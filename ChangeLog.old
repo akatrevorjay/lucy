@@ -1,0 +1,1107 @@
+2006-05-19 06:08  trevorj
+
+	* [r207] trunk/Lucy/Diamonds/Dict.pm, trunk/Lucy/Diamonds/RSS.pm,
+	  trunk/Lucy/Diamonds/Reminder.pm,
+	  trunk/Lucy/Diamonds/Responses.pm: Fucking bugs
+
+2006-05-19 03:51  trevorj
+
+	* [r206] trunk/Lucy/Common.pm, trunk/Lucy/Diamonds/State.pm: Fix
+	  my fuckups
+
+2006-05-17 06:29  trevorj
+
+	* [r205] trunk/Lucy/Common.pm, trunk/Lucy/Config.pm.example,
+	  trunk/Lucy/Diamonds/InfoBot.pm,
+	  trunk/Lucy/Diamonds/NetTools_ng.pm,
+	  trunk/Lucy/Diamonds/Responses.pm, trunk/Lucy/Diamonds/State.pm,
+	  trunk/lucy.pl: Mmmm more autoloading. I'm not sure if I like it.
+	  It may be removed in the future.
+
+2006-05-16 08:05  trevorj
+
+	* [r204] trunk/Lucy/Diamonds/Dict.pm,
+	  trunk/Lucy/Diamonds/Responses.pm: Haha. I'm a retard. Fix the
+	  compiling typo.
+
+2006-05-16 06:42  trevorj
+
+	* [r203] trunk/ChangeLog, trunk/ChangeLog.html,
+	  trunk/Lucy/Diamonds/Responses.pm: Actually add the plugin this
+	  time around ;)
+	  Update changelog
+
+2006-05-16 06:41  trevorj
+
+	* [r202] trunk/Lucy/Common.pm, trunk/Lucy/Config.pm.example,
+	  trunk/Lucy/Diamonds/ChuckNorris.pm,
+	  trunk/Lucy/Diamonds/InfoBot.pm, trunk/Lucy/MsgHandler.pm,
+	  trunk/db/mysql.schema: Added responses plugin, which reads
+	  responses from the db
+	  Moved alot of code from chucknorris into the db
+
+2006-05-15 07:38  trevorj
+
+	* [r201] trunk/Lucy/Diamonds/ChuckNorris.pm, trunk/TODO: I decided
+	  we should yield everything instead of $lucy->blah
+	  this will help simplify the autoload of Sky
+	  TODO: All Diamonds besides ChuckNorris and State
+
+2006-05-15 03:23  trevorj
+
+	* [r200] trunk/ChangeLog, trunk/ChangeLog.html,
+	  trunk/Lucy/Common.pm, trunk/Lucy/Diamonds/ChuckNorris.pm,
+	  trunk/Lucy/Diamonds/Songs.pm, trunk/Lucy/Diamonds/State.pm,
+	  trunk/Lucy/MsgHandler.pm, trunk/lucy.pl: Started move from
+	  $lucy->blah to $lucy->yield(blah)
+
+2006-05-14 02:33  trevorj
+
+	* [r199] trunk/Lucy/Diamonds/Songs.pm: Added some color
+
+2006-05-14 02:09  trevorj
+
+	* [r198] trunk/Lucy/Diamonds/RSS.pm, trunk/Lucy/Diamonds/State.pm,
+	  trunk/Lucy/Sky.pm: Random little things
+
+2006-05-13 18:50  trevorj
+
+	* [r197] trunk/Lucy/Diamonds/NickTrackar.pm,
+	  trunk/Lucy/Diamonds/Reminder.pm, trunk/Lucy/Diamonds/State.pm,
+	  trunk/Lucy/MsgHandler.pm, trunk/Lucy/Sky.pm, trunk/lucy.pl:
+	  jackncokes
+
+2006-05-11 21:16  trevorj
+
+	* [r196] trunk/Lucy/Diamonds/State.pm: show notices
+
+2006-05-11 20:51  trevorj
+
+	* [r195] trunk/Lucy/Diamonds/State.pm: Do Not Log NickServ Idents
+
+2006-05-11 20:44  trevorj
+
+	* [r194] trunk/Lucy/Diamonds/State.pm, trunk/lucystats.pl: Mmmm
+
+2006-05-11 20:34  trevorj
+
+	* [r193] trunk/Lucy/Config.pm.example,
+	  trunk/Lucy/Diamonds/Google_ng.pm,
+	  trunk/Lucy/Diamonds/NetTools_ng.pm: Added b0rked NetTools
+	  plugin; Added State to default Diamonds
+
+2006-05-11 17:22  trevorj
+
+	* [r192] trunk/Lucy/Diamonds/Logger.pm,
+	  trunk/Lucy/Diamonds/State.pm: Little updates here and there
+
+2006-05-11 04:07  trevorj
+
+	* [r191] trunk/ChangeLog, trunk/ChangeLog.html,
+	  trunk/Lucy/Diamonds/Logger.pm,
+	  trunk/Lucy/Diamonds/NickTrackar.pm,
+	  trunk/Lucy/Diamonds/State.pm, trunk/db/rss: Added state plugin
+
+2006-05-10 02:58  trevorj
+
+	* [r190] trunk/lucystats.pl: Stats works beautifully
+
+2006-05-10 01:39  trevorj
+
+	* [r189] trunk/lucystats.pl: fix compat with before 0.5
+
+2006-05-10 01:25  trevorj
+
+	* [r188] trunk/lib/serialize.pm, trunk/lib/serialize.readme,
+	  trunk/lucystats.pl: PHP serialize support for the stats
+
+2006-05-07 04:28  trevorj
+
+	* [r187] trunk/ChangeLog, trunk/ChangeLog.html,
+	  trunk/Lucy/Common.pm, trunk/Lucy/Diamonds/Logger.pm,
+	  trunk/Lucy/Diamonds/State.pm, trunk/Lucy/MsgHandler.pm,
+	  trunk/Lucy/Sky.pm: Hopefully everything isn't borked after this.
+
+2006-05-05 01:38  trevorj
+
+	* [r186] trunk/Lucy/Diamonds/State.pm, trunk/TODO: Added start of
+	  State plugin
+
+2006-05-04 22:27  trevorj
+
+	* [r185] trunk/Lucy/Diamonds/Logger.pm: Oops, my isn't needed.
+
+2006-05-04 22:26  trevorj
+
+	* [r184] trunk/TODO: Removed done TODO
+
+2006-05-04 22:23  trevorj
+
+	* [r183] trunk/Lucy/Diamonds/Logger.pm, trunk/Lucy/Sky.pm,
+	  trunk/lucy.pl: Mmmm
+
+2006-05-04 20:11  trevorj
+
+	* [r182] trunk/Lucy/Diamonds/NickTrackar.pm: gah.
+
+2006-05-04 20:10  trevorj
+
+	* [r181] trunk/Lucy/Common.pm: mmm
+
+2006-05-04 19:31  trevorj
+
+	* [r180] trunk/Lucy/Common.pm, trunk/Lucy/Diamonds/NickTrackar.pm,
+	  trunk/TODO: Random work
+
+2006-05-04 05:45  trevorj
+
+	* [r179] trunk/Lucy/Config.pm.example,
+	  trunk/Lucy/Diamonds/NickTrackar.pm, trunk/Lucy/Sky.pm: Mmm
+
+2006-05-04 01:34  trevorj
+
+	* [r178] trunk/Lucy/Diamonds/ChuckNorris.pm,
+	  trunk/Lucy/Diamonds/InfoBot.pm, trunk/Lucy/Sky.pm: Fix my
+	  screwups
+
+2006-05-04 00:58  trevorj
+
+	* [r177] trunk/Lucy/Config.pm.example,
+	  trunk/Lucy/Diamonds/ChuckNorris.pm, trunk/Lucy/Sky.pm: Mmmm
+
+2006-05-02 01:01  trevorj
+
+	* [r176] trunk/Lucy/Diamonds/Google_ng.pm: Added b0rked google_ng
+	  plugin
+
+2006-05-02 00:55  trevorj
+
+	* [r175] trunk/Lucy/Config.pm.example,
+	  trunk/Lucy/Diamonds/Connect.pm, trunk/Lucy/MsgHandler.pm,
+	  trunk/Lucy/Sky.pm: Some code cleanups, rearrangement. Deleted
+	  the 'Connect' plugin
+
+2006-05-01 21:47  trevorj
+
+	* [r174] trunk/Lucy/Diamonds/Google.pm: Code cleanup
+
+2006-05-01 21:43  trevorj
+
+	* [r173] trunk/db/mysql.schema: Updated mysql schema to hopefully
+	  work with more mysql versions other than 5
+
+2006-05-01 04:54  trevorj
+
+	* [r172] trunk/Lucy/Diamonds/ChuckNorris.pm,
+	  trunk/Lucy/Diamonds/Logger.pm, trunk/Lucy/Diamonds/RSS.pm,
+	  trunk/Lucy/Sky.pm, trunk/lucy.pl: Mmmm
+
+2006-05-01 00:16  trevorj
+
+	* [r171] trunk/Lucy/Diamonds/RSS.pm, trunk/lucy.pl: Mmmm
+
+2006-04-27 21:30  trevorj
+
+	* [r170] trunk/Lucy/Diamonds/RSS.pm: Eh, RSS updates
+
+2006-04-26 03:31  trevorj
+
+	* [r169] trunk/Lucy/Diamonds/RSS.pm: RSS fixens
+
+2006-04-25 07:16  trevorj
+
+	* [r168] trunk/Lucy/Common.pm, trunk/Lucy/Diamonds/ChuckNorris.pm,
+	  trunk/Lucy/Diamonds/Logger.pm, trunk/Lucy/Diamonds/RSS.pm,
+	  trunk/lib/POE/Component/RSSAggregator.pm, trunk/lucy.pl: Oh man
+	  look at al this love.
+
+2006-04-25 00:59  trevorj
+
+	* [r167] trunk/Lucy/Diamonds/Logger.pm,
+	  trunk/Lucy/Diamonds/NickTrackar.pm: Hopefully fix some
+	  nicktrackar boogs
+
+2006-04-25 00:27  trevorj
+
+	* [r166] trunk/Lucy/Diamonds/RSS.pm, trunk/lib/POE,
+	  trunk/lib/POE/Component,
+	  trunk/lib/POE/Component/RSSAggregator.pm: some rss work
+
+2006-04-24 08:00  trevorj
+
+	* [r165] trunk/Lucy/Diamonds/RSS.pm: Fixups
+
+2006-04-24 07:57  trevorj
+
+	* [r164] trunk/Lucy/Diamonds/RSS.pm: I should test code before I
+	  commit...
+
+2006-04-24 07:55  trevorj
+
+	* [r163] trunk/db/mysql.schema: Update db schema with current RSS
+	  structure (needs author user id and created ts)
+
+2006-04-24 07:53  trevorj
+
+	* [r162] trunk/Lucy/Diamonds/RSS.pm: Coded Stoning
+
+2006-04-24 07:27  trevorj
+
+	* [r161] trunk/Lucy/Diamonds/RSS.pm: Remove a little unneeded code
+	  ;)
+
+2006-04-24 07:25  trevorj
+
+	* [r160] trunk/Lucy/Diamonds/RSS.pm: Semi-fixed RSS plugin. Needs
+	  remove rss functionality, and a url regex...
+
+2006-04-24 05:36  trevorj
+
+	* [r159] trunk/Lucy/Diamonds/RSS.pm,
+	  trunk/Lucy/Diamonds/Reminder.pm, trunk/Lucy/Diamonds/Songs.pm,
+	  trunk/Lucy/Diamonds/Weather.pm: Alot of weird little changes,
+	  beware of the new RSS plugin, it is very broke atm.
+
+2006-04-20 14:33  trevorj
+
+	* [r158] trunk/Lucy/Diamonds/ChuckNorris.pm,
+	  trunk/Lucy/Diamonds/InfoBot.pm, trunk/Lucy/Diamonds/RSS.pm,
+	  trunk/Lucy/Sky.pm, trunk/lucystats.pl: Lots of small changes,
+	  some slightly bigger than others.
+
+2006-04-12 05:59  trevorj
+
+	* [r157] trunk/Lucy/Diamonds/ChuckNorris.pm,
+	  trunk/Lucy/Diamonds/RSS.pm, trunk/Lucy/Sky.pm, trunk/lucy.pl:
+	  plugins are now objects in a hash, some rss updates, speed
+	  improvements
+
+2006-04-11 20:16  trevorj
+
+	* [r156] trunk/Lucy/Diamonds/RSS.pm: Double the rss check delay to
+	  10m, not 5
+
+2006-04-11 20:01  trevorj
+
+	* [r155] trunk/Lucy/Diamonds/RSS.pm: How about I actually commit
+	  the RSS plugin this time??
+
+2006-04-11 19:59  trevorj
+
+	* [r154] trunk/Lucy/Diamonds/ChuckNorris.pm,
+	  trunk/Lucy/Diamonds/NickTrackar.pm, trunk/Lucy/MsgHandler.pm,
+	  trunk/Lucy/Sky.pm, trunk/db/rss, trunk/lucy.pl: Added RSS
+	  plugin, among other things
+
+2006-04-07 00:11  trevorj
+
+	* [r153] trunk/Lucy/Diamonds/Logger.pm, trunk/Lucy/MsgHandler.pm,
+	  trunk/Lucy/Sky.pm, trunk/lucy.pl: Mmmmm
+
+2006-04-06 07:10  trevorj
+
+	* [r152] trunk/Lucy/Diamonds/Dict.pm: As I said before.
+
+2006-04-06 07:02  trevorj
+
+	* [r151] trunk/Lucy/Diamonds/Dict.pm: being stoned and coding are
+	  sometimes not a very good mix...
+
+2006-04-06 06:49  trevorj
+
+	* [r150] trunk/Lucy/Diamonds/Dict.pm: Stupid svn
+
+2006-04-06 06:48  trevorj
+
+	* [r149] trunk/Lucy/Diamonds/Dict.pm: Dict updates (it skipped one
+	  result)
+
+2006-04-06 06:13  echoline
+
+	* [r148] trunk/Lucy/Diamonds/Dict.pm: whoops, forgot s///g
+
+2006-04-06 06:09  trevorj
+
+	* [r147] trunk/Lucy/Sky.pm: Fix plugin crash
+
+2006-04-06 06:06  echoline
+
+	* [r146] trunk/Lucy/Diamonds/Dict.pm: fixed blank examples really
+	  now
+
+2006-04-06 05:38  trevorj
+
+	* [r145] trunk/Lucy/Diamonds/Logger.pm,
+	  trunk/Lucy/Diamonds/NickTrackar.pm: log nick changes
+
+2006-04-06 05:25  trevorj
+
+	* [r144] trunk/Lucy/Diamonds/NickTrackar.pm,
+	  trunk/Lucy/MsgHandler.pm, trunk/Lucy/Sky.pm: privmsgs work, and
+	  nick change trackage
+
+2006-04-06 03:59  echoline
+
+	* [r143] trunk/Lucy/Common.pm, trunk/Lucy/Diamonds/Dict.pm: added
+	  underlining, fixed empty !dict examples
+
+2006-04-06 01:05  trevorj
+
+	* [r142] trunk/Lucy/Diamonds/NickTrackar.pm: fix typo in seen
+
+2006-04-06 00:57  trevorj
+
+	* [r141] trunk/Lucy/Common.pm, trunk/Lucy/Diamonds/ChuckNorris.pm,
+	  trunk/Lucy/Diamonds/Logger.pm,
+	  trunk/Lucy/Diamonds/NickTrackar.pm,
+	  trunk/Lucy/Diamonds/Weather.pm, trunk/Lucy/Sky.pm, trunk/TODO:
+	  Random updates
+
+2006-04-04 22:09  trevorj
+
+	* [r140] trunk/Lucy/Diamonds/Google.pm,
+	  trunk/Lucy/Diamonds/Reminder.pm: Fixed font typos
+
+2006-04-04 18:50  echoline
+
+	* [r139] trunk/Lucy/Common.pm, trunk/Lucy/Diamonds/Dict.pm,
+	  trunk/Lucy/Diamonds/Google.pm, trunk/Lucy/Diamonds/Reminder.pm:
+	  added color to a few modules
+	  changed inverse and gray in font()
+
+2006-04-04 07:49  trevorj
+
+	* [r138] trunk/Lucy/Common.pm: efficency bleh
+
+2006-04-04 07:43  trevorj
+
+	* [r137] trunk/Lucy/Common.pm, trunk/Lucy/Diamonds/Connect.pm:
+	  made the font function slightly more efficient
+
+2006-04-04 07:33  echoline
+
+	* [r136] trunk/Lucy/Diamonds/Dict.pm: fixed bug with irc coloring
+
+2006-04-04 07:06  trevorj
+
+	* [r135] trunk/Lucy/Diamonds/ChuckNorris.pm: fix the bug I created
+
+2006-04-04 07:01  echoline
+
+	* [r134] trunk/Lucy/Common.pm: added config toggle to font()
+
+2006-04-04 07:00  trevorj
+
+	* [r133] trunk/Lucy/Config.pm.example,
+	  trunk/Lucy/Diamonds/ChuckNorris.pm: IRC colors runtime changables
+
+2006-04-04 06:56  trevorj
+
+	* [r132] trunk/Lucy/Diamonds/ChuckNorris.pm,
+	  trunk/Lucy/Diamonds/NickTrackar.pm, trunk/Lucy/Sky.pm,
+	  trunk/lucystats.pl: mmm
+
+2006-04-04 06:33  echoline
+
+	* [r131] trunk/Lucy/Diamonds/Dict.pm: added font() usage
+
+2006-04-04 06:09  echoline
+
+	* [r130] trunk/Lucy/Common.pm: oops, forgot to add use Switch;
+
+2006-04-04 06:08  echoline
+
+	* [r129] trunk/Lucy/Common.pm: added font($attribs,$text)
+
+2006-04-04 05:56  trevorj
+
+	* [r128] trunk/Lucy/Diamonds/NickTrackar.pm, trunk/lucystats.pl:
+	  mmm lucystats
+
+2006-04-04 05:36  trevorj
+
+	* [r127] trunk/lucystats.pl: fix lucystats user order
+
+2006-04-01 05:03  trevorj
+
+	* [r126] trunk/db/mysql.schema, trunk/lucystats.pl: mmm lucystats
+	  update, now using mysql views
+
+2006-04-01 04:03  trevorj
+
+	* [r125] trunk/Lucy/Diamonds/ChuckNorris.pm,
+	  trunk/Lucy/Diamonds/InfoBot.pm: added search for !factoid, and a
+	  smarter !order
+
+2006-03-31 21:27  trevorj
+
+	* [r124] trunk/Lucy/Diamonds/InfoBot.pm:
+
+2006-03-31 20:12  echoline
+
+	* [r123] trunk/Lucy/Diamonds/InfoBot.pm:
+
+2006-03-31 06:54  trevorj
+
+	* [r122] trunk/db/mysql.schema: update sql schema
+
+2006-03-31 04:34  trevorj
+
+	* [r121] trunk/Lucy/Common.pm, trunk/Lucy/Diamonds/NickTrackar.pm:
+	  lets uh, make garbage collection actually work shall we?
+
+2006-03-31 04:10  trevorj
+
+	* [r120] trunk/Lucy/Diamonds/InfoBot.pm,
+	  trunk/Lucy/Diamonds/NickTrackar.pm,
+	  trunk/Lucy/Diamonds/Reminder.pm: I don't practice santeria
+
+2006-03-31 03:32  trevorj
+
+	* [r119] trunk/Lucy/Common.pm, trunk/Lucy/Config.pm.example,
+	  trunk/Lucy/Diamonds/InfoBot.pm,
+	  trunk/Lucy/Diamonds/NickTrackar.pm,
+	  trunk/Lucy/Diamonds/Reminder.pm, trunk/Lucy/Sky.pm: Alot of
+	  little fixups here and there
+
+2006-03-31 02:15  trevorj
+
+	* [r118] trunk/Lucy/Diamonds/Logger.pm: Found a better way to do
+	  the logging
+
+2006-03-31 01:03  trevorj
+
+	* [r117] trunk/Lucy/Diamonds/Logger.pm, trunk/Lucy/Sky.pm: Make
+	  logger more efficient (finally)
+
+2006-03-29 21:39  trevorj
+
+	* [r116] trunk/lucystats.pl: Mmmm more lucystats
+
+2006-03-29 12:53  trevorj
+
+	* [r115] trunk/Lucy/Diamonds/NickTrackar.pm: Cleanups
+
+2006-03-29 12:50  trevorj
+
+	* [r114] trunk/Lucy/Diamonds/InfoBot.pm, trunk/db/mysql.schema:
+	  Added ts to InfoBot
+
+2006-03-29 12:38  trevorj
+
+	* [r113] trunk/lucystats.pl: Added semi-compatibility layer to
+	  lucystats till we get neoturbine updated
+
+2006-03-29 12:33  trevorj
+
+	* [r112] trunk/lucystats.pl: Added semi-compatibility layer to
+	  lucystats till we get neoturbine updated
+
+2006-03-29 12:16  trevorj
+
+	* [r111] trunk/db/setup.sh, trunk/lucystats.xsl: Make lucystats
+	  work with the new update; cleanups
+
+2006-03-29 12:11  trevorj
+
+	* [r110] trunk/lucystats.xsl: Make lucystats work with the new
+	  update
+
+2006-03-29 11:57  trevorj
+
+	* [r109] trunk/lucystats.pl: Make lucystats work with the new
+	  update
+
+2006-03-29 11:56  trevorj
+
+	* [r108] trunk/Lucy/Diamonds/Reminder.pm, trunk/lucystats.pl: Make
+	  lucystats work with the new update
+
+2006-03-29 10:47  trevorj
+
+	* [r107] trunk/Lucy/Diamonds/Reminder.pm, trunk/db/mysql.schema:
+	  Huuuge update, removed DBI in favor of DBIx::Simple, and
+	  effectively halfed the DB code ;)
+	  Not to mention a bunch of random fixins
+	  Now uses denora's user table, seen has GC!!
+	  SQL schema has changed
+
+2006-03-29 10:42  trevorj
+
+	* [r106] trunk/Lucy/Config.pm.example,
+	  trunk/Lucy/Diamonds/InfoBot.pm, trunk/Lucy/Diamonds/Links.pm,
+	  trunk/Lucy/Diamonds/Logger.pm,
+	  trunk/Lucy/Diamonds/NickTrackar.pm,
+	  trunk/Lucy/Diamonds/Reminder.pm, trunk/Lucy/Diamonds/Seen.pm,
+	  trunk/lib/SQL, trunk/lib/SQL/Abstract.pm, trunk/lucy.pl: Huuuge
+	  update, removed DBI in favor of DBIx::Simple, and effectively
+	  halfed the DB code ;)
+	  Not to mention a bunch of random fixins
+	  Now uses denora's user table, seen has GC!!
+	  SQL schema has changed
+
+2006-03-28 02:35  trevorj
+
+	* [r105] branches/alzabo/blah.pl, branches/alzabo/lucy.pl: sigh.
+	  alzabo fails to compile...
+
+2006-03-28 01:43  trevorj
+
+	* [r104] branches/alzabo: Alzabo conversion field
+
+2006-03-23 02:39  trevorj
+
+	* [r103] trunk/Lucy/Diamonds/Connect.pm: mmm
+
+2006-03-23 02:35  trevorj
+
+	* [r102] trunk/Lucy/Config.pm.example,
+	  trunk/Lucy/Diamonds/ChuckNorris.pm,
+	  trunk/Lucy/Diamonds/Connect.pm, trunk/Lucy/Sky.pm,
+	  trunk/lucy.pl: Random updates and code oh my
+
+2006-03-21 14:56  trevorj
+
+	* [r101] trunk/Lucy/Diamonds/ChuckNorris.pm,
+	  trunk/Lucy/Diamonds/NickTrackar.pm: Random updates and code oh my
+
+2006-03-18 20:52  trevorj
+
+	* [r100] trunk/Lucy/Diamonds/ChuckNorris.pm: remove random
+	  injections due to request
+
+2006-03-18 07:03  trevorj
+
+	* [r99] trunk/Lucy/Diamonds/ChuckNorris.pm: Format the code baby
+
+2006-03-18 06:57  echoline
+
+	* [r98] trunk/Lucy/Diamonds/ChuckNorris.pm:
+
+2006-03-18 06:55  echoline
+
+	* [r97] trunk/Lucy/Diamonds/ChuckNorris.pm:
+
+2006-03-18 06:39  trevorj
+
+	* [r96] trunk/Lucy/Diamonds/ChuckNorris.pm: Added !order
+
+2006-03-17 23:25  trevorj
+
+	* [r95] trunk/Lucy/Config.pm.example,
+	  trunk/Lucy/Diamonds/ChuckNorris.pm,
+	  trunk/Lucy/Diamonds/NickTrackar.pm: Random updates and code oh my
+
+2006-03-17 17:24  echoline
+
+	* [r94] trunk/Lucy/Diamonds/Dict.pm:
+
+2006-03-14 20:04  trevorj
+
+	* [r93] trunk/Lucy/Diamonds/ChuckNorris.pm,
+	  trunk/Lucy/Diamonds/Seen.pm, trunk/Lucy/Sky.pm,
+	  trunk/lucystats.pl: Random updates and code oh my
+
+2006-03-11 20:24  trevorj
+
+	* [r92] trunk/Lucy/Config.pm.example,
+	  trunk/Lucy/Diamonds/ChuckNorris.pm, trunk/Lucy/Sky.pm,
+	  trunk/lucy.pl: some sky updates, removed unneeded events
+
+2006-03-11 04:33  trevorj
+
+	* [r91] trunk/db/setup.sh: Added db setup.sh; Needs alot of love.
+
+2006-03-11 04:23  trevorj
+
+	* [r90] trunk/Lucy/Diamonds/Dict.pm: Fix eli's typos
+
+2006-03-11 04:14  trevorj
+
+	* [r89] trunk/Lucy/Diamonds/Dict.pm: Fix eli's typo
+
+2006-03-10 21:40  echoline
+
+	* [r88] trunk/Lucy/Diamonds/Dict.pm,
+	  trunk/Lucy/Diamonds/Google.pm:
+
+2006-03-10 21:22  trevorj
+
+	* [r87] trunk/Lucy/Diamonds/Dict.pm: Actually fix Dict
+
+2006-03-10 21:18  trevorj
+
+	* [r86] trunk/Lucy/Diamonds/Dict.pm, trunk/Lucy/Sky.pm: Actually
+	  fix Dict
+
+2006-03-10 21:08  echoline
+
+	* [r85] trunk/Lucy/Diamonds/Dict.pm:
+
+2006-03-10 21:01  trevorj
+
+	* [r84] trunk/Lucy/Diamonds/Dict.pm: Try to fix Dict
+
+2006-03-10 20:44  echoline
+
+	* [r83] trunk/Lucy/Diamonds/Dict.pm:
+
+2006-03-10 20:28  trevorj
+
+	* [r82] trunk/Lucy/Config.pm.example,
+	  trunk/Lucy/Diamonds/ChuckNorris.pm, trunk/Lucy/Diamonds/Dict.pm:
+	  Lazy
+
+2006-03-10 18:34  echoline
+
+	* [r81] trunk/Lucy/Diamonds/Dict.pm:
+
+2006-03-10 18:30  echoline
+
+	* [r80] trunk/Lucy/Diamonds/Dict.pm:
+
+2006-03-10 17:24  trevorj
+
+	* [r79] trunk/Lucy/Diamonds/ChuckNorris.pm: Math help
+
+2006-03-10 17:00  trevorj
+
+	* [r78] trunk/Lucy/Diamonds/ChuckNorris.pm: Gave math some error
+	  handling
+
+2006-03-10 16:51  trevorj
+
+	* [r77] trunk/Lucy/Diamonds/ChuckNorris.pm: Expanded Chuck
+	  Norris's Vocabulary to include Math
+
+2006-03-10 14:28  trevorj
+
+	* [r76] trunk/Lucy/Common.pm, trunk/Lucy/MsgHandler.pm,
+	  trunk/Lucy/Sky.pm, trunk/lib/Acme/Yoda.pm: Fix what I b0rked
+
+2006-03-10 14:27  trevorj
+
+	* [r75] trunk/Lucy/Diamonds, trunk/lib/Acme/Terror.pm,
+	  trunk/lib/Lucy: bahhhh fixxxxx
+
+2006-03-10 13:58  trevorj
+
+	* [r74] trunk/Lucy: More rearranging
+
+2006-03-10 13:58  trevorj
+
+	* [r73] trunk/Lucy, trunk/Lucy/Config.pm.example,
+	  trunk/lib/Acme/Scurvy, trunk/lib/Acme/Scurvy/Whoreson,
+	  trunk/lib/Acme/Scurvy/Whoreson/BilgeRat,
+	  trunk/lib/Acme/Scurvy/Whoreson/BilgeRat.pm,
+	  trunk/lib/Acme/Scurvy/Whoreson/BilgeRat/Backend,
+	  trunk/lib/Acme/Scurvy/Whoreson/BilgeRat/Backend/insultserver.pm,
+	  trunk/lib/Acme/Scurvy/Whoreson/BilgeRat/Backend/lala.pm,
+	  trunk/lib/Acme/Scurvy/Whoreson/BilgeRat/Backend/pirate.pm,
+	  trunk/lib/Lucy/Config.pm.example: More rearranging
+
+2006-03-10 13:54  trevorj
+
+	* [r72] trunk/Lucy, trunk/lib/Lucy, trunk/lib/Lucy/Common.pm,
+	  trunk/lib/Lucy/Config.pm.example, trunk/lib/Lucy/Diamonds,
+	  trunk/lib/Lucy/Diamonds/ChuckNorris.pm,
+	  trunk/lib/Lucy/MsgHandler.pm, trunk/lib/Lucy/Sky.pm: Mmmmmm
+
+2006-03-10 12:38  trevorj
+
+	* [r71] trunk/Lucy/Diamonds/ChuckNorris.pm: Chuck Norris deserves
+	  your respect.
+
+2006-03-10 12:29  trevorj
+
+	* [r70] trunk/Lucy/Config.pm.example,
+	  trunk/Lucy/Diamonds/ChuckNorris.pm,
+	  trunk/Lucy/Diamonds/Connect.pm, trunk/Lucy/Diamonds/Google.pm,
+	  trunk/Lucy/Diamonds/InfoBot.pm, trunk/Lucy/Diamonds/Terror.pm:
+	  Created ChuckNorris plugin, Merged Terror into it.
+
+2006-03-09 22:26  trevorj
+
+	* [r69] trunk/Lucy/Diamonds/Weather.pm,
+	  trunk/db/weather/locations.dat, trunk/db/weather/m_USOH0008.dat:
+	  Moved weather cache to db/weather
+
+2006-03-09 22:24  trevorj
+
+	* [r68] trunk/db/weather, trunk/db/weather/locations.dat,
+	  trunk/db/weather/m_USOH0008.dat: Moved weather cache to
+	  db/weather
+
+2006-03-09 21:52  trevorj
+
+	* [r67] trunk/Lucy/Diamonds/Songs.pm: Hey, how about I test things
+	  out before I commit them??
+
+2006-03-09 21:48  trevorj
+
+	* [r66] trunk/Lucy/Diamonds/Songs.pm,
+	  trunk/Lucy/Diamonds/Stats.pm: Deleted deprecated Stats plugin,
+	  made songs a little more efficient
+
+2006-03-09 20:40  echoline
+
+	* [r65] trunk/Lucy/Diamonds/Songs.pm:
+
+2006-03-06 02:46  trevorj
+
+	* [r64] trunk/Lucy/Diamonds/Terror.pm: Unyoda
+
+2006-03-06 02:38  trevorj
+
+	* [r63] trunk/Lucy/Diamonds/Terror.pm: Add 8ball and Yoda. Yoda
+	  doesn't work yet.
+
+2006-03-06 01:52  trevorj
+
+	* [r62] trunk/lib, trunk/lib/Acme, trunk/lib/Acme/Magic8Ball.pm,
+	  trunk/lib/Acme/Terror.pm, trunk/lib/Acme/Yoda.pm: Fix lib
+
+2006-03-06 01:52  trevorj
+
+	* [r61] trunk/lib: fix this shit
+
+2006-03-06 01:50  trevorj
+
+	* [r60] trunk/Lucy/Sky.pm, trunk/lucy.pl: Cleanups
+
+2006-03-06 01:46  trevorj
+
+	* [r59] trunk/Lucy/Diamonds/Acme, trunk/Lucy/Diamonds/Terror.pm,
+	  trunk/lib, trunk/lucy.pl: Fixed Terror Plugin. Added lib dir for
+	  external packages.
+
+2006-03-05 15:06  sargas
+
+	* [r58] trunk/Lucy/Diamonds/Terror.pm: Oops, we don't want to
+	  respond to everything
+
+2006-03-05 15:03  sargas
+
+	* [r57] trunk/Lucy/Diamonds/Acme,
+	  trunk/Lucy/Diamonds/Acme/Magic8Ball.pm,
+	  trunk/Lucy/Diamonds/Acme/Terror.pm,
+	  trunk/Lucy/Diamonds/Acme/Yoda.pm: Adding some fun little classes
+	  for use in the diamonds
+
+2006-03-05 15:03  sargas
+
+	* [r56] trunk/Lucy/Diamonds/Terror.pm: Added Terror diamond
+
+2006-03-05 08:19  trevorj
+
+	* [r55] trunk/Lucy/Diamonds/Weather.pm: Fix weather bug
+
+2006-03-05 07:28  trevorj
+
+	* [r54] trunk/Lucy/Config.pm.example,
+	  trunk/Lucy/Diamonds/Weather.pm: Added Weather diamond, uses
+	  weather.com api
+
+2006-03-05 05:24  trevorj
+
+	* [r53] trunk/Lucy/Diamonds/Songs.pm, trunk/lucystats.pl: Songs
+	  allows t=blah and track=blah
+
+2006-03-05 05:07  trevorj
+
+	* [r52] trunk/Lucy/Diamonds/Connect.pm,
+	  trunk/Lucy/Diamonds/Google.pm, trunk/Lucy/Diamonds/Songs.pm,
+	  trunk/Lucy/Diamonds/Stats.pm: Random little features
+
+2006-03-05 02:37  trevorj
+
+	* [r51] trunk/Lucy/Diamonds/Songs.pm, trunk/Lucy/IRC.pm,
+	  trunk/Lucy/Sky.pm: Merged IRC with Sky
+
+2006-03-05 01:23  trevorj
+
+	* [r50] trunk/Lucy/Diamonds/Songs.pm: UNBORK!
+
+2006-03-05 01:22  trevorj
+
+	* [r49] trunk/Lucy/Diamonds/Songs.pm: UnBork()
+
+2006-03-05 01:19  trevorj
+
+	* [r48] trunk/Lucy/Diamonds/Songs.pm: Merged lastfm into one
+	  command
+
+2006-03-05 01:04  trevorj
+
+	* [r47] trunk/Lucy/Diamonds/Connect.pm,
+	  trunk/Lucy/Diamonds/Google.pm, trunk/Lucy/Diamonds/InfoBot.pm,
+	  trunk/Lucy/Diamonds/Reminder.pm, trunk/Lucy/Diamonds/Seen.pm,
+	  trunk/Lucy/Diamonds/Songs.pm: Added lastfm support to Songs
+
+2006-03-05 00:10  trevorj
+
+	* [r46] trunk/Lucy/Diamonds/Songs.pm: updated Songs
+
+2006-03-05 00:00  trevorj
+
+	* [r45] trunk/Lucy/Diamonds/Songs.pm: Fix Songs
+
+2006-03-04 23:54  echoline
+
+	* [r44] trunk/Lucy/Diamonds/Songs.pm:
+
+2006-03-04 23:46  echoline
+
+	* [r43] trunk/Lucy/Diamonds/Songs.pm:
+
+2006-03-04 22:25  trevorj
+
+	* [r42] trunk/Lucy/Diamonds/Connect.pm, trunk/Lucy/IRC.pm,
+	  trunk/Lucy/Sky.pm: Dynamic Diamonds. Needs some kind of auth
+	  system.
+
+2006-03-04 12:04  trevorj
+
+	* [r41] trunk/Lucy/Config.pm.example,
+	  trunk/Lucy/Diamonds/Links.pm: Stats plugin is now deprecated in
+	  favor of the Links plugin and lucystats
+
+2006-03-04 11:55  trevorj
+
+	* [r40] trunk/Lucy/Config.pm.example: Stats plugin is now
+	  deprecated in favor of the Links plugin and lucystats
+
+2006-03-04 11:54  trevorj
+
+	* [r39] trunk/Lucy/Diamonds/Links.pm,
+	  trunk/Lucy/Diamonds/Stats.pm: Stats plugin is now deprecated in
+	  favor of the Links plugin and lucystats
+
+2006-03-04 10:39  trevorj
+
+	* [r38] trunk/Lucy/Config.pm.example: More Boogs
+
+2006-03-04 10:34  trevorj
+
+	* [r37] trunk/Lucy/Diamonds/Connect.pm, trunk/lucy.pl: Boogs
+
+2006-03-04 09:31  trevorj
+
+	* [r36] trunk/Lucy/Diamonds/Connect.pm, trunk/Lucy/Sky.pm,
+	  trunk/lucy.pl: Dynamic pluginness
+
+2006-03-04 08:42  trevorj
+
+	* [r35] trunk/lucy.pl: Fix bugs introduced by last commit ;)
+
+2006-03-04 08:38  trevorj
+
+	* [r34] trunk/Lucy/Config.pm.example, trunk/lucy.pl: Moved
+	  @diamonds into Config
+
+2006-03-04 08:35  trevorj
+
+	* [r33] trunk/lucystats.pl: Added alternate config
+
+2006-03-04 08:18  trevorj
+
+	* [r32] trunk/lucystats.pl: lucystats quick lib update
+
+2006-03-04 08:14  trevorj
+
+	* [r31] trunk/Lucy/IRC.pm, trunk/lucystats.pl: Add lucystats.pl
+	  script which does a live stats grab with cache
+
+2006-03-04 06:06  trevorj
+
+	* [r30] trunk/Lucy/Common.pm, trunk/Lucy/Diamonds/Connect.pm,
+	  trunk/Lucy/Diamonds/Google.pm, trunk/Lucy/Diamonds/InfoBot.pm,
+	  trunk/Lucy/Diamonds/Logger.pm, trunk/Lucy/Diamonds/Reminder.pm,
+	  trunk/Lucy/Diamonds/Seen.pm, trunk/Lucy/Diamonds/Stats.pm,
+	  trunk/Lucy/IRC.pm, trunk/Lucy/MsgHandler.pm, trunk/Lucy/Sky.pm,
+	  trunk/lucy.pl, trunk/lucystats.xsl: Small changes here and there
+
+2006-03-04 02:30  trevorj
+
+	* [r29] trunk/Lucy/Common.pm, trunk/Lucy/Diamonds/Connect.pm,
+	  trunk/Lucy/Diamonds/InfoBot.pm, trunk/Lucy/Diamonds/Logger.pm,
+	  trunk/Lucy/Diamonds/Seen.pm, trunk/Lucy/Diamonds/Stats.pm,
+	  trunk/lucy.pl: Mmmm Debug Colors
+
+2006-03-04 00:20  trevorj
+
+	* [r28] trunk/Lucy/Diamonds/Connect.pm,
+	  trunk/Lucy/Diamonds/Logger.pm, trunk/Lucy/Sky.pm: Mmmm. Bug with
+	  parseumask fixed, and more replies.
+
+2006-03-03 23:40  trevorj
+
+	* [r27] trunk, trunk/Lucy/Common.pm,
+	  trunk/Lucy/Diamonds/Connect.pm, trunk/Lucy/Diamonds/InfoBot.pm,
+	  trunk/Lucy/Diamonds/Logger.pm, trunk/Lucy/Diamonds/Reminder.pm,
+	  trunk/Lucy/Diamonds/Seen.pm, trunk/Lucy/Diamonds/Stats.pm,
+	  trunk/Lucy/IRC.pm, trunk/Lucy/MsgHandler.pm: Sexy formatting
+	  changes, and sexy replies
+
+2006-03-03 22:06  trevorj
+
+	* [r26] trunk/Lucy/Common.pm: Boogs.
+
+2006-03-03 22:01  trevorj
+
+	* [r25] trunk/Lucy/Common.pm, trunk/Lucy/Diamonds/Connect.pm,
+	  trunk/Lucy/Diamonds/Google.pm, trunk/Lucy/Diamonds/InfoBot.pm,
+	  trunk/Lucy/Diamonds/Logger.pm, trunk/Lucy/Diamonds/Seen.pm,
+	  trunk/Lucy/Diamonds/Stats.pm, trunk/Lucy/IRC.pm,
+	  trunk/Lucy/MsgHandler.pm, trunk/lucy.old.pl, trunk/lucy.pl: Mmm.
+	  Fixes, and Loggage
+
+2006-03-03 12:37  trevorj
+
+	* [r24] trunk/Lucy/Common.pm, trunk/Lucy/Diamonds/Connect.pm,
+	  trunk/Lucy/Diamonds/Google.pm, trunk/Lucy/Diamonds/InfoBot.pm,
+	  trunk/Lucy/Diamonds/Reminder.pm, trunk/Lucy/Diamonds/Seen.pm,
+	  trunk/Lucy/Diamonds/Stats.pm, trunk/Lucy/IRC.pm,
+	  trunk/Lucy/MsgHandler.pm, trunk/lucy.pl: New plugin arch works
+	  great. Except for loggage.
+
+2006-03-03 08:44  trevorj
+
+	* [r23] trunk/Lucy/Diamonds/BotCommand.pm,
+	  trunk/Lucy/Diamonds/Connect.pm, trunk/Lucy/Diamonds/Google.pm,
+	  trunk/Lucy/Diamonds/InfoBot.pm, trunk/Lucy/IRC.pm,
+	  trunk/Lucy/MsgHandler.pm, trunk/Lucy/Sky.pm, trunk/lucy.pl: Semi
+	  working plugin arch
+
+2006-03-03 07:29  trevorj
+
+	* [r22] trunk/Lucy/Common.pm, trunk/Lucy/Diamonds,
+	  trunk/Lucy/Diamonds/BotCommand.pm,
+	  trunk/Lucy/Diamonds/Connect.pm, trunk/Lucy/Diamonds/Google.pm,
+	  trunk/Lucy/Diamonds/InfoBot.pm, trunk/Lucy/Diamonds/Reminder.pm,
+	  trunk/Lucy/Diamonds/Seen.pm, trunk/Lucy/Diamonds/Stats.pm,
+	  trunk/Lucy/IRC.pm, trunk/Lucy/Plugin, trunk/Lucy/Sky.pm,
+	  trunk/lucy.old.pl, trunk/lucy.pl: new plugin architecture,
+	  completely broken atm
+
+2006-03-02 00:35  trevorj
+
+	* [r21] branches/version0.03: Version 0.03
+
+2006-03-02 00:16  trevorj
+
+	* [r20] trunk/Lucy/Plugin/MsgHandler.pm,
+	  trunk/Lucy/Plugin/Seen.pm: Fixes in regexes; etc
+
+2006-02-28 18:29  trevorj
+
+	* [r19] trunk/Lucy/Plugin/InfoBot.pm, trunk/Lucy/Plugin/Seen.pm:
+	  Seen's underscore conversion was fucked. Fixed.
+
+2006-02-28 17:53  trevorj
+
+	* [r18] trunk/Lucy/Plugin/Seen.pm: Boogs are squashed in Seen's
+	  new WHO support.
+	  NAMES sucks. Don't use it.
+
+2006-02-28 17:11  trevorj
+
+	* [r17] trunk/Lucy/Plugin/InfoBot.pm,
+	  trunk/Lucy/Plugin/MsgHandler.pm, trunk/Lucy/Plugin/Seen.pm,
+	  trunk/lucy.pl: Add topic loggage and topic seen
+
+2006-02-28 14:10  trevorj
+
+	* [r16] trunk, trunk/Lucy/Plugin/InfoBot.pm,
+	  trunk/Lucy/Plugin/MsgHandler.pm, trunk/Lucy/Plugin/Stats.pm,
+	  trunk/lucy.pl:
+
+2006-02-27 12:41  trevorj
+
+	* [r15] trunk/lucystats.xsl: XSL updates for factoids
+
+2006-02-27 12:33  trevorj
+
+	* [r14] trunk/Lucy/Plugin/Seen.pm, trunk/lucy.pl: Cleanups...
+
+2006-02-27 12:23  trevorj
+
+	* [r13] trunk/Lucy/Plugin/Reminder.pm, trunk/Lucy/Plugin/Seen.pm,
+	  trunk/Lucy/Plugin/Stats.pm, trunk/lucy.pl: Added factoids to
+	  stats
+
+2006-02-27 11:24  trevorj
+
+	* [r12] trunk/lucy.pl: Loggage updates. No longer opens/closes
+	  files at it's whim.
+
+2006-02-27 10:33  trevorj
+
+	* [r11] trunk/Lucy/Config.pm.example, trunk/Lucy/Plugin/Google.pm,
+	  trunk/Lucy/Plugin/InfoBot.pm, trunk/Lucy/Plugin/MsgHandler.pm,
+	  trunk/Lucy/Plugin/NickServ.pm, trunk/Lucy/Plugin/Reminder.pm:
+	  SVN ids; formatting.
+
+2006-02-27 10:27  trevorj
+
+	* [r10] trunk/db/mysql.schema, trunk/lucy.pl: Random formatting
+	  goodness. There's still phish in my brain.
+
+2006-02-27 10:09  trevorj
+
+	* [r9] trunk/Lucy/Config.pm.example, trunk/Lucy/Plugin/Google.pm,
+	  trunk/Lucy/Plugin/InfoBot.pm, trunk/Lucy/Plugin/MsgHandler.pm,
+	  trunk/Lucy/Plugin/NickServ.pm, trunk/Lucy/Plugin/Reminder.pm,
+	  trunk/Lucy/Plugin/Seen.pm, trunk/Lucy/Plugin/Stats.pm,
+	  trunk/lucy.pl: there is a phish in my brain
+
+2006-02-27 09:09  trevorj
+
+	* [r8] trunk/Lucy/Plugin/InfoBot.pm: InfoBot now accepts
+	  underscores in assignment that gets turned into spaces
+
+2006-02-27 07:53  trevorj
+
+	* [r7] trunk/Lucy/Plugin/InfoBot.pm: InfoBot now shows who was
+	  responsible for a factoid
+
+2006-02-27 07:46  trevorj
+
+	* [r6] trunk/Lucy/Plugin/InfoBot.pm: Fixed InfoBot bot_command so
+	  it umm. works?
+
+2006-02-27 07:02  trevorj
+
+	* [r5] trunk/Lucy/Plugin/InfoBot.pm, trunk/Lucy/Plugin/Seen.pm:
+	  InfoBot support for "eggs are yellow dawg" instead of "eggs is
+	  yellow dawg"
+
+2006-02-27 04:40  trevorj
+
+	* [r4] trunk/Lucy, trunk/Lucy/Config.pm.example,
+	  trunk/Lucy/Plugin/Google.pm, trunk/Lucy/Plugin/InfoBot.pm,
+	  trunk/Lucy/Plugin/Logger.pm, trunk/Lucy/Plugin/MsgHandler.pm,
+	  trunk/Lucy/Plugin/NickServ.pm, trunk/Lucy/Plugin/Reminder.pm,
+	  trunk/Lucy/Plugin/Seen.pm, trunk/Lucy/Plugin/Stats.pm,
+	  trunk/Lucy/Plugin/oldLogger.pm, trunk/lucy.pl,
+	  trunk/lucystats.xsl: Added more GPL references
+
+2006-02-27 04:17  trevorj
+
+	* [r3] trunk/COPYING: Add GPL
+
+2006-02-27 04:04  trevorj
+
+	* [r2] trunk/Lucy, trunk/Lucy/Config.pm.example,
+	  trunk/Lucy/Plugin, trunk/Lucy/Plugin/Google.pm,
+	  trunk/Lucy/Plugin/InfoBot.pm, trunk/Lucy/Plugin/Logger.pm,
+	  trunk/Lucy/Plugin/MsgHandler.pm, trunk/Lucy/Plugin/NickServ.pm,
+	  trunk/Lucy/Plugin/Reminder.pm, trunk/Lucy/Plugin/Seen.pm,
+	  trunk/Lucy/Plugin/Stats.pm, trunk/db, trunk/db/mysql.schema,
+	  trunk/log, trunk/lucy.pl, trunk/lucystats.xsl: Initial import to
+	  SVN.
+
+2006-01-14 07:36  trevorj
+
+	* [r1] branches, tags, trunk: initial checkin of nothingness
+

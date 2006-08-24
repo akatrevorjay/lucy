@@ -1,0 +1,83 @@
+###
+### Lucy TODO List
+###
+
+#helpful regexes
+# change $lucy->blah($1, $2); to $lucy->yield(blah, $1, $2);
+from	| \$lucy\-\>([\w]+)(?:\(([^\)]+)\))?\;
+to		| \$lucy\-\>yield\($1, $2\)\;
+# change $lucy->yield(blah, $1, $2) to $lucy->yield(blah => $1 => $2)
+from	| 
+to		| 
+
+######
+###### HIGH
+######
+
+### User info in subs
+# - There is a problem with the way the information is handled to the events imo.
+We should keep track of the users, channels; see above; and hand a user hash to the events.
+What about a user object?? That would be sweet, we could have helper functions for grabbing the full mask, etc
+$user = {
+	nick		=> 'lamer',
+	username	=> 'evilllama',
+	host		=> 'goatse.cx',
+	
+	ircname		=> 'Muahaaha',
+};
+
+### NickTrakar plugin
+#	- track nick changes, have an aliases column? IMPORTANTE!!!! MUCHOS!
+
+######
+###### MEDIUM
+######
+	
+### Plugin architecture
+POE::Component::Pool::Thread - A POE Managed Boss/Worker threadpool.
+POE::Component::ForkManager - Perl extension for managing a preforking server in POE
+POE::Component::JobQueue - a component to manage queues and worker pools
+#
+POE::Component::IRC::Plugin::PlugMan, a POE::Component::IRC plugin that provides plugin management services.
+POE::Component::IRC::Pipeline - the plugin pipeline for POE::Component::IRC.
+### Logging
+# I want to redo logging. I want a log message system like
+--> POE::Component::SimpleLog - Perl extension to manage a simple logging system for POE.
+# that way I can dcc chat into lucy and see certain levels of messages
+### IO ( logging, etc )
+# What about sqlite logging?
+POE::Wheel::ReadWrite - buffered non-blocking I/O
+POE::Component::Logger - A POE logging class
+### RSS Parsing
+http://search.cpan.org/~sungo/POE-Component-RSS-0.08/lib/POE/Component/RSS.pm
+POE::Component::RSSAggregator - Watch Muliple RSS Feeds for New Headlines
+
+######
+###### LOW
+######
+have the irc_(public|bot_command) events return a user hash, with all info about the user that is $who
+
+#####
+##### modules to look into
+#####
+Filesys::Virtual::SSH - remote execution Virtual Filesystem
+### RPC
+POE::Component::Server::XMLRPC - publish POE event handlers via XMLRPC over HTTP
+
+### Database
+POE::Component::EasyDBI - Perl extension for asynchronous non-blocking DBI calls in POE
+
+###### Plugins
+### Shorten URLS on demand
+POE::Component::WWW::Shorten - A non-blocking wrapper around WWW::Shorten.
+WWW::Shorten
+### AI MegaHAL
+POE::Component::AI::MegaHAL -- A non-blocking wrapper around AI::MegaHAL.
+### Console
+POE::Component::IRC::Plugin::Console - a lightweight debugging and control console for POE::Component::IRC bots.
+
+###
+### STATS
+###
+# FastCGI stats server as a plugin?? oooh
+POE::Component::FastCGI - POE FastCGI server
