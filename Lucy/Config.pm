@@ -1,0 +1,79 @@
+#!/usr/bin/perl
+# SVN: $Id: Config.pm.example 205 2006-05-17 06:29:45Z trevorj $
+# _____________
+# Lucy; irc bot
+# ~trevorj <[trevorjoynson@gmail.com]>
+#
+#	Copyright 2006 Trevor Joynson
+#
+#	This file is part of Lucy.
+#
+#	Lucy is free software; you can redistribute it and/or modify
+#	it under the terms of the GNU General Public License as published by
+#	the Free Software Foundation; either version 2 of the License, or
+#	(at your option) any later version.
+#	
+#	Lucy is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#	GNU General Public License for more details.
+#	
+#	You should have received a copy of the GNU General Public License
+#	along with Lucy; if not, write to the Free Software
+#	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+#
+package Lucy::Config;
+use warnings;
+use strict;
+use vars qw(@ISA @EXPORT $config);
+require Exporter;
+@ISA    = qw(Exporter);
+@EXPORT = qw($config);
+
+##### Config
+$config = {
+	# Diamonds, aka plugins if you're lame
+	# Add Google|Weather|Dict when you fill out the required config vars below
+	Diamonds => [qw(Logger State Reminder InfoBot ChuckNorris RSS Responses)],
+
+	# Database Settings ( can use any perl dbd driver )
+	DBdsn  => 'DBI:mysql:database=lucy;host=localhost',
+	DBuser => 'root',
+	DBpass => '',
+
+	# IRC Settings
+	Server => 'pool.intheskywithdiamonds.net',
+	Port   => 6667,
+	UseSSL => 0,
+
+# You can use the same log file for multiple channels ( .log extension is added if not there)
+	Channels => {
+		'#neobots' => { log => '#neobots.log', },
+	},
+	Nick         => 'LucyBot',
+	Username     => 'Lucy',
+	Ircname      => 'Lucy In The Sky With Diamonds',
+# Uncomment these if you want nickserv ident
+#	NickServUser => 'NickServ',
+#	NickServPass => 'changeme',
+# Uncomment these if you want your bot to /oper on connect
+# ( needed for russian roulette game to kill a user )
+# it's reccommended that lucy is only allowed to kill users, and nothing more.
+#	OperUser     => 'notneeded',
+#	OperPass     => 'onlyusedinroulette',
+
+	# Bot Settings
+	Maintainer    => 'trevorj',
+	UseIRCColors  => 1,
+	debug_level   => 6,
+
+	# This is a WIP feature. Loads certain subs on demand instead of at runtime. ( saves ram until it's needed )
+	load_ondemand => 1,
+
+	# Other Settings
+	#GoogleApi_Key => 'getonefrom google.com mofo',
+	#WeatherApi_partner => 'getonefrom weather.com mofo',
+	#WeatherApi_key     => 'getonefrom weather.com mofo',
+	#UrbanDictApi_key   => 'getonefrom urbandictionary.com mofo',
+};
+##### End of Config
