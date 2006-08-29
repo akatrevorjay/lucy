@@ -50,7 +50,7 @@ sub irc_bot_command {
 		$max_results = $1;
 	}
 	$where = $where->[0];
-	Lucy::debug( 'UrbanDict', 'query for ['.$args.']', 6 );
+	Lucy::debug( 'UrbanDict', 'query for [' . $args . ']', 6 );
 
 	my $search =
 	  WWW::Search->new( 'UrbanDictionary',
@@ -65,13 +65,17 @@ sub irc_bot_command {
 			$lucy->privmsg( $where,
 				Lucy::font( 'red', $nick ) . ': Definition for ' . $args );
 		}
-		my $description = $result->{description};
+		my $description = $result->{definition};
 		$description =~ s/\n/ /g;
 		$lucy->privmsg( $where,
-			Lucy::font( 'yellow bold', $i . ': ' ) . $description );
+			    Lucy::font( 'yellow bold', $i . ': ' )
+			  . $description . '['
+			  . Lucy::font( 'red', $result->{author} )
+			  . ']' );
 		if ( my $example = $result->{example} ) {
 			$example =~ s/\n/ /g;
-			$lucy->privmsg( $where, Lucy::font( 'yellow bold', "ex: " ) . $example );
+			$lucy->privmsg( $where,
+				Lucy::font( 'yellow bold', "ex: " ) . $example );
 		}
 		$i++;
 	}
