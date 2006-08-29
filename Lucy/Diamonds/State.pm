@@ -398,7 +398,7 @@ sub irc_nick {
 	### log it
 	$self->log( $Lucy::config->{Channels}{$_}{log},
 		"-!- " . $nick . " changed nicks to [" . $new . "]" )
-	  for $self->nick_channels($nick);
+	  for $lucy->nick_channels($nick);
 
 	### seen update
 	#$Lucy::dbh->query(
