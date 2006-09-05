@@ -353,7 +353,7 @@ sub irc_kick {
 }
 
 sub irc_disconnected {
-	Lucy::Debug( 'IRC', 'Disconnected.', 2 );
+	Lucy::debug( 'IRC', 'Disconnected.', 2 );
 
 	$_[OBJECT]->log( 'lucy', '-!- IRC: Disconnected' );
 	delete $_[SENDER]->{state};
@@ -361,7 +361,7 @@ sub irc_disconnected {
 }
 
 sub irc_error {
-	Lucy::Debug( 'IRC', 'Error?', 2 );
+	Lucy::debug( 'IRC', 'Error?', 2 );
 
 	$_[OBJECT]->log( 'lucy', '-!- IRC: Error' );
 	delete $_[SENDER]->{state};
@@ -369,7 +369,7 @@ sub irc_error {
 }
 
 sub irc_socketerr {
-	Lucy::Debug( 'IRC', 'Socket error?', 2 );
+	Lucy::debug( 'IRC', 'Socket error?', 2 );
 
 	$_[OBJECT]->log( 'lucy', '-!- IRC: Socket error' );
 	delete $_[SENDER]->{state};
