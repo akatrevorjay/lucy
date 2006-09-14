@@ -97,9 +97,9 @@ sub irc_bot_command {
 	{
 
 		#TODO check if it's in the array, don't hardcode it twice
-		my %langs = {insultserver => 1, pirate => 1};
+		my %langs = { insultserver => 1, pirate => 1 };
 		my @langs = ( 'insultserver', 'pirate' );
-		
+
 		$itype = $langs[ int rand( $#langs + 1 ) ]
 		  unless ( $itype =~ /(?:insultserver|pirate)/ );
 		$iwho = $nick unless ($iwho);
@@ -172,11 +172,6 @@ sub irc_bot_command {
 		&& ( $args =~ /^(?:on|off)$/i ) )
 	{
 		$Lucy::config->{UseIRCColors} = ( $args eq 'on' ) ? 1 : 0;
-		# fuck trevorj tmp
-	} elsif ( $cmd eq 'extract_state') {
-		use Data::Dumper;
-		print "Whoa man\n\n";
-		print Dumper(\$lucy->{state});
 	}
 
 #TODO some kind of auth system is required for such powerful functions
