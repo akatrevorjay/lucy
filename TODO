@@ -14,6 +14,17 @@ to		|
 ###### HIGH
 ######
 
+### State Plugin
+Move the $lucy->{state} into the db. Way too much information is duplicated imo, and
+ I would like to reduce that.
+Update the code to whats in PoCo::IRC::State again. They've been busy, and I have been lazy.
+# DB Psuedo-format
+lucy_state_users = {
+	id => 0,
+	nick => 'trevorj',
+	
+}
+
 ### User info in subs
 # - There is a problem with the way the information is handled to the events imo.
 We should keep track of the users, channels; see above; and hand a user hash to the events.
@@ -55,7 +66,7 @@ POE::Component::RSSAggregator - Watch Muliple RSS Feeds for New Headlines
 ######
 ###### LOW
 ######
-have the irc_(public|bot_command) events return a user hash, with all info about the user that is $who
+
 
 #####
 ##### modules to look into

@@ -200,7 +200,7 @@ sub AUTOLOAD {
 }
 
 ##########
-# Methods for STATE query
+# Methods for state query
 # Internal methods begin with '_'
 #
 
@@ -357,6 +357,7 @@ sub nick_channels {
 	foreach
 	  my $channel ( keys %{ $_[SENDER]->{state}->{Nicks}->{$nick}->{CHANS} } )
 	{
+		#print "got one: ".$_[SENDER]->{state}->{Chans}->{$channel}->{Name}."\n";
 		push( @result, $_[SENDER]->{state}->{Chans}->{$channel}->{Name} );
 	}
 	return @result;

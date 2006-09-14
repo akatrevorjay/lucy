@@ -47,37 +47,39 @@ sub new {
 sub init {
 	my $self = shift;
 
-	#	$Lucy::lucy->add_event(
-	#		qw(
-	#		  irc_001
-	#		  irc_315
-	#		  irc_324
-	#		  irc_352
-	#		  irc_bot_msg
-	#		  irc_bot_public
-	#		  irc_ctcp_action
-	#		  irc_disconnected
-	#		  irc_error
-	#		  irc_join
-	#		  irc_kick
-	#		  irc_mode
-	#		  irc_msg
-	#		  irc_nick
-	#		  irc_part
-	#		  irc_public
-	#		  irc_quit
-	#		  irc_socketerr
-	#		  irc_topic
-	#		  )
-	#	);
+	#$Lucy::lucy->add_event(
+	#	qw(
+	#	  irc_001
+	#	  irc_315
+	#	  irc_324
+	#	  irc_352
+	#	  irc_bot_msg
+	#	  irc_bot_public
+	#	  irc_ctcp_action
+	#	  irc_disconnected
+	#	  irc_error
+	#	  irc_join
+	#	  irc_kick
+	#	  irc_mode
+	#	  irc_msg
+	#	  irc_nick
+	#	  irc_part
+	#	  irc_public
+	#	  irc_quit
+	#	  irc_socketerr
+	#	  irc_topic
+	#	  )
+	#);
 }
 
+# Logger->log hook
 sub log {
 	my $self = shift;
 	return undef unless defined $Lucy::lucy->{Diamonds}{Logger};
 	return $Lucy::lucy->{Diamonds}{Logger}->log(@_);
 }
 
+# NickTrackar->updateseen hook
 sub updateseen {
 	my $self = shift;
 	return undef unless defined $Lucy::lucy->{Diamonds}{NickTrackar};
@@ -138,7 +140,7 @@ sub irc_notice {
 	$where = $where->[0];
 	Lucy::debug( "notice", "$nick|$nick: $what", 8 );
 
-	#$self->log( 'notices', "$nick: $what" );
+	#$self->log( 'notice', "$nick: $what" );
 	return 0;
 }
 
@@ -198,10 +200,10 @@ sub irc_topic {
 ## This code borrows from PoCo::IRC::State heavily
 ##
 
-# Event handlers for tracking the STATE. $lucy->{STATE} is used as our namespace.
+# Event handlers for tracking the state. $lucy->{state} is used as our namespace.
 # lc() is used to create unique keys.
 
-# Make sure we have a clean STATE when we first join the network and if we inadvertently get disconnected
+# Make sure we have a clean state when we first join the network and if we inadvertently get disconnected
 #TODO log these events as disconnected, etc
 sub irc_001 {
 	Lucy::debug( "IRC", "Connected.", 2 );
@@ -222,23 +224,23 @@ sub irc_join {
 	my ( $user, $host ) = split( /\@/, $userhost );
 	Lucy::debug( "join", "$nick has joined $channel", 2 );
 
-	# log it
+	# log n seen
 	$self->log( $Lucy::config->{Channels}{$channel}{log},
 		"-!- $nick joined $channel" );
 	$self->updateseen( $nick, 'join', $channel );
 
 	if ( lc($nick) eq lc( $lucy->nick_name ) ) {
-		delete $lucy->{STATE}->{Chans}->{ lc($channel) };
+		delete $lucy->{state}->{Chans}->{ lc($channel) };
 		$lucy->{CHANNEL_SYNCH}->{ lc($channel) } = { MODE => 0, WHO => 0 };
-		$kernel->yield( 'who'  => $channel );
-		$kernel->yield( 'mode' => $channel );
+		$lucy->yield( 'who'  => $channel );
+		$lucy->yield( 'mode' => $channel );
 	} else {
-		$kernel->yield( 'who' => $nick );
-		$lucy->{STATE}->{Nicks}->{ lc($nick) }->{Nick} = $nick;
-		$lucy->{STATE}->{Nicks}->{ lc($nick) }->{User} = $user;
-		$lucy->{STATE}->{Nicks}->{ lc($nick) }->{Host} = $host;
-		$lucy->{STATE}->{Nicks}->{ lc($nick) }->{CHANS}->{ lc($channel) } = '';
-		$lucy->{STATE}->{Chans}->{ lc($channel) }->{Nicks}->{ lc($nick) } = '';
+		$lucy->yield( 'who' => $nick );
+		$lucy->{state}->{Nicks}->{ lc($nick) }->{Nick} = $nick;
+		$lucy->{state}->{Nicks}->{ lc($nick) }->{User} = $user;
+		$lucy->{state}->{Nicks}->{ lc($nick) }->{Host} = $host;
+		$lucy->{state}->{Nicks}->{ lc($nick) }->{CHANS}->{ lc($channel) } = '';
+		$lucy->{state}->{Chans}->{ lc($channel) }->{Nicks}->{ lc($nick) } = '';
 	}
 
 	return 0;
@@ -252,31 +254,33 @@ sub irc_part {
 	my $channel = lc $_[ARG1];
 	my $nick = ( split /!/, $who )[0];
 	Lucy::debug( "part", "$nick has left $channel", 2 );
+
+	# log n seen
 	$self->log( $Lucy::config->{Channels}{$channel}{log},
 		"-!- $nick left $channel" );
 	$self->updateseen( $nick, 'part', $channel );
 
 	$nick = lc($nick);
 	if ( $nick eq lc( $lucy->nick_name() ) ) {
-		delete $lucy->{STATE}->{Nicks}->{$nick}->{CHANS}->{$channel};
-		delete $lucy->{STATE}->{Chans}->{$channel}->{Nicks}->{$nick};
+		delete $lucy->{state}->{Nicks}->{$nick}->{CHANS}->{$channel};
+		delete $lucy->{state}->{Chans}->{$channel}->{Nicks}->{$nick};
 		foreach
-		  my $member ( keys %{ $lucy->{STATE}->{Chans}->{$channel}->{Nicks} } )
+		  my $member ( keys %{ $lucy->{state}->{Chans}->{$channel}->{Nicks} } )
 		{
-			delete $lucy->{STATE}->{Nicks}->{$member}->{CHANS}->{$channel};
+			delete $lucy->{state}->{Nicks}->{$member}->{CHANS}->{$channel};
 			if (
 				scalar
-				keys %{ $lucy->{STATE}->{Nicks}->{$member}->{CHANS} } <= 0 )
+				keys %{ $lucy->{state}->{Nicks}->{$member}->{CHANS} } <= 0 )
 			{
-				delete $lucy->{STATE}->{Nicks}->{$member};
+				delete $lucy->{state}->{Nicks}->{$member};
 			}
 		}
-		delete $lucy->{STATE}->{Chans}->{$channel};
+		delete $lucy->{state}->{Chans}->{$channel};
 	} else {
-		delete $lucy->{STATE}->{Nicks}->{$nick}->{CHANS}->{$channel};
-		delete $lucy->{STATE}->{Chans}->{$channel}->{Nicks}->{$nick};
-		if ( scalar keys %{ $lucy->{STATE}->{Nicks}->{$nick}->{CHANS} } <= 0 ) {
-			delete $lucy->{STATE}->{Nicks}->{$nick};
+		delete $lucy->{state}->{Nicks}->{$nick}->{CHANS}->{$channel};
+		delete $lucy->{state}->{Chans}->{$channel}->{Nicks}->{$nick};
+		if ( scalar keys %{ $lucy->{state}->{Nicks}->{$nick}->{CHANS} } <= 0 ) {
+			delete $lucy->{state}->{Nicks}->{$nick};
 		}
 	}
 	return 0;
@@ -290,20 +294,24 @@ sub irc_quit {
 	my $nick = ( split /!/, $who )[0];
 	Lucy::debug( "quit", "$nick has quit IRC", 2 );
 
-#TODO find out what channels the user was on and log it
-#$self->log( $Lucy::config->{Channels}{$channel}{log}, "-!- $nick has quit IRC" );
+	# find out what channels the user was on and log it
+	#TODO why does nick_channels not work?
+	foreach ( $lucy->nick_channels($nick) ) {
+		$self->log( $Lucy::config->{Channels}{$_}{log},
+			"-!- $nick has quit IRC" );
+	}
 	$self->updateseen( $nick, 'quit' );
 
 	$nick = lc($nick);
 	if ( $nick eq lc( $Lucy::lucy->nick_name ) ) {
-		delete $lucy->{STATE};
+		delete $lucy->{state};
 	} else {
 		foreach
-		  my $channel ( keys %{ $lucy->{STATE}->{Nicks}->{$nick}->{CHANS} } )
+		  my $channel ( keys %{ $lucy->{state}->{Nicks}->{$nick}->{CHANS} } )
 		{
-			delete $lucy->{STATE}->{Chans}->{$channel}->{Nicks}->{$nick};
+			delete $lucy->{state}->{Chans}->{$channel}->{Nicks}->{$nick};
 		}
-		delete $lucy->{STATE}->{Nicks}->{$nick};
+		delete $lucy->{state}->{Nicks}->{$nick};
 	}
 	return 0;
 }
@@ -328,25 +336,25 @@ sub irc_kick {
 	$nick    = lc($nick);
 	$channel = lc($channel);
 	if ( $nick eq lc( $Lucy::lucy->nick_name ) ) {
-		delete $lucy->{STATE}->{Nicks}->{$nick}->{CHANS}->{$channel};
-		delete $lucy->{STATE}->{Chans}->{$channel}->{Nicks}->{$nick};
+		delete $lucy->{state}->{Nicks}->{$nick}->{CHANS}->{$channel};
+		delete $lucy->{state}->{Chans}->{$channel}->{Nicks}->{$nick};
 		foreach
-		  my $member ( keys %{ $lucy->{STATE}->{Chans}->{$channel}->{Nicks} } )
+		  my $member ( keys %{ $lucy->{state}->{Chans}->{$channel}->{Nicks} } )
 		{
-			delete $lucy->{STATE}->{Nicks}->{$member}->{CHANS}->{$channel};
+			delete $lucy->{state}->{Nicks}->{$member}->{CHANS}->{$channel};
 			if (
 				scalar
-				keys %{ $lucy->{STATE}->{Nicks}->{$member}->{CHANS} } <= 0 )
+				keys %{ $lucy->{state}->{Nicks}->{$member}->{CHANS} } <= 0 )
 			{
-				delete $lucy->{STATE}->{Nicks}->{$member};
+				delete $lucy->{state}->{Nicks}->{$member};
 			}
 		}
-		delete $lucy->{STATE}->{Chans}->{$channel};
+		delete $lucy->{state}->{Chans}->{$channel};
 	} else {
-		delete $lucy->{STATE}->{Nicks}->{$nick}->{CHANS}->{$channel};
-		delete $lucy->{STATE}->{Chans}->{$channel}->{Nicks}->{$nick};
-		if ( scalar keys %{ $lucy->{STATE}->{Nicks}->{$nick}->{CHANS} } <= 0 ) {
-			delete $lucy->{STATE}->{Nicks}->{$nick};
+		delete $lucy->{state}->{Nicks}->{$nick}->{CHANS}->{$channel};
+		delete $lucy->{state}->{Chans}->{$channel}->{Nicks}->{$nick};
+		if ( scalar keys %{ $lucy->{state}->{Nicks}->{$nick}->{CHANS} } <= 0 ) {
+			delete $lucy->{state}->{Nicks}->{$nick};
 		}
 	}
 	return 0;
@@ -375,7 +383,6 @@ sub irc_socketerr {
 	delete $_[SENDER]->{state};
 	return 0;
 }
-
 
 ###
 ### Someone has changed nicks
@@ -416,16 +423,16 @@ sub irc_nick {
 	if ( $nick eq lc($new) ) {
 
 		# Case Change
-		$lucy->{STATE}->{Nicks}->{$nick}->{Nick} = $new;
+		$lucy->{state}->{Nicks}->{$nick}->{Nick} = $new;
 	} else {
-		my $record = delete $lucy->{STATE}->{Nicks}->{$nick};
+		my $record = delete $lucy->{state}->{Nicks}->{$nick};
 		$record->{Nick} = $new;
 		foreach my $channel ( keys %{ $record->{CHANS} } ) {
-			$lucy->{STATE}->{Chans}->{$channel}->{Nicks}->{$new} =
+			$lucy->{state}->{Chans}->{$channel}->{Nicks}->{$new} =
 			  $record->{CHANS}->{$channel};
-			delete $lucy->{STATE}->{Chans}->{$channel}->{Nicks}->{$nick};
+			delete $lucy->{state}->{Chans}->{$channel}->{Nicks}->{$nick};
 		}
-		$lucy->{STATE}->{Nicks}->{$new} = $record;
+		$lucy->{state}->{Nicks}->{$new} = $record;
 	}
 	return 0;
 }
@@ -447,28 +454,28 @@ sub irc_mode {
 		  SWITCH: {
 				if ( $mode =~ /\+([ohvaq])/ ) {
 					my ($flag) = $1;
-					unless ( $lucy->{STATE}->{Nicks}->{ lc($arg) }->{CHANS}
+					unless ( $lucy->{state}->{Nicks}->{ lc($arg) }->{CHANS}
 						->{ lc($channel) } =~ /$flag/ )
 					{
-						$lucy->{STATE}->{Nicks}->{ lc($arg) }->{CHANS}
+						$lucy->{state}->{Nicks}->{ lc($arg) }->{CHANS}
 						  ->{ lc($channel) } .= $flag;
-						$lucy->{STATE}->{Chans}->{ lc($channel) }->{Nicks}
+						$lucy->{state}->{Chans}->{ lc($channel) }->{Nicks}
 						  ->{ lc($arg) } =
-						  $lucy->{STATE}->{Nicks}->{ lc($arg) }->{CHANS}
+						  $lucy->{state}->{Nicks}->{ lc($arg) }->{CHANS}
 						  ->{ lc($channel) };
 					}
 					last SWITCH;
 				}
 				if ( $mode =~ /-([ohvaq])/ ) {
 					my ($flag) = $1;
-					if ( $lucy->{STATE}->{Nicks}->{ lc($arg) }->{CHANS}
+					if ( $lucy->{state}->{Nicks}->{ lc($arg) }->{CHANS}
 						->{ lc($channel) } =~ /$flag/ )
 					{
-						$lucy->{STATE}->{Nicks}->{ lc($arg) }->{CHANS}
+						$lucy->{state}->{Nicks}->{ lc($arg) }->{CHANS}
 						  ->{ lc($channel) } =~ s/$flag//;
-						$lucy->{STATE}->{Chans}->{ lc($channel) }->{Nicks}
+						$lucy->{state}->{Chans}->{ lc($channel) }->{Nicks}
 						  ->{ lc($arg) } =
-						  $lucy->{STATE}->{Nicks}->{ lc($arg) }->{CHANS}
+						  $lucy->{state}->{Nicks}->{ lc($arg) }->{CHANS}
 						  ->{ lc($channel) };
 					}
 					last SWITCH;
@@ -477,50 +484,50 @@ sub irc_mode {
 					last SWITCH;
 				}
 				if ( $mode eq '+l' and defined($arg) ) {
-					$lucy->{STATE}->{Chans}->{ lc($channel) }->{Mode} .= 'l'
+					$lucy->{state}->{Chans}->{ lc($channel) }->{Mode} .= 'l'
 					  unless (
-						$lucy->{STATE}->{Chans}->{ lc($channel) }->{Mode} =~
+						$lucy->{state}->{Chans}->{ lc($channel) }->{Mode} =~
 						/l/ );
-					$lucy->{STATE}->{Chans}->{ lc($channel) }->{ChanLimit} =
+					$lucy->{state}->{Chans}->{ lc($channel) }->{ChanLimit} =
 					  $arg;
 					last SWITCH;
 				}
 				if ( $mode eq '+k' and defined($arg) ) {
-					$lucy->{STATE}->{Chans}->{ lc($channel) }->{Mode} .= 'k'
+					$lucy->{state}->{Chans}->{ lc($channel) }->{Mode} .= 'k'
 					  unless (
-						$lucy->{STATE}->{Chans}->{ lc($channel) }->{Mode} =~
+						$lucy->{state}->{Chans}->{ lc($channel) }->{Mode} =~
 						/k/ );
-					$lucy->{STATE}->{Chans}->{ lc($channel) }->{ChanKey} = $arg;
+					$lucy->{state}->{Chans}->{ lc($channel) }->{ChanKey} = $arg;
 					last SWITCH;
 				}
 				if ( $mode eq '-l' ) {
-					$lucy->{STATE}->{Chans}->{ lc($channel) }->{Mode} =~ s/l//;
-					delete( $lucy->{STATE}->{Chans}->{ lc($channel) }
+					$lucy->{state}->{Chans}->{ lc($channel) }->{Mode} =~ s/l//;
+					delete( $lucy->{state}->{Chans}->{ lc($channel) }
 						  ->{ChanLimit} );
 					last SWITCH;
 				}
 				if ( $mode eq '-k' ) {
-					$lucy->{STATE}->{Chans}->{ lc($channel) }->{Mode} =~ s/k//;
+					$lucy->{state}->{Chans}->{ lc($channel) }->{Mode} =~ s/k//;
 					delete(
-						$lucy->{STATE}->{Chans}->{ lc($channel) }->{ChanKey} );
+						$lucy->{state}->{Chans}->{ lc($channel) }->{ChanKey} );
 					last SWITCH;
 				}
 
 	  # Anything else doesn't have arguments so just adjust {Mode} as necessary.
 				if ( $mode =~ /^\+(.)/ ) {
 					my ($flag) = $1;
-					$lucy->{STATE}->{Chans}->{ lc($channel) }->{Mode} .= $flag
+					$lucy->{state}->{Chans}->{ lc($channel) }->{Mode} .= $flag
 					  unless (
-						$lucy->{STATE}->{Chans}->{ lc($channel) }->{Mode} =~
+						$lucy->{state}->{Chans}->{ lc($channel) }->{Mode} =~
 						/$flag/ );
 					last SWITCH;
 				}
 				if ( $mode =~ /^-(.)/ ) {
 					my ($flag) = $1;
-					if ( $lucy->{STATE}->{Chans}->{ lc($channel) }->{Mode} =~
+					if ( $lucy->{state}->{Chans}->{ lc($channel) }->{Mode} =~
 						/$flag/ )
 					{
-						$lucy->{STATE}->{Chans}->{ lc($channel) }->{Mode} =~
+						$lucy->{state}->{Chans}->{ lc($channel) }->{Mode} =~
 						  s/$flag//;
 					}
 					last SWITCH;
@@ -529,17 +536,17 @@ sub irc_mode {
 		}
 
 		# Lets make the channel mode nice
-		if ( $lucy->{STATE}->{Chans}->{ lc($channel) }->{Mode} ) {
-			$lucy->{STATE}->{Chans}->{ lc($channel) }->{Mode} = join(
+		if ( $lucy->{state}->{Chans}->{ lc($channel) }->{Mode} ) {
+			$lucy->{state}->{Chans}->{ lc($channel) }->{Mode} = join(
 				'',
 				sort { uc $a cmp uc $b } (
 					split(
-						//, $lucy->{STATE}->{Chans}->{ lc($channel) }->{Mode}
+						//, $lucy->{state}->{Chans}->{ lc($channel) }->{Mode}
 					)
 				)
 			);
 		} else {
-			delete( $lucy->{STATE}->{Chans}->{ lc($channel) }->{Mode} );
+			delete( $lucy->{state}->{Chans}->{ lc($channel) }->{Mode} );
 		}
 	}
 	return 0;
@@ -552,13 +559,13 @@ sub irc_352 {
 	my ( $channel, $user, $host, $server, $nick, $status ) =
 	  split( / /, $first );
 	my ($real) = substr( $second, index( $second, " " ) + 1 );
-	Lucy::debug( "IRC", "$channel| got who reply for $nick", 6 );
+	Lucy::debug( "IRC", "$channel| got who reply for $nick", 8 );
 
-	$lucy->{STATE}->{Nicks}->{ lc($nick) }->{Nick}   = $nick;
-	$lucy->{STATE}->{Nicks}->{ lc($nick) }->{User}   = $user;
-	$lucy->{STATE}->{Nicks}->{ lc($nick) }->{Host}   = $host;
-	$lucy->{STATE}->{Nicks}->{ lc($nick) }->{Real}   = $real;
-	$lucy->{STATE}->{Nicks}->{ lc($nick) }->{Server} = $server;
+	$lucy->{state}->{Nicks}->{ lc($nick) }->{Nick}   = $nick;
+	$lucy->{state}->{Nicks}->{ lc($nick) }->{User}   = $user;
+	$lucy->{state}->{Nicks}->{ lc($nick) }->{Host}   = $host;
+	$lucy->{state}->{Nicks}->{ lc($nick) }->{Real}   = $real;
+	$lucy->{state}->{Nicks}->{ lc($nick) }->{Server} = $server;
 	if ( $channel ne '*' ) {
 		my ($whatever) = '';
 		if ( $status =~ /\@/ ) { $whatever = 'o'; }
@@ -566,14 +573,14 @@ sub irc_352 {
 		if ( $status =~ /\%/ ) { $whatever = 'h'; }
 		if ( $status =~ /\&/ ) { $whatever = 'a'; }
 		if ( $status =~ /\~/ ) { $whatever = 'q'; }
-		$lucy->{STATE}->{Nicks}->{ lc($nick) }->{CHANS}->{ lc($channel) } =
+		$lucy->{state}->{Nicks}->{ lc($nick) }->{CHANS}->{ lc($channel) } =
 		  $whatever;
-		$lucy->{STATE}->{Chans}->{ lc($channel) }->{Name} = $channel;
-		$lucy->{STATE}->{Chans}->{ lc($channel) }->{Nicks}->{ lc($nick) } =
+		$lucy->{state}->{Chans}->{ lc($channel) }->{Name} = $channel;
+		$lucy->{state}->{Chans}->{ lc($channel) }->{Nicks}->{ lc($nick) } =
 		  $whatever;
 	}
 	if ( $status =~ /\*/ ) {
-		$lucy->{STATE}->{Nicks}->{ lc($nick) }->{IRCop} = 1;
+		$lucy->{state}->{Nicks}->{ lc($nick) }->{IRCop} = 1;
 	}
 	return 0;
 }
@@ -582,19 +589,19 @@ sub irc_352 {
 sub irc_315 {
 	my ( $kernel, $self, $lucy ) = @_[ KERNEL, OBJECT, SENDER ];
 	my ($channel) = ( split / :/, $_[ARG1] )[0];
-	Lucy::debug( "IRC", "$channel| got end of who", 6 );
+	Lucy::debug( "IRC", "$channel| got end of who", 7 );
 
 	# If it begins with #, &, + or ! its a channel apparently. RFC2812.
 	if ( $channel =~ /^[\x23\x2B\x21\x26]/ ) {
-		$self->_channel_sync_who($channel);
-		if ( $self->_channel_sync($channel) ) {
-			delete( $self->{CHANNEL_SYNCH}->{ lc($channel) } );
-			$self->_send_event( 'irc_chan_sync', $channel );
+		$lucy->_channel_sync_who($channel);
+		if ( $lucy->_channel_sync($channel) ) {
+			delete( $lucy->{CHANNEL_SYNCH}->{ lc($channel) } );
+			$lucy->_send_event( 'irc_chan_sync', $channel );
 		}
 
 		# Otherwise we assume its a nickname
 	} else {
-		$self->_send_event( 'irc_nick_sync', $channel );
+		$lucy->_send_event( 'irc_nick_sync', $channel );
 	}
 	return 0;
 }
@@ -605,29 +612,28 @@ sub irc_324 {
 	my (@args)    = split( / /, $_[ARG1] );
 	my ($channel) = shift @args;
 
-	my ($parsed_mode) = $lucy->parse_mode_line(@args);
-	Lucy::debug( "IRC",
-		"got $channel mode [" . @{ $parsed_mode->{modes} } . "]", 5 );
+	my $parsed_mode = $lucy->parse_mode_line(@args);
+	Lucy::debug( "IRC", "got $channel mode [" . 'fixme' . "]", 5 );
 
 	while ( my $mode = shift( @{ $parsed_mode->{modes} } ) ) {
 		$mode =~ s/\+//;
 		my ($arg);
 		$arg = shift( @{ $parsed_mode->{args} } ) if ( $mode =~ /[kl]/ );
-		$lucy->{STATE}->{Chans}->{ lc($channel) }->{Mode} .= $mode
+		$lucy->{state}->{Chans}->{ lc($channel) }->{Mode} .= $mode
 		  unless (
-			$lucy->{STATE}->{Chans}->{ lc($channel) }->{Mode} =~ /$mode/ );
+			$lucy->{state}->{Chans}->{ lc($channel) }->{Mode} =~ /$mode/ );
 		if ( $mode eq 'l' and defined($arg) ) {
-			$lucy->{STATE}->{Chans}->{ lc($channel) }->{ChanLimit} = $arg;
+			$lucy->{state}->{Chans}->{ lc($channel) }->{ChanLimit} = $arg;
 		}
 		if ( $mode eq 'k' and defined($arg) ) {
-			$lucy->{STATE}->{Chans}->{ lc($channel) }->{ChanKey} = $arg;
+			$lucy->{state}->{Chans}->{ lc($channel) }->{ChanKey} = $arg;
 		}
 	}
-	if ( $lucy->{STATE}->{Chans}->{ lc($channel) }->{Mode} ) {
-		$lucy->{STATE}->{Chans}->{ lc($channel) }->{Mode} = join(
+	if ( $lucy->{state}->{Chans}->{ lc($channel) }->{Mode} ) {
+		$lucy->{state}->{Chans}->{ lc($channel) }->{Mode} = join(
 			'',
 			sort { uc $a cmp uc $b } (
-				split( //, $lucy->{STATE}->{Chans}->{ lc($channel) }->{Mode} )
+				split( //, $lucy->{state}->{Chans}->{ lc($channel) }->{Mode} )
 			)
 		);
 	}
