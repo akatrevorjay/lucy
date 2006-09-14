@@ -29,6 +29,12 @@ no strict "refs";
 use vars qw($VERSION $dbh $sessid $lucy);
 $VERSION = "0.5svn";
 
+# temporary fix as I don't want much arg parsing going on unless it's needed
+if ( defined $ARGV[0] && $ARGV[0] =~ /^--chdir="?(.+)"?$/ ) {
+	print "Changing working directory to " . $1 . "\n";
+	chdir $1;
+}
+
 BEGIN {
 	unshift( @INC, "./lib" );
 }
