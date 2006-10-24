@@ -95,13 +95,12 @@ sub irc_bot_command {
 		&& ( my ( $iwho, $itype ) = $args =~ /^(.*?)\s*(?:like an? (\w+))?$/i )
 	  )
 	{
-
-		#TODO check if it's in the array, don't hardcode it twice
 		my %langs = { insultserver => 1, pirate => 1 };
-		my @langs = ( 'insultserver', 'pirate' );
 
-		$itype = $langs[ int rand( $#langs + 1 ) ]
-		  unless ( $itype =~ /(?:insultserver|pirate)/ );
+		unless ( $langs{$itype} ) {
+			@langtypes = keys %langs;
+			$itype     = $langtypes[ int rand( $#langs + 1 ) ];
+		}
 		$iwho = $nick unless ($iwho);
 
 		my $insult =
