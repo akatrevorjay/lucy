@@ -98,8 +98,8 @@ sub irc_bot_command {
 		my %langs = { insultserver => 1, pirate => 1 };
 
 		unless ( $langs{$itype} ) {
-			@langtypes = keys %langs;
-			$itype     = $langtypes[ int rand( $#langs + 1 ) ];
+			my @langtypes = keys %langs;
+			$itype        = $langtypes[ int rand( $#langtypes + 1 ) ];
 		}
 		$iwho = $nick unless ($iwho);
 
