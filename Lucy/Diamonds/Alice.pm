@@ -46,14 +46,14 @@ sub irc_bot_command {
 	my ($sock, $msg);
 
 	if ($sock = IO::Socket::UNIX->new('/tmp/alice')) {
-		$sock->write("lucy\007$cmd $args");
+		$sock->write("$nick\007$cmd $args");
 		$sock->read($msg, 1024);
 		$sock->close;
 		$lucy->privmsg( $where,
-			Lucy::font( 'red', $nick ) . " " . $msg);
+			Lucy::font( 'red', $nick ) . ": " . $msg);
 	} else {
 		$lucy->privmsg( $where,
-			Lucy::font( 'red', $who ) . " unable to connect to socket");
+			Lucy::font( 'red', $nick ) . " unable to connect to socket");
 	}
 }
 
