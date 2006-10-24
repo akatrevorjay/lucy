@@ -30,10 +30,17 @@ use strict;
 ### Mmmm. We have been loaded.
 sub new {
 	my $class = shift;
-	return
-	  bless { cmd_regex =>
-'(?:nigga\s+|when\s+)?(?:have\s+|will\s+|can\s+)?(?:you\s+)?(?:please\s+)?(?:tell me\s+)?(\w+)\s*(?:for\s+)?(.*?)\s*[\?\!]*$'
-	  }, $class;
+	return bless {
+		cmd_regex => '
+(?:nigga\s+|when\s+)?
+(?:have\s+|will\s+|can\s+)?
+(?:you\s+)?
+(?:please\s+)?
+(?:tell me\s+)?
+	(\w+)\s*
+(?:for\s+)?
+	(.*?)\s*[\?\!]*$'
+	}, $class;
 }
 
 ### Let's register some events
@@ -60,13 +67,13 @@ sub S_public {
 	my ($botnick) = $lucy->nick_name();
 
 	my ( $cmd, $args ) =
-	  $what =~ /^(?:$botnick:\s+|$botnick,\s+|!)$self->{cmd_regex}/i;
+	  $what =~ /^(?:$botnick:\s+|$botnick,\s+|!)$self->{cmd_regex}/ix;
 	if ($cmd) {
 		$cmd = lc($cmd);
 		Lucy::debug( "MsgHandler", "Sending command ($cmd,$args)", 7 );
 
-		$lucy->_send_event( 'irc_bot_command',
-			$who, $where, $what, $cmd, $args, 'pub' );
+		$lucy->_send_event( 'irc_bot_command', $who, $where, $what, $cmd, $args,
+			'pub' );
 	}
 
 	# Return an exit code
@@ -84,13 +91,13 @@ sub S_msg {
 	my $nick  = ( split( /[@!]/, $who, 2 ) )[0];
 	my $where = [$nick];
 
-	my ( $cmd, $args ) = $what =~ /^!?$self->{cmd_regex}/io;
+	my ( $cmd, $args ) = $what =~ /^!?$self->{cmd_regex}/iox;
 	if ($cmd) {
 		$cmd = lc($cmd);
 		Lucy::debug( 'MsgHandler', "Sending privmsg command ($cmd,$args)", 7 );
 
-		$lucy->_send_event( 'irc_bot_command',
-			$who, $where, $what, $cmd, $args, 'msg' );
+		$lucy->_send_event( 'irc_bot_command', $who, $where, $what, $cmd, $args,
+			'msg' );
 	}
 
 	# Return an exit code

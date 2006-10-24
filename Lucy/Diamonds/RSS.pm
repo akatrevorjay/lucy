@@ -150,7 +150,7 @@ sub irc_bot_command {
 	my $nick = ( split( /[@!]/, $who, 2 ) )[0];
 	if (   $cmd eq 'fetch'
 		&& $args =~
-		/^(?:the\s+)?(?:last\s+)?([\w]{3,30})\s+(?:on\s+|from\s+)?([\w]{3,30})$/
+		/^(?:me\s+)?(?:the\s+)?(?:last\s+)?([\w]{3,30})\s+(?:on\s+|from\s+)?([\w]{3,30})$/
 	  )
 	{
 		$1 = 'description' if $1 eq 'desc';
