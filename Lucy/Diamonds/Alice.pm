@@ -41,12 +41,12 @@ sub irc_bot_command {
 	  @_[ OBJECT, SENDER, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5 ];
 	}
 	$where = $where->[0];
-	Lucy::debug( 'Alice', "$cmd", 6 );
+	Lucy::debug( 'Alice', "$cmd $args", 6 );
 
 	my ($sock, $msg);
 
 	if ($sock = IO::Socket::UNIX->new('/tmp/alice')) {
-		$sock->write("$who\007$cmd");
+		$sock->write("$who\007$cmd $args");
 		$sock->read($msg, 1024);
 		$sock->close;
 		$lucy->privmsg( $where,
