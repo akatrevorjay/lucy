@@ -53,7 +53,7 @@ sub irc_bot_command {
 			Lucy::font( 'red', $nick ) . ": " . $msg);
 	} else {
 		$lucy->privmsg( $where,
-			Lucy::font( 'red', $nick ) . " unable to connect to socket");
+			Lucy::font( 'red', $nick ) . ": unable to connect to socket");
 	}
 }
 
