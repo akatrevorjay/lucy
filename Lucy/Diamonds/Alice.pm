@@ -39,21 +39,21 @@ sub new {
 sub irc_bot_command {
 	my ( $self, $lucy, $who, $where, $what, $cmd, $args, $type ) =
 	  @_[ OBJECT, SENDER, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5 ];
-	}
+        my $nick = ( split( /[@!]/, $who, 2 ) )[0];
 	$where = $where->[0];
 	Lucy::debug( 'Alice', "$cmd $args", 6 );
 
 	my ($sock, $msg);
 
 	if ($sock = IO::Socket::UNIX->new('/tmp/alice')) {
-		$sock->write("$who\007$cmd $args");
+		$sock->write("lucy\007$cmd $args");
 		$sock->read($msg, 1024);
 		$sock->close;
 		$lucy->privmsg( $where,
-			Lucy::font( 'red', $who ) . " " . $msg;
+			Lucy::font( 'red', $nick ) . " " . $msg);
 	} else {
 		$lucy->privmsg( $where,
-			Lucy::font( 'red', $who ) . " unable to connect to socket";
+			Lucy::font( 'red', $who ) . " unable to connect to socket");
 	}
 }
 
