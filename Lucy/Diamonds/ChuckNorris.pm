@@ -97,7 +97,7 @@ sub irc_bot_command {
 	{
 		my %langs = { insultserver => 1, pirate => 1 };
 
-		unless ( $langs{$itype} ) {
+		unless ( exists $langs{$itype} ) {
 			my @langtypes = keys %langs;
 			$itype        = $langtypes[ int rand( $#langtypes + 1 ) ];
 		}

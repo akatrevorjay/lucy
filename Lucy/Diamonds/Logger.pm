@@ -31,6 +31,8 @@ use strict;
 
 #no strict "refs";
 
+sub priority { return -1; }
+
 ### Mmmm. We have been loaded.
 sub new {
 	my $class = shift;

@@ -30,6 +30,9 @@ use strict;
 
 #use Net::Google::Spelling;
 
+# use the lowest priority
+sub priority { return 9; }
+
 ### Mmmm. We have been loaded.
 sub new {
 	my $class = shift;
@@ -39,21 +42,20 @@ sub new {
 sub irc_bot_command {
 	my ( $self, $lucy, $who, $where, $what, $cmd, $args, $type ) =
 	  @_[ OBJECT, SENDER, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5 ];
-        my $nick = ( split( /[@!]/, $who, 2 ) )[0];
+	my $nick = ( split( /[@!]/, $who, 2 ) )[0];
 	$where = $where->[0];
-	Lucy::debug( 'Alice', "$cmd $args", 6 );
+	Lucy::debug( 'Alice', "got command $cmd", 8 );
 
-	my ($sock, $msg);
+	my ( $sock, $msg );
 
-	if ($sock = IO::Socket::UNIX->new('/tmp/alice')) {
+	if ( $sock = IO::Socket::UNIX->new('/tmp/alice') ) {
 		$sock->write("$nick\007$cmd $args");
-		$sock->read($msg, 1024);
+		$sock->read( $msg, 1024 );
 		$sock->close;
-		$lucy->privmsg( $where,
-			Lucy::font( 'red', $nick ) . ": " . $msg);
+		$lucy->privmsg( $where, Lucy::font( 'bold', $nick ) . ": " . $msg );
 	} else {
 		$lucy->privmsg( $where,
-			Lucy::font( 'red', $nick ) . ": unable to connect to socket");
+			Lucy::font( 'red', $nick ) . ": unable to connect to socket" );
 	}
 }
 

@@ -97,11 +97,13 @@ sub irc_bot_command {
 			} else {
 				$lucy->yield( privmsg => $where => $res->{response} );
 			}
+
+			# do not continue this event down the road of diamonds
+			return 1;
 		}
 	}
 
 	undef %tr;
-	return 0;
 }
 
 sub getresponsemap {

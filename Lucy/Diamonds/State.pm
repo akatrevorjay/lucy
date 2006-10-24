@@ -38,6 +38,8 @@ use Switch;
 use warnings;
 use strict;
 
+sub priority { return 0; }
+
 sub new {
 	my $self = bless {}, shift;
 	$self->init;

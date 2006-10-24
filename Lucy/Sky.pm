@@ -34,12 +34,12 @@ use warnings;
 use strict;
 no strict 'refs';
 use vars qw($AUTOLOAD);
+use Data::Dumper;
 
 ###
 ### Diamond stuff
 ###
 #$self->{Diamonds}{$d}->_unload();
-#TODO with a hash of objects, how would I do priorities?
 sub add_diamond {
 	my $self = shift;
 	foreach my $d (@_) {
@@ -47,9 +47,19 @@ sub add_diamond {
 		  )
 		{
 			$self->remove_diamond($d) if $self->is_diamond_loaded($d);
+
 			$self->{Diamonds}{$d} =
 			  eval( 'return Lucy::Diamonds::' . $d . '->new() or undef;' );
-			Lucy::debug( "Sky", "Loaded diamond $d", 2 );
+
+			my $priority =
+			    $self->{Diamonds}{$d}->can('priority')
+			  ? $self->{Diamonds}{$d}->priority()
+			  : 4;
+			if ( $priority >= 0 ) {
+				$self->{Diamonds_map}[$priority]{$d} = 1;
+			}
+
+			Lucy::debug( "Sky", "Loaded diamond $d [priority=$priority]", 2 );
 		} else {
 			Lucy::debug( "Sky",
 				"WHOA THERE NELLY!!! $d failed to load: \n" . $@, 1 );
@@ -61,6 +71,14 @@ sub remove_diamond {
 	my $self = shift;
 	foreach my $d (@_) {
 		if ( $self->is_diamond_loaded($d) ) {
+			my $priority =
+			    $self->{Diamonds}{$d}->can('priority')
+			  ? $self->{Diamonds}{$d}->priority()
+			  : 5;
+			if ( $priority >= 0 ) {
+				delete $self->{Diamonds_map}[$priority]{$d};
+			}
+
 			delete $self->{Diamonds}{$d};
 			Lucy::debug( "Sky", "Unloaded diamond $d", 2 );
 		} else {
@@ -161,399 +179,430 @@ sub _default {
 
 	# run the event on the diamonds
 	if ( $self->{Events}{$state} ) {
-		foreach my $d ( keys %{ $self->{Diamonds} } ) {
-			my $meth = $self->{Diamonds}{$d}->can($state);
-			next unless $meth;
-			my $ret = eval { $meth->( $self->{Diamonds}{$d}, @new_ ) };
-			Lucy::debug( 'Sky',
-				'Compilation of ' . $state . ' @ ' . $d . ' failed: ' . $@, 0 )
-			  if $@;
-			return if $ret;
+		foreach my $pri ( 0 .. $#{ $self->{Diamonds_map} } ) {
+			next unless defined $self->{Diamonds_map}[$pri];
+			Lucy::debug(
+				'Event' . $pri, "$state on "
+				  . join( ',', keys( %{$self->{Diamonds_map}[$pri]} )), 8 );
+
+			   #TODO is this really needed in this foreach as well as the next??
+				  my $ret;
+				  foreach my $d ( keys %{ $self->{Diamonds_map}[$pri] } ) {
+					my $meth = $self->{Diamonds}{$d}->can($state);
+					next unless $meth;
+					$ret = eval { $meth->( $self->{Diamonds}{$d}, @new_ ) };
+					Lucy::debug(
+						'Sky',
+						'Compilation of ' . $state . ' @ ' . $d
+						  . ' failed: '
+						  . $@,
+						0
+					  )
+					  if $@;
+					last if $ret;
+				}
+				last if $ret;
+			}
 		}
+		return 0;
 	}
-	return 0;
-}
 
-sub AUTOLOAD {
-	my $self   = shift;
-	my $method = $AUTOLOAD;
-	$method =~ s/^.*://;
+	sub AUTOLOAD {
+		my $self   = shift;
+		my $method = $AUTOLOAD;
+		$method =~ s/^.*://;
 
-	#print "\ntrevorj: I caught a fish! $method\n\n";
-	my $ret;
-	if ( $self->{__irc}->can($method) ) {
-		$ret = eval { $self->{__irc}->$method(@_); };
-		Lucy::debug( 'Sky',
-			'Compilation of ' . $method . ' @ Sky:AUTOLOAD_can failed: ' . $@,
-			0 )
-		  if $@;
-	} else {
-		$ret = eval { $self->{__irc}->call( $method, @_ ); };
-		Lucy::debug(
-			'Sky',
-			'Compilation of ' . $method . ' @ Sky:AUTOLOAD_else failed: ' . $@,
-			0
-		  )
-		  if $@;
+		#print "\ntrevorj: I caught a fish! $method\n\n";
+		my $ret;
+		if ( $self->{__irc}->can($method) ) {
+			$ret = eval { $self->{__irc}->$method(@_); };
+			Lucy::debug(
+				'Sky',
+				'Compilation of ' . $method
+				  . ' @ Sky:AUTOLOAD_can failed: '
+				  . $@,
+				0
+			  )
+			  if $@;
+		} else {
+			$ret = eval { $self->{__irc}->call( $method, @_ ); };
+			Lucy::debug(
+				'Sky',
+				'Compilation of ' . $method
+				  . ' @ Sky:AUTOLOAD_else failed: '
+				  . $@,
+				0
+			  )
+			  if $@;
+		}
+		return $ret;
 	}
-	return $ret;
-}
 
 ##########
-# Methods for state query
-# Internal methods begin with '_'
-#
+	# Methods for state query
+	# Internal methods begin with '_'
+	#
 
-sub _channel_sync {
-	my ($self) = shift;
-	my ($channel) = lc( $_[0] ) || return 0;
-	return 0 unless $self->_channel_exists($channel);
+	sub _channel_sync {
+		my ($self) = shift;
+		my ($channel) = lc( $_[0] ) || return 0;
+		return 0 unless $self->_channel_exists($channel);
 
-	if ( defined( $self->{CHANNEL_SYNCH}->{$channel} ) ) {
-		if (    $self->{CHANNEL_SYNCH}->{$channel}->{MODE}
-			and $self->{CHANNEL_SYNCH}->{$channel}->{WHO} )
+		if ( defined( $self->{CHANNEL_SYNCH}->{$channel} ) ) {
+			if (    $self->{CHANNEL_SYNCH}->{$channel}->{MODE}
+				and $self->{CHANNEL_SYNCH}->{$channel}->{WHO} )
+			{
+				return 1;
+			}
+		}
+		return 0;
+	}
+
+	sub _channel_sync_mode {
+		my ($self)    = shift;
+		my ($channel) = lc( $_[0] ) || return 0;
+
+		unless ( $self->_channel_exists($channel) ) {
+			return 0;
+		}
+
+		if ( defined( $self->{CHANNEL_SYNCH}->{$channel} ) ) {
+			$self->{CHANNEL_SYNCH}->{$channel}->{MODE} = 1;
+			return 1;
+		}
+		return 0;
+	}
+
+	sub _channel_sync_who {
+		my ($self)    = shift;
+		my ($channel) = lc( $_[0] ) || return 0;
+
+		unless ( $self->_channel_exists($channel) ) {
+			return 0;
+		}
+
+		if ( defined( $self->{CHANNEL_SYNCH}->{$channel} ) ) {
+			$self->{CHANNEL_SYNCH}->{$channel}->{WHO} = 1;
+			return 1;
+		}
+		return 0;
+	}
+
+	sub _nick_exists {
+		my ($self) = shift;
+		my ($nick) = lc( $_[0] ) || return 0;
+
+		if ( defined( $_[SENDER]->{state}->{Nicks}->{$nick} ) ) {
+			return 1;
+		}
+		return 0;
+	}
+
+	sub _channel_exists {
+		my ($self)    = shift;
+		my ($channel) = lc( $_[0] ) || return 0;
+
+		if ( defined( $_[SENDER]->{state}->{Chans}->{$channel} ) ) {
+			return 1;
+		}
+		return 0;
+	}
+
+	sub _nick_has_channel_mode {
+		my ($self)    = shift;
+		my ($channel) = lc( $_[0] ) || return 0;
+		my ($nick)    = lc( $_[1] ) || return 0;
+		my ($flag)    = ( split //, $_[2] )[0] || return 0;
+
+		unless ( $self->is_channel_member( $channel, $nick ) ) {
+			return 0;
+		}
+
+		if ( $_[SENDER]->{state}->{Nicks}->{$nick}->{CHANS}->{$channel} =~
+			/$flag/ )
 		{
 			return 1;
 		}
-	}
-	return 0;
-}
-
-sub _channel_sync_mode {
-	my ($self)    = shift;
-	my ($channel) = lc( $_[0] ) || return 0;
-
-	unless ( $self->_channel_exists($channel) ) {
 		return 0;
 	}
-
-	if ( defined( $self->{CHANNEL_SYNCH}->{$channel} ) ) {
-		$self->{CHANNEL_SYNCH}->{$channel}->{MODE} = 1;
-		return 1;
-	}
-	return 0;
-}
-
-sub _channel_sync_who {
-	my ($self)    = shift;
-	my ($channel) = lc( $_[0] ) || return 0;
-
-	unless ( $self->_channel_exists($channel) ) {
-		return 0;
-	}
-
-	if ( defined( $self->{CHANNEL_SYNCH}->{$channel} ) ) {
-		$self->{CHANNEL_SYNCH}->{$channel}->{WHO} = 1;
-		return 1;
-	}
-	return 0;
-}
-
-sub _nick_exists {
-	my ($self) = shift;
-	my ($nick) = lc( $_[0] ) || return 0;
-
-	if ( defined( $_[SENDER]->{state}->{Nicks}->{$nick} ) ) {
-		return 1;
-	}
-	return 0;
-}
-
-sub _channel_exists {
-	my ($self)    = shift;
-	my ($channel) = lc( $_[0] ) || return 0;
-
-	if ( defined( $_[SENDER]->{state}->{Chans}->{$channel} ) ) {
-		return 1;
-	}
-	return 0;
-}
-
-sub _nick_has_channel_mode {
-	my ($self)    = shift;
-	my ($channel) = lc( $_[0] ) || return 0;
-	my ($nick)    = lc( $_[1] ) || return 0;
-	my ($flag)    = ( split //, $_[2] )[0] || return 0;
-
-	unless ( $self->is_channel_member( $channel, $nick ) ) {
-		return 0;
-	}
-
-	if ( $_[SENDER]->{state}->{Nicks}->{$nick}->{CHANS}->{$channel} =~ /$flag/ )
-	{
-		return 1;
-	}
-	return 0;
-}
 
 # Returns all the channels that the bot is on with an indication of whether it has operator, halfop or voice.
-sub channels {
-	my ($self) = shift;
-	my (%result);
-	my ($realnick) = lc( $Lucy::lucy->nick_name );
+	sub channels {
+		my ($self) = shift;
+		my (%result);
+		my ($realnick) = lc( $Lucy::lucy->nick_name );
 
-	if ( $self->_nick_exists($realnick) ) {
+		if ( $self->_nick_exists($realnick) ) {
+			foreach my $channel (
+				keys %{ $_[SENDER]->{state}->{Nicks}->{$realnick}->{CHANS} } )
+			{
+				$result{ $_[SENDER]->{state}->{Chans}->{$channel}->{Name} } =
+				  $_[SENDER]->{state}->{Nicks}->{$realnick}->{CHANS}
+				  ->{$channel};
+			}
+		}
+		return \%result;
+	}
+
+	sub nicks {
+		my ($self) = shift;
+		my (@result);
+
+		foreach my $nick ( keys %{ $_[SENDER]->{state}->{Nicks} } ) {
+			push( @result, $_[SENDER]->{state}->{Nicks}->{$nick}->{Nick} );
+		}
+		return @result;
+	}
+
+	sub nick_info {
+		my ($self) = shift;
+		my ($nick) = lc( $_[0] ) || return 0;
+
+		unless ( $self->_nick_exists($nick) ) {
+			return 0;
+		}
+
+		my ($record) = $_[SENDER]->{state}->{Nicks}->{$nick};
+
+		my (%result) = %{$record};
+
+		$result{Userhost} = $result{User} . '@' . $result{Host};
+
+		delete( $result{'CHANS'} );
+
+		return \%result;
+	}
+
+	sub nick_long_form {
+		my ($self) = shift;
+		my ($nick) = lc( $_[0] ) || return 0;
+
+		unless ( $self->_nick_exists($nick) ) {
+			return 0;
+		}
+
+		my ($record) = $_[SENDER]->{state}->{Nicks}->{$nick};
+
+		return $record->{Nick} . '!' . $record->{User} . '@' . $record->{Host};
+	}
+
+	sub nick_channels {
+		my ($self) = shift;
+		my ($nick) = lc( $_[0] ) || return ();
+		my (@result);
+
+		unless ( $self->_nick_exists($nick) ) {
+			return @result;
+		}
+
 		foreach my $channel (
-			keys %{ $_[SENDER]->{state}->{Nicks}->{$realnick}->{CHANS} } )
+			keys %{ $_[SENDER]->{state}->{Nicks}->{$nick}->{CHANS} } )
 		{
-			$result{ $_[SENDER]->{state}->{Chans}->{$channel}->{Name} } =
-			  $_[SENDER]->{state}->{Nicks}->{$realnick}->{CHANS}->{$channel};
+			print "got one: "
+			  . $_[SENDER]->{state}->{Chans}->{$channel}->{Name} . "\n";
+			push( @result, $_[SENDER]->{state}->{Chans}->{$channel}->{Name} );
 		}
-	}
-	return \%result;
-}
-
-sub nicks {
-	my ($self) = shift;
-	my (@result);
-
-	foreach my $nick ( keys %{ $_[SENDER]->{state}->{Nicks} } ) {
-		push( @result, $_[SENDER]->{state}->{Nicks}->{$nick}->{Nick} );
-	}
-	return @result;
-}
-
-sub nick_info {
-	my ($self) = shift;
-	my ($nick) = lc( $_[0] ) || return 0;
-
-	unless ( $self->_nick_exists($nick) ) {
-		return 0;
-	}
-
-	my ($record) = $_[SENDER]->{state}->{Nicks}->{$nick};
-
-	my (%result) = %{$record};
-
-	$result{Userhost} = $result{User} . '@' . $result{Host};
-
-	delete( $result{'CHANS'} );
-
-	return \%result;
-}
-
-sub nick_long_form {
-	my ($self) = shift;
-	my ($nick) = lc( $_[0] ) || return 0;
-
-	unless ( $self->_nick_exists($nick) ) {
-		return 0;
-	}
-
-	my ($record) = $_[SENDER]->{state}->{Nicks}->{$nick};
-
-	return $record->{Nick} . '!' . $record->{User} . '@' . $record->{Host};
-}
-
-sub nick_channels {
-	my ($self) = shift;
-	my ($nick) = lc( $_[0] ) || return ();
-	my (@result);
-
-	unless ( $self->_nick_exists($nick) ) {
 		return @result;
 	}
 
-	foreach
-	  my $channel ( keys %{ $_[SENDER]->{state}->{Nicks}->{$nick}->{CHANS} } )
-	{
-		print "got one: ".$_[SENDER]->{state}->{Chans}->{$channel}->{Name}."\n";
-		push( @result, $_[SENDER]->{state}->{Chans}->{$channel}->{Name} );
-	}
-	return @result;
-}
+	sub channel_list {
+		my ($self) = shift;
+		my ($channel) = lc( $_[0] ) || return 0;
+		my (@result);
 
-sub channel_list {
-	my ($self) = shift;
-	my ($channel) = lc( $_[0] ) || return 0;
-	my (@result);
+		unless ( $self->_channel_exists($channel) ) {
+			return 0;
+		}
 
-	unless ( $self->_channel_exists($channel) ) {
-		return 0;
-	}
+		foreach my $nick (
+			keys %{ $_[SENDER]->{state}->{Chans}->{$channel}->{Nicks} } )
+		{
+			push( @result, $_[SENDER]->{state}->{Nicks}->{$nick}->{Nick} );
+		}
 
-	foreach
-	  my $nick ( keys %{ $_[SENDER]->{state}->{Chans}->{$channel}->{Nicks} } )
-	{
-		push( @result, $_[SENDER]->{state}->{Nicks}->{$nick}->{Nick} );
-	}
-
-	return @result;
-}
-
-sub is_operator {
-	my ($self) = shift;
-	my ($nick) = lc( $_[0] ) || return 0;
-
-	unless ( $self->_nick_exists($nick) ) {
-		return 0;
-	}
-
-	if ( $_[SENDER]->{state}->{Nicks}->{$nick}->{IRCop} ) {
-		return 1;
-	}
-	return 0;
-}
-
-sub is_channel_mode_set {
-	my ($self)    = shift;
-	my ($channel) = lc( $_[0] ) || return 0;
-	my ($mode)    = ( split //, $_[1] )[0] || return 0;
-
-	$mode =~ s/[^A-Za-z]//g;
-
-	unless ( $self->_channel_exists($channel) or $mode ) {
-		return 0;
-	}
-
-	if ( defined( $_[SENDER]->{state}->{Chans}->{$channel}->{Mode} )
-		and $_[SENDER]->{state}->{Chans}->{$channel}->{Mode} =~ /$mode/ )
-	{
-		return 1;
-	}
-	return 0;
-}
-
-sub channel_limit {
-	my ($self)    = shift;
-	my ($channel) = lc( $_[0] ) || return 0;
-
-	unless ( $self->_channel_exists($channel) ) {
-		return 0;
-	}
-
-	if ( $self->is_channel_mode_set( $channel, 'l' )
-		and defined( $_[SENDER]->{state}->{Chans}->{$channel}->{ChanLimit} ) )
-	{
-		return $_[SENDER]->{state}->{Chans}->{$channel}->{ChanLimit};
-	}
-	return 0;
-}
-
-sub channel_key {
-	my ($self)    = shift;
-	my ($channel) = lc( $_[0] ) || return 0;
-
-	unless ( $self->_channel_exists($channel) ) {
-		return 0;
-	}
-
-	if ( $self->is_channel_mode_set( $channel, 'k' )
-		and defined( $_[SENDER]->{state}->{Chans}->{$channel}->{ChanKey} ) )
-	{
-		return $_[SENDER]->{state}->{Chans}->{$channel}->{ChanKey};
-	}
-	return 0;
-}
-
-sub channel_modes {
-	my ($self)    = shift;
-	my ($channel) = lc( $_[0] ) || return 0;
-
-	unless ( $self->_channel_exists($channel) ) {
-		return 0;
-	}
-
-	if ( defined( $_[SENDER]->{state}->{Chans}->{$channel}->{Mode} ) ) {
-		return $_[SENDER]->{state}->{Chans}->{$channel}->{Mode};
-	}
-	return 0;
-}
-
-sub is_channel_member {
-	my ($self)    = shift;
-	my ($channel) = lc( $_[0] ) || return 0;
-	my ($nick)    = lc( $_[1] ) || return 0;
-
-	unless ( $self->_channel_exists($channel) and $self->_nick_exists($nick) ) {
-		return 0;
-	}
-
-	if ( defined( $_[SENDER]->{state}->{Chans}->{$channel}->{Nicks}->{$nick} ) )
-	{
-		return 1;
-	}
-	return 0;
-}
-
-sub is_channel_operator {
-	my ($self)    = shift;
-	my ($channel) = lc( $_[0] ) || return 0;
-	my ($nick)    = lc( $_[1] ) || return 0;
-
-	unless ( $self->_nick_has_channel_mode( $channel, $nick, 'o' ) ) {
-		return 0;
-	}
-	return 1;
-}
-
-sub has_channel_voice {
-	my ($self)    = shift;
-	my ($channel) = lc( $_[0] ) || return 0;
-	my ($nick)    = lc( $_[1] ) || return 0;
-
-	unless ( $self->_nick_has_channel_mode( $channel, $nick, 'v' ) ) {
-		return 0;
-	}
-	return 1;
-}
-
-sub is_channel_halfop {
-	my ($self)    = shift;
-	my ($channel) = lc( $_[0] ) || return 0;
-	my ($nick)    = lc( $_[1] ) || return 0;
-
-	unless ( $self->_nick_has_channel_mode( $channel, $nick, 'h' ) ) {
-		return 0;
-	}
-	return 1;
-}
-
-sub is_channel_owner {
-	my ($self)    = shift;
-	my ($channel) = lc( $_[0] ) || return 0;
-	my ($nick)    = lc( $_[1] ) || return 0;
-
-	unless ( $self->_nick_has_channel_mode( $channel, $nick, 'q' ) ) {
-		return 0;
-	}
-	return 1;
-}
-
-sub is_channel_admin {
-	my ($self)    = shift;
-	my ($channel) = lc( $_[0] ) || return 0;
-	my ($nick)    = lc( $_[1] ) || return 0;
-
-	unless ( $self->_nick_has_channel_mode( $channel, $nick, 'a' ) ) {
-		return 0;
-	}
-	return 1;
-}
-
-sub ban_mask {
-	my ($self)    = shift;
-	my ($channel) = lc( $_[0] ) || return 0;
-	my ($mask)    = parse_ban_mask( $_[1] ) || return 0;
-	my (@result);
-
-	unless ( $self->_channel_exists($channel) ) {
 		return @result;
 	}
 
-	# Convert the mask from IRC to regex.
-	$mask = lc($mask);
-	$mask = quotemeta $mask;
-	$mask =~ s/\\\*/[\x01-\xFF]{0,}/g;
-	$mask =~ s/\\\?/[\x01-\xFF]{1,1}/g;
+	sub is_operator {
+		my ($self) = shift;
+		my ($nick) = lc( $_[0] ) || return 0;
 
-	foreach my $nick ( $self->channel_list($channel) ) {
-		if ( lc( $self->nick_long_form($nick) ) =~ /^$mask$/ ) {
-			push( @result, $nick );
+		unless ( $self->_nick_exists($nick) ) {
+			return 0;
 		}
+
+		if ( $_[SENDER]->{state}->{Nicks}->{$nick}->{IRCop} ) {
+			return 1;
+		}
+		return 0;
 	}
 
-	return @result;
-}
+	sub is_channel_mode_set {
+		my ($self)    = shift;
+		my ($channel) = lc( $_[0] ) || return 0;
+		my ($mode)    = ( split //, $_[1] )[0] || return 0;
 
-1;
+		$mode =~ s/[^A-Za-z]//g;
+
+		unless ( $self->_channel_exists($channel) or $mode ) {
+			return 0;
+		}
+
+		if ( defined( $_[SENDER]->{state}->{Chans}->{$channel}->{Mode} )
+			and $_[SENDER]->{state}->{Chans}->{$channel}->{Mode} =~ /$mode/ )
+		{
+			return 1;
+		}
+		return 0;
+	}
+
+	sub channel_limit {
+		my ($self)    = shift;
+		my ($channel) = lc( $_[0] ) || return 0;
+
+		unless ( $self->_channel_exists($channel) ) {
+			return 0;
+		}
+
+		if ( $self->is_channel_mode_set( $channel, 'l' )
+			and defined( $_[SENDER]->{state}->{Chans}->{$channel}->{ChanLimit} )
+		  )
+		{
+			return $_[SENDER]->{state}->{Chans}->{$channel}->{ChanLimit};
+		}
+		return 0;
+	}
+
+	sub channel_key {
+		my ($self)    = shift;
+		my ($channel) = lc( $_[0] ) || return 0;
+
+		unless ( $self->_channel_exists($channel) ) {
+			return 0;
+		}
+
+		if ( $self->is_channel_mode_set( $channel, 'k' )
+			and defined( $_[SENDER]->{state}->{Chans}->{$channel}->{ChanKey} ) )
+		{
+			return $_[SENDER]->{state}->{Chans}->{$channel}->{ChanKey};
+		}
+		return 0;
+	}
+
+	sub channel_modes {
+		my ($self)    = shift;
+		my ($channel) = lc( $_[0] ) || return 0;
+
+		unless ( $self->_channel_exists($channel) ) {
+			return 0;
+		}
+
+		if ( defined( $_[SENDER]->{state}->{Chans}->{$channel}->{Mode} ) ) {
+			return $_[SENDER]->{state}->{Chans}->{$channel}->{Mode};
+		}
+		return 0;
+	}
+
+	sub is_channel_member {
+		my ($self)    = shift;
+		my ($channel) = lc( $_[0] ) || return 0;
+		my ($nick)    = lc( $_[1] ) || return 0;
+
+		unless ($self->_channel_exists($channel)
+			and $self->_nick_exists($nick) )
+		{
+			return 0;
+		}
+
+		if (
+			defined(
+				$_[SENDER]->{state}->{Chans}->{$channel}->{Nicks}->{$nick}
+			)
+		  )
+		{
+			return 1;
+		}
+		return 0;
+	}
+
+	sub is_channel_operator {
+		my ($self)    = shift;
+		my ($channel) = lc( $_[0] ) || return 0;
+		my ($nick)    = lc( $_[1] ) || return 0;
+
+		unless ( $self->_nick_has_channel_mode( $channel, $nick, 'o' ) ) {
+			return 0;
+		}
+		return 1;
+	}
+
+	sub has_channel_voice {
+		my ($self)    = shift;
+		my ($channel) = lc( $_[0] ) || return 0;
+		my ($nick)    = lc( $_[1] ) || return 0;
+
+		unless ( $self->_nick_has_channel_mode( $channel, $nick, 'v' ) ) {
+			return 0;
+		}
+		return 1;
+	}
+
+	sub is_channel_halfop {
+		my ($self)    = shift;
+		my ($channel) = lc( $_[0] ) || return 0;
+		my ($nick)    = lc( $_[1] ) || return 0;
+
+		unless ( $self->_nick_has_channel_mode( $channel, $nick, 'h' ) ) {
+			return 0;
+		}
+		return 1;
+	}
+
+	sub is_channel_owner {
+		my ($self)    = shift;
+		my ($channel) = lc( $_[0] ) || return 0;
+		my ($nick)    = lc( $_[1] ) || return 0;
+
+		unless ( $self->_nick_has_channel_mode( $channel, $nick, 'q' ) ) {
+			return 0;
+		}
+		return 1;
+	}
+
+	sub is_channel_admin {
+		my ($self)    = shift;
+		my ($channel) = lc( $_[0] ) || return 0;
+		my ($nick)    = lc( $_[1] ) || return 0;
+
+		unless ( $self->_nick_has_channel_mode( $channel, $nick, 'a' ) ) {
+			return 0;
+		}
+		return 1;
+	}
+
+	sub ban_mask {
+		my ($self)    = shift;
+		my ($channel) = lc( $_[0] ) || return 0;
+		my ($mask)    = parse_ban_mask( $_[1] ) || return 0;
+		my (@result);
+
+		unless ( $self->_channel_exists($channel) ) {
+			return @result;
+		}
+
+		# Convert the mask from IRC to regex.
+		$mask = lc($mask);
+		$mask = quotemeta $mask;
+		$mask =~ s/\\\*/[\x01-\xFF]{0,}/g;
+		$mask =~ s/\\\?/[\x01-\xFF]{1,1}/g;
+
+		foreach my $nick ( $self->channel_list($channel) ) {
+			if ( lc( $self->nick_long_form($nick) ) =~ /^$mask$/ ) {
+				push( @result, $nick );
+			}
+		}
+
+		return @result;
+	}
+
+	1;
