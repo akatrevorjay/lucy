@@ -45,8 +45,11 @@ sub new {
 	  shift;
 	$self->_init();
 	foreach (
-		$Lucy::dbh->select( $self->tablename, [qw(url name delay)] )->hashes )
+		$Lucy::dbh->select( $self->tablename, [qw(url name delay enabled)] )
+		->hashes )
 	{
+		next if ( $_->{enabled} eq 'N' );
+
 		Lucy::debug( 'RSS', 'Adding feed [' . $_->{name} . ']', 6 );
 		$poe_kernel->post( 'rss', 'add_feed', $_ );
 	}
@@ -150,7 +153,7 @@ sub irc_bot_command {
 	my $nick = ( split( /[@!]/, $who, 2 ) )[0];
 	if (   $cmd eq 'fetch'
 		&& $args =~
-		/^(?:me\s+)?(?:the\s+)?(?:last\s+)?([\w]{3,30})\s+(?:on\s+|from\s+)?([\w]{3,30})$/
+/^(?:me\s+)?(?:the\s+)?(?:last\s+)?([\w]{3,30})\s+(?:on\s+|from\s+)?([\w]{3,30})$/
 	  )
 	{
 		$1 = 'description' if $1 eq 'desc';
@@ -208,13 +211,11 @@ sub irc_bot_command {
 			Lucy::debug( 'RSS', 'removing feed [' . $subargs[0] . ']', 6 );
 
 			$kernel->post( 'rss' => 'remove_feed', $subargs[0] );
-			$Lucy::dbh->update(
-				$self->tablename,
-				{ enabled => 'N' },
-				{ name    => $subargs[0] }
-			);
 
 			#$Lucy::dbh->delete( $self->tablename, {name => $subargs[0]} );
+			$lucy->privmsg( $where,
+"$nick: ok, I removed it from memory. It will be back when I am restarted though."
+			);
 		} elsif ( $subcmd eq 'pause' && $subargs[0] =~ /^[\w\s]{3,30}$/ ) {
 			Lucy::debug( 'RSS', 'pausing feed [' . $subargs[0] . ']', 6 );
 
