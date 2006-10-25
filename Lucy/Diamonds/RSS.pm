@@ -50,6 +50,9 @@ sub new {
 	{
 		next if ( $_->{enabled} eq 'N' );
 
+		# XML::RSS::Feed complains about feed details it doesn't know about.
+		delete $_->{enabled};
+
 		Lucy::debug( 'RSS', 'Adding feed [' . $_->{name} . ']', 6 );
 		$poe_kernel->post( 'rss', 'add_feed', $_ );
 	}

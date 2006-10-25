@@ -92,3 +92,161 @@ POE::Component::IRC::Plugin::Console - a lightweight debugging and control conso
 ###
 # FastCGI stats server as a plugin?? oooh
 POE::Component::FastCGI - POE FastCGI server
+
+
+
+############
+############ Old code, may come in handy some day
+############
+
+#####
+## Generic cache object
+##
+##
+# Options ##################################################################
+#
+# Debug =>      0 - DEFAULT, no debugging output
+#               1 - prints cache statistics upon destroying
+#               2 - prints detailed debugging info
+#
+# MaxCount =>   Maximum entries in cache.
+#
+# MaxBytes =>   Maximum bytes taken in memory for cache based on approximate
+#               size of total cache structure in memory
+#
+#               There is approximately 240 bytes used per key/value pair in the cache for
+#               the cache data structures, so a cache of 5000 entries would take
+#               at approximately 1.2M plus the size of the data being cached.
+#
+# MaxSize  =>   Maximum size of each cache entry. Larger entries are not cached.
+#                   This helps prevent much of the cache being flushed when
+#                   you set an exceptionally large entry.  Defaults to MaxBytes/10
+#
+# WriteSync =>  1 - DEFAULT, write() when data is dirtied for
+#                   TRUE CACHE (see below)
+#               0 - write() dirty data as late as possible, when leaving
+#                   cache, or when cache is being DESTROY'd
+#
+############################################################################
+#package Lucy::CacheLRU;
+#use warnings;
+#use strict;
+#use vars qw(@ISA);
+#@ISA = qw(Tie::Cache);
+#
+#sub read {
+#	my ( $self, $key ) = @_;
+#	print "cache miss for $key, read() data\n";
+#	undef;
+#}
+#
+#sub write {
+#	my ( $self, $key, $value ) = @_;
+#	print "flushing [$key, $value] from cache, write() data\n";
+#}
+#
+#1;
+
+######
+### Generic ancessor object.
+### Could come in handy ;) especially to subclass.
+###
+##TODO make this capable of being an LRU cache
+#package Lucy::GenericObject;
+#use strict;
+#use Carp;
+#use vars qw($AUTOLOAD);
+#
+#sub AUTOLOAD {
+#	my $self = shift;
+#	my $attr = $AUTOLOAD;
+#	$attr =~ s/.*:://;
+#	return unless $attr =~ /[^A-Z]/;    # skip DESTROY and all-cap methods
+#	return 1 if ( $attr =~ /_init|_put|_get|_delete/ );
+#
+#	# Are there any args? if so, put.
+#	if (@_) {
+#		$self->put( $attr, @_ );
+#	}
+#	return $self->get($attr);
+#}
+#
+## get rid of it
+#sub delete {
+#	my ( $self, $attr ) = @_;
+#
+#	# Convert to uppercase if case insensitive?
+#	$attr = uc $attr if defined $self->{case_insensitive};
+#
+#	#TODO should this only delete the key if the _delete function returns ok?
+#	if ( $self->_delete($attr) ) {
+#		delete $self->{$attr};
+#		return 1;
+#	}
+#	return undef;
+#}
+#
+## we're saving something.
+#sub put {
+#	my ( $self, $attr ) = @_;
+#
+#	# Convert to uppercase if case insensitive
+#	$attr = uc $attr if defined $self->{case_insensitive};
+#
+#	# do we have a defined set of fields?
+#	if ( defined $self->{fields} ) {
+#		return undef unless defined $self->{fields}{$attr};
+#	}
+#
+#	if ( my $data = shift ) {
+#
+#		#TODO should this only put the data if the _put function returns ok?
+#		if ( $self->_put( $attr, $data ) ) {
+#			$self->{data}{$attr} = $data;
+#			return 1;
+#		}
+#	} else {
+#		#return $self->delete($attr);
+#	}
+#
+#	return undef;
+#}
+#
+## get it damnit.
+#sub get {
+#	my ( $self, $attr ) = @_;
+#
+#	# Convert to uppercase if case insensitive
+#	$attr = uc $attr if defined $self->{case_insensitive};
+#
+#	$self->{data}{$attr} = $self->_get($attr)
+#	  unless defined $self->{data}{$attr};
+#	return $self->{data}{$attr} || undef;
+#}
+#
+#sub new {
+#	my $class = shift;
+#
+#	#my $class = ref($proto) || $proto;
+#	#my $parent = ref($proto) && $proto;
+#
+#	my %params;
+#	if ( @_ % 2 ) {
+#		%params = @_;
+#
+#		# Convert to uppercase if case insensitive
+#		if ( $params{case_insensitive} ) {
+#			foreach ( keys %{ $params{data} } ) {
+#				next if uc($_) eq $_;
+#				$params{data}{ uc $_ } = $params{data}{$_};
+#				delete $params{data}{$_};
+#			}
+#		}
+#	}
+#	my $self = bless \%params, $class;
+#	undef %params;
+#	$self->_init;
+#	return $self;
+#}
+#
+#1;

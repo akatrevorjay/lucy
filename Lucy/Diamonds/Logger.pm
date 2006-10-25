@@ -31,12 +31,10 @@ use strict;
 
 #no strict "refs";
 
-sub priority { return -1; }
-
 ### Mmmm. We have been loaded.
 sub new {
 	my $class = shift;
-	return bless {}, $class;
+	return bless { priority => -1 }, $class;
 }
 
 ###
@@ -50,7 +48,8 @@ sub log {
 		unless ( defined $self->{logs}{$log} )
 		{
 			$self->{logs}{$log} = $self->_openlog( cwd() . "/log/$log.log" );
-			$self->log( $log, '-!- Opened log file' ) if defined $self->{logs}{$log};
+			$self->log( $log, '-!- Opened log file' )
+			  if defined $self->{logs}{$log};
 		}
 		return unless defined $self->{logs}{$log};
 		$payload = time . ' ' . $payload . "\n";

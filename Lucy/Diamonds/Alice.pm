@@ -28,15 +28,12 @@ use IO::Socket;
 use warnings;
 use strict;
 
-#use Net::Google::Spelling;
-
-# use the lowest priority
-sub priority { return 9; }
-
 ### Mmmm. We have been loaded.
 sub new {
 	my $class = shift;
-	return bless {}, $class;
+
+	# use the lowest priority
+	return bless { priority => 9 }, $class;
 }
 
 sub irc_bot_command {

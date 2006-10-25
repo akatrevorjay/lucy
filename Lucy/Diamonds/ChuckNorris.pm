@@ -70,6 +70,7 @@ sub irc_bot_command {
 			$lucy->yield( ctcp => $where => 'ACTION' =>
 				  'loads the gun and sets it on the table' );
 		}
+		return 1;
 	} elsif ( $cmd eq 'shoot' ) {
 		if (   ( !defined $self->{gunchamber} )
 			|| ( $self->{gunchamber} <= 0 ) )
@@ -89,6 +90,7 @@ sub irc_bot_command {
 				$lucy->yield( privmsg => $nick => "click" );
 			}
 		}
+		return 1;
 
 		# Insult
 	} elsif ( ( $cmd eq 'insult' )
@@ -107,7 +109,8 @@ sub irc_bot_command {
 		  Acme::Scurvy::Whoreson::BilgeRat->new( language => $itype );
 		$lucy->yield( privmsg => $where => "$iwho: $insult" );
 		undef $insult;
-
+		return 1;
+		
 		# Run math expressions
 	} elsif ( $cmd eq 'math' ) {
 		unless ( $args eq 'help' ) {
@@ -132,11 +135,10 @@ sub irc_bot_command {
 "$nick: syntax is available at http://search.cpan.org/~addw/Math-Expression-1.14/Expression.pm"
 			);
 		}
-
+		return 1;
+		
 		# Current US terror level
 	} elsif ( $cmd eq 'terror' ) {
-		### trevorj: I edited this to do it manually, because theres no point in loading
-		### XML::Simple (required by Acme::Terror) if we use XML::Smart in other plugins
 		if (
 			my $XML = XML::Smart->new(
 				"http://www.dhs.gov/dhspublic/getAdvisoryCondition"
@@ -149,11 +151,13 @@ sub irc_bot_command {
 				  . $XML->{CONDITION} );
 			undef $XML;
 		}
-
+		return 1;
+		
 		# Magic Eight Ball
 	} elsif ( $cmd eq '8ball' ) {
 		$lucy->privmsg( $where, "$nick: " . ask($args) );
-
+		return 1;
+		
 		# Rot13 unbreakable encryption
 	} elsif ( $cmd eq 'rot13' ) {
 		$args =~ tr[a-zA-Z][n-za-mN-ZA-M];
@@ -165,12 +169,14 @@ sub irc_bot_command {
 			Lucy::debug( "debug", "--- SET DEBUG LEVEL TO $1 ---", 2 );
 			$Lucy::config->{debug_level} = scalar($1);
 		}
+		return 1;
 
 		# Turn colors on/off
 	} elsif ( ( $cmd eq 'colors' )
 		&& ( $args =~ /^(?:on|off)$/i ) )
 	{
 		$Lucy::config->{UseIRCColors} = ( $args eq 'on' ) ? 1 : 0;
+		return 1;
 	}
 
 #TODO some kind of auth system is required for such powerful functions
@@ -198,12 +204,12 @@ sub irc_bot_command {
 					privmsg => $where => "$nick: failed to reload $args" );
 			}
 		}
-
+		return 1;
+		
 		#} elsif ( $cmd eq 'lag' ) {
 		#	TODO doesn't work =/
 		#	$lucy->privmsg( $where, "$nick: lag is " . $lucy->lag() );
 	} else {
-
 		return 0;
 	}
 }
