@@ -29,32 +29,29 @@ package Lucy::Sky;
 use POE
   qw(Component::IRC::State Component::IRC::Plugin::BotTraffic Component::IRC::Plugin::Connector Component::IRC::Plugin::ISupport);
 use Lucy::MsgHandler;
-use again;
+use Module::Refresh;
 use warnings;
 use strict;
 no strict 'refs';
 use vars qw($AUTOLOAD);
-use Data::Dumper;
+
+#use Data::Dumper;
 
 ###
 ### Diamond stuff
 ###
-#$self->{Diamonds}{$d}->_unload();
 sub add_diamond {
 	my $self = shift;
 	foreach my $d (@_) {
-		if ( eval { return require_again( 'Lucy::Diamonds::' . $d ) or undef; }
-		  )
-		{
-			$self->remove_diamond($d) if $self->is_diamond_loaded($d);
-
+		$self->remove_diamond($d) if $self->is_diamond_loaded($d);
+		if ( eval( 'return require Lucy::Diamonds::' . $d . ' or undef;' ) ) {
 			$self->{Diamonds}{$d} =
 			  eval( 'return Lucy::Diamonds::' . $d . '->new() or undef;' );
 
 			my $priority =
 			  ( exists $self->{Diamonds}{$d}->{priority} )
 			  ? $self->{Diamonds}{$d}->{priority}
-			  : 4;
+			  : $self->{default_priority};
 			if ( $priority >= 0 ) {
 				$self->{Diamonds_map}[$priority]{$d} = 1;
 			}
@@ -72,14 +69,16 @@ sub remove_diamond {
 	foreach my $d (@_) {
 		if ( $self->is_diamond_loaded($d) ) {
 			my $priority =
-			    $self->{Diamonds}{$d}->can('priority')
-			  ? $self->{Diamonds}{$d}->priority()
-			  : 5;
+			  ( exists $self->{Diamonds}{$d}->{priority} )
+			  ? $self->{Diamonds}{$d}->{priority}
+			  : $self->{default_priority};
 			if ( $priority >= 0 ) {
 				delete $self->{Diamonds_map}[$priority]{$d};
 			}
 
 			delete $self->{Diamonds}{$d};
+			$self->{refresher}->unload_module( 'Lucy/Diamonds/' . $d . '.pm' );
+
 			Lucy::debug( "Sky", "Unloaded diamond $d", 2 );
 		} else {
 			Lucy::debug( "Sky",
@@ -91,8 +90,12 @@ sub remove_diamond {
 #TODO if run without args, reload all modules OR preferably, reload all changed modules
 sub reload_diamond {
 	my ( $self, @diamonds ) = @_;
-	$self->remove_diamond(@diamonds);
-	$self->add_diamond(@diamonds);
+	if (@diamonds) {
+		$self->remove_diamond(@diamonds);
+		$self->add_diamond(@diamonds);
+	} else {
+		$self->{refresher}->refresh();
+	}
 }
 
 sub is_diamond_loaded {
@@ -117,6 +120,9 @@ sub new {
 	die __PACKAGE__ . "->new() params must be a hash" if @_ % 2;
 	my %params = @_;
 
+	#FUCK Tunables
+	$params{default_priority} = 4;
+
 	my $self = bless \%params, $class;
 	$self->init();
 	return $self;
@@ -124,6 +130,9 @@ sub new {
 
 sub init {
 	my ($self) = @_;
+
+	# init module::refresh object
+	$self->{refresher} = Module::Refresh->new();
 
 	# Create the component that will represent an IRC network.
 	$self->{__irc} =

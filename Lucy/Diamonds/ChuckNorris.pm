@@ -101,7 +101,7 @@ sub irc_bot_command {
 
 		unless ( exists $langs{$itype} ) {
 			my @langtypes = keys %langs;
-			$itype        = $langtypes[ int rand( $#langtypes + 1 ) ];
+			$itype = $langtypes[ int rand( $#langtypes + 1 ) ];
 		}
 		$iwho = $nick unless ($iwho);
 
@@ -110,7 +110,7 @@ sub irc_bot_command {
 		$lucy->yield( privmsg => $where => "$iwho: $insult" );
 		undef $insult;
 		return 1;
-		
+
 		# Run math expressions
 	} elsif ( $cmd eq 'math' ) {
 		unless ( $args eq 'help' ) {
@@ -136,7 +136,7 @@ sub irc_bot_command {
 			);
 		}
 		return 1;
-		
+
 		# Current US terror level
 	} elsif ( $cmd eq 'terror' ) {
 		if (
@@ -152,12 +152,12 @@ sub irc_bot_command {
 			undef $XML;
 		}
 		return 1;
-		
+
 		# Magic Eight Ball
 	} elsif ( $cmd eq '8ball' ) {
 		$lucy->privmsg( $where, "$nick: " . ask($args) );
 		return 1;
-		
+
 		# Rot13 unbreakable encryption
 	} elsif ( $cmd eq 'rot13' ) {
 		$args =~ tr[a-zA-Z][n-za-mN-ZA-M];
@@ -179,25 +179,38 @@ sub irc_bot_command {
 		return 1;
 	}
 
-#TODO some kind of auth system is required for such powerful functions
-#FUCK diamond_add doesn't work correctly. remove|reload work fine.
-#elsif ($cmd eq 'dadd') {
-#	if ($args =~ /\w{3,20}/) {
-#		Lucy::debug( "Connect", "Loading diamond $args by $nick\'s request..", 1 );
-#		$lucy->add_diamond, $args);
-#	}
-#}
-#elsif ($cmd eq 'dremove') {
-#	if ($args =~ /\w{3,20}/) {
-#		Lucy::debug( "Connect", "Unloading diamond $args by $nick\'s request..", 1 );
-#		$lucy->remove_diamond, $args);
-#	}
-#}
-	elsif ( $cmd eq 'reload' ) {
-		if ( $args =~ /\w{3,20}/ ) {
+	#TODO some kind of auth system is required for such powerful functions
+	#FUCK diamond_add doesn't work correctly. remove|reload work fine.
+	elsif ( $cmd eq 'diamond_add' ) {
+		if (   $type eq 'pub'
+			&& $lucy->is_channel_admin( $where, $nick )
+			&& $args =~ /\w{3,20}/ )
+		{
 			Lucy::debug( "ChuckNorris",
-				"Reloading diamond $args by $nick\'s request...", 1 );
-			if ( $lucy->reload_diamond($args) ) {
+				"Loading diamond $args by $nick\'s request..", 1 );
+			$lucy->add_diamond($args);
+		}
+
+		return 1;
+	} elsif ( $cmd eq 'diamond_remove' ) {
+		if (   $type eq 'pub'
+			&& $lucy->is_channel_admin( $where, $nick )
+			&& $args =~ /\w{3,20}/ )
+		{
+			Lucy::debug( "ChuckNorris",
+				"Unloading diamond $args by $nick\'s request..", 1 );
+			$lucy->remove_diamond($args);
+		}
+
+		return 1;
+	} elsif ( $cmd eq 'reload' ) {
+		if (   $type eq 'pub'
+			&& $lucy->is_channel_admin( $where, $nick ) )
+		{
+			Lucy::debug( "ChuckNorris",
+				"Reloading diamonds that have changed by $nick\'s request...",
+				1 );
+			if ( $lucy->reload_diamond() ) {
 				$lucy->yield( privmsg => $where => "$nick: ok" );
 			} else {
 				$lucy->yield(
@@ -205,10 +218,6 @@ sub irc_bot_command {
 			}
 		}
 		return 1;
-		
-		#} elsif ( $cmd eq 'lag' ) {
-		#	TODO doesn't work =/
-		#	$lucy->privmsg( $where, "$nick: lag is " . $lucy->lag() );
 	} else {
 		return 0;
 	}
