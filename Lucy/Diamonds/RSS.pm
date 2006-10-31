@@ -172,6 +172,7 @@ sub irc_bot_command {
 			$lucy->yield( privmsg => $where =>
 				  "$nick: I don't know of any feed called $2" );
 		}
+		return 1;
 	} elsif ( $cmd eq 'rss' ) {
 		my ( $subcmd, @subargs ) = split / /, $args or return 0;
 
@@ -186,7 +187,7 @@ sub irc_bot_command {
 					} else {
 						$lucy->privmsg( $where,
 							"$nick: sorry man, but your url is faulty." );
-						return 0;
+						return 1;
 					}
 				}
 			}
@@ -196,7 +197,7 @@ sub irc_bot_command {
 				unless ( exists $feed->{$s} ) {
 					$lucy->privmsg( $where,
 						"$nick: your rss feed needs a $s=blah" );
-					return 0;
+					return 1;
 				}
 			}
 
@@ -239,11 +240,8 @@ sub irc_bot_command {
 				{ name    => $subargs[0] }
 			);
 			$lucy->privmsg( $where, "$nick: ok" );
-		} else {
-			return 0;
 		}
-	} else {
-		return 0;
+		return 1;
 	}
 }
 

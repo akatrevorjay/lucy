@@ -106,7 +106,6 @@ sub irc_ctcp_action {
 
 	$self->log( $Lucy::config->{Channels}{$where}{log}, "* $nick $what" );
 	$self->updateseen( $nick, 'action', $where, $what );
-	return 0;
 }
 
 ###
@@ -121,7 +120,6 @@ sub irc_public {
 
 	$self->log( $Lucy::config->{Channels}{$where}{log}, "<$nick> $what" );
 	$self->updateseen( $nick, 'pub', $where, $what );
-	return 0;
 }
 
 ###
@@ -135,7 +133,6 @@ sub irc_msg {
 
 	Lucy::debug( "privmsg", "[$nick] $nick: $what", 2 );
 	$self->log( 'privmsg', "[$nick] $nick: $what" );
-	return 0;
 }
 
 ###
@@ -149,7 +146,6 @@ sub irc_notice {
 	Lucy::debug( "notice", "$nick|$nick: $what", 8 );
 
 	#$self->log( 'notice', "$nick: $what" );
-	return 0;
 }
 
 ###
@@ -165,7 +161,6 @@ sub irc_bot_msg {
 		Lucy::debug( "privmsg", "[$nick] $botnick: $what", 2 );
 		$self->log( 'privmsg', "[$nick] $botnick: $what" );
 	}
-	return 0;
 }
 
 ###
@@ -178,7 +173,6 @@ sub irc_bot_public {
 	Lucy::debug( "public", "$where |<$nick> $what", 4 );
 
 	$self->log( $Lucy::config->{Channels}{$where}{log}, "<$nick> $what" );
-	return 0;
 }
 
 ###
@@ -192,7 +186,6 @@ sub irc_topic {
 
 	$self->log( $Lucy::config->{Channels}{$channel}{log},
 		"-!- $nick changed the topic of $channel to [$what]" );
-	return 0;
 }
 
 ####
@@ -201,15 +194,13 @@ sub irc_topic {
 #sub irc_ctcp_version {
 #	my ( $self, $lucy, $session, $who ) =
 #	  @_[ OBJECT, SENDER, SESSION, ARG0 ];
-#	return 0;
-#}
+##}
 
 #TODO log these events as disconnected, etc
 sub irc_001 {
 	Lucy::debug( "IRC", "Connected.", 2 );
 
 	#$_[OBJECT]->log('lucy','-!- IRC: Connected');
-	return 0;
 }
 
 ###
@@ -227,7 +218,6 @@ sub irc_join {
 	$self->log( $Lucy::config->{Channels}{$channel}{log},
 		"-!- $nick joined $channel" );
 	$self->updateseen( $nick, 'join', $channel );
-	return 0;
 }
 
 ####
@@ -243,7 +233,6 @@ sub irc_part {
 	$self->log( $Lucy::config->{Channels}{$channel}{log},
 		"-!- $nick left $channel" );
 	$self->updateseen( $nick, 'part', $channel );
-	return 0;
 }
 
 ###
@@ -266,7 +255,6 @@ sub irc_quit {
 			"-!- $nick has quit IRC" );
 	}
 	$self->updateseen( $nick, 'quit' );
-	return 0;
 }
 
 ###
@@ -286,28 +274,24 @@ sub irc_kick {
 		"-!- " . $nick . " has quit [" . $channel . "]"
 	);
 	$self->updateseen( $nick, 'kick', $channel, $kicker, $reason );
-	return 0;
 }
 
 sub irc_disconnected {
 	Lucy::debug( 'IRC', 'Disconnected.', 2 );
 
 	$_[OBJECT]->log( 'lucy', '-!- IRC: Disconnected' );
-	return 0;
 }
 
 sub irc_error {
 	Lucy::debug( 'IRC', 'Error?', 2 );
 
 	$_[OBJECT]->log( 'lucy', '-!- IRC: Error' );
-	return 0;
 }
 
 sub irc_socketerr {
 	Lucy::debug( 'IRC', 'Socket error?', 2 );
 
 	$_[OBJECT]->log( 'lucy', '-!- IRC: Socket error' );
-	return 0;
 }
 
 ###
@@ -344,15 +328,13 @@ sub irc_nick {
 	#	if ( $nick eq $Lucy::lucy->nick_name ) {
 	#		$Lucy::lucy->nick_name = $new;
 	#	}
-	return 0;
 }
 
 ## Channel MODE
 #sub irc_mode {
 #	my ( $kernel, $self, $lucy, $who, $channel ) =
 #	  @_[ KERNEL, OBJECT, SENDER, ARG0, ARG1 ];
-#	return 0;
-#}
+##}
 
 ## RPL_WHOREPLY
 #sub irc_352 {
@@ -363,16 +345,14 @@ sub irc_nick {
 #	my ($real) = substr( $second, index( $second, " " ) + 1 );
 #	Lucy::debug( "IRC", "$channel| got who reply for $nick", 8 );
 #
-#	return 0;
-#}
+##}
 
 ##RPL_ENDOFWHO
 #sub irc_315 {
 #	my ( $kernel, $self, $lucy ) = @_[ KERNEL, OBJECT, SENDER ];
 #	my ($channel) = ( split / :/, $_[ARG1] )[0];
 #	Lucy::debug( "IRC", "$channel| got end of who", 7 );
-#	return 0;
-#}
+##}
 
 ## RPL_CHANNELMODEIS
 #sub irc_324 {
@@ -381,7 +361,6 @@ sub irc_nick {
 #	my ($channel) = shift @args;
 #
 #	Lucy::debug( "IRC", "got $channel mode [" . 'fixme' . "]", 5 );
-#	return 0;
-#}
+##}
 
 1;

@@ -56,7 +56,7 @@ sub irc_bot_command {
 
 		# grab weather object
 		my $sweather = Weather::Com::Simple->new(
-			'cache'      => cwd().'/db/weather',
+			'cache'      => cwd() . '/db/weather',
 			'partner_id' => $Lucy::config->{WeatherApi_partner},
 			'license'    => $Lucy::config->{WeatherApi_key},
 			'place'      => $args,
@@ -88,7 +88,7 @@ sub irc_bot_command {
 		$lucy->privmsg( $where, "$nick: syntax is !weather [location]" );
 	}
 
-	#return 0;
+	return 1;
 }
 
 1;

@@ -60,7 +60,7 @@ sub irc_bot_command {
 	my $i = 1;
 	while ( my $result = $search->next_result() ) {
 		if ( $i > $max_results ) {
-			return;
+			last;
 		} elsif ( $i == 1 ) {
 			$lucy->privmsg( $where,
 				Lucy::font( 'red', $nick ) . ': Definition for ' . $args );
@@ -83,7 +83,8 @@ sub irc_bot_command {
 		$lucy->privmsg( $where,
 			Lucy::font( 'red', $nick ) . ': No definition found for ' . $args );
 	}
-	return 0;
+
+	return 1;
 }
 
 1;

@@ -218,8 +218,6 @@ sub irc_bot_command {
 			}
 		}
 		return 1;
-	} else {
-		return 0;
 	}
 }
 

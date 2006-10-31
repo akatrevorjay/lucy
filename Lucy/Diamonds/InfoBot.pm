@@ -34,7 +34,7 @@ sub tablename { return 'lucy_factoids'; }
 ### Mmmm. We have been loaded.
 sub new {
 	my $class = shift;
-	return bless { InfoBot => {} }, $class;
+	return bless {}, $class;
 }
 
 ### Public message event
@@ -55,6 +55,7 @@ sub irc_bot_command {
 			$lucy->privmsg( $where,
 				"$nick: Look, I don't know wtf $args is/are, nor do I care!" );
 		}
+		return 1;
 	} elsif ( ( $cmd eq 'what' )
 		&& ( my ($fact) = $args =~ /^(?:is|are) ([\w ]{3,30})$/ ) )
 	{
@@ -72,6 +73,7 @@ sub irc_bot_command {
 			$lucy->privmsg( $where,
 				"$nick: Look, I don't know wtf $fact is, nor do I care!" );
 		}
+		return 1;
 	} elsif ( $cmd eq 'factoid' ) {
 		my $q;
 
@@ -109,8 +111,7 @@ sub irc_bot_command {
 			$lucy->privmsg( $where,
 				$f->{who} . " says " . $f->{fact} . " " . $f->{definition} );
 		}
-	} else {
-		return 0;
+		return 1;
 	}
 }
 
@@ -153,7 +154,6 @@ sub irc_public {
 			}
 		}
 	}
-	return 0;
 }
 
 1;

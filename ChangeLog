@@ -1,0 +1,188 @@
+2006-10-26 21:29  trevorj
+
+	* [r24] lucy/trunk/Lucy/Diamonds/ChuckNorris.pm,
+	  lucy/trunk/Lucy/Sky.pm, lucy/trunk/lib/Module,
+	  lucy/trunk/lib/Module/Refresh.pm: Removed again requirement in
+	  favor of Module::Refresh
+	  diamond_add and diamond_remove should now work correctly
+	  oh, and !reload works too
+
+2006-10-25 17:07  trevorj
+
+	* [r23] lucy/trunk/Lucy/Common.pm,
+	  lucy/trunk/Lucy/Diamonds/Alice.pm,
+	  lucy/trunk/Lucy/Diamonds/ChuckNorris.pm,
+	  lucy/trunk/Lucy/Diamonds/Logger.pm,
+	  lucy/trunk/Lucy/Diamonds/RSS.pm,
+	  lucy/trunk/Lucy/Diamonds/State.pm, lucy/trunk/Lucy/Sky.pm,
+	  lucy/trunk/TODO, lucy/trunk/lucy.pl: State: Using
+	  PoCo::IRC::State again, as I don't want to recreate the wheel
+	  unless it's needed.
+	  Sky, RSS, Alice, Logger, State, ChuckNorris: Priority fixes.
+	  Also, priorities are exported a different way, aka not through an
+	  ugly function.
+	  ATTENTION: Whenever an event is considered handled, ie, sending
+	  the event to other diamonds would only waste efficiency, return a
+	  value of 1 and it will stop parsing the event. This is needed for
+	  catch-all Diamonds like Alice.
+
+2006-10-25 01:22  trevorj
+
+	* [r22] lucy/trunk/Lucy/Common.pm, lucy/trunk/Lucy/Diamonds/RSS.pm:
+
+2006-10-24 23:30  trevorj
+
+	* [r21] lucy/trunk/Lucy/Diamonds/RSS.pm,
+	  lucy/trunk/Lucy/MsgHandler.pm: MsgHandler: Better readability for
+	  the command regex using /x
+	  RSS: Better usability allowing "fetch me the last url from
+	  Slashdot"
+
+2006-10-24 23:09  trevorj
+
+	* [r20] lucy/trunk/Lucy/Diamonds/Alice.pm,
+	  lucy/trunk/Lucy/Diamonds/ChuckNorris.pm,
+	  lucy/trunk/Lucy/Diamonds/Logger.pm,
+	  lucy/trunk/Lucy/Diamonds/Responses.pm,
+	  lucy/trunk/Lucy/Diamonds/State.pm, lucy/trunk/Lucy/Sky.pm: Added
+	  plugin priorities
+
+2006-10-24 19:48  echoline
+
+	* [r19] lucy/trunk/Lucy/Diamonds/Alice.pm: added colons after nicks
+
+2006-10-24 19:23  echoline
+
+	* [r18] lucy/trunk/Lucy/Diamonds/Alice.pm: more fixes to alice
+
+2006-10-24 19:19  trevorj
+
+	* [r17] lucy/trunk/Lucy/Diamonds/ChuckNorris.pm: Hopefully fix
+	  chucknorris
+
+2006-10-24 19:18  trevorj
+
+	* [r16] lucy/trunk/Lucy/Diamonds/Alice.pm: Fixed typos and such
+	  goodness
+
+2006-10-24 19:07  echoline
+
+	* [r15] lucy/trunk/Lucy/Diamonds/Alice.pm: first fix to Alice.pm
+
+2006-10-24 18:54  trevorj
+
+	* [r14] lucy/trunk, lucy/trunk/Lucy,
+	  lucy/trunk/Lucy/Diamonds/ChuckNorris.pm: don't hardcode insult
+	  types twice
+
+2006-10-24 18:47  echoline
+
+	* [r13] lucy/trunk/Lucy/Diamonds/Alice.pm: here is a first stab at
+	  an alice plugin
+
+2006-10-24 01:24  echoline
+
+	* [r12] lucy/trunk/Lucy/Diamonds/Google_nsrdn.pm: this was
+	  bullshit...
+
+2006-09-14 17:05  trevorj
+
+	* [r11] lucy/trunk/Lucy/Diamonds/ChuckNorris.pm,
+	  lucy/trunk/Lucy/Sky.pm: mmmm
+
+2006-09-14 16:22  trevorj
+
+	* [r10] lucy/trunk/Lucy/Diamonds/ChuckNorris.pm,
+	  lucy/trunk/Lucy/Diamonds/State.pm, lucy/trunk/Lucy/Sky.pm,
+	  lucy/trunk/TODO, lucy/trunk/test: Added fetch last url/headline
+	  from feed
+
+2006-09-14 15:09  trevorj
+
+	* [r9] lucy/trunk/lucy.pl: quickfix for --chdir
+
+2006-09-05 15:36  trevorj
+
+	* [r8] lucy/trunk/Lucy/Diamonds/State.pm: Haha. I'm a retard. Fix
+	  the compiling typo.
+
+2006-08-30 03:13  trevorj
+
+	* [r7] lucy/trunk/Lucy/Config.pm: Weird how this got committed.
+	  Deleted.
+
+2006-08-29 19:48  trevorj
+
+	* [r6] lucy/trunk/Lucy/Diamonds/Dict.pm: Fixed Dict.pm typobug
+	  where definitions weren't shown
+
+2006-08-29 01:21  trevorj
+
+	* [r5] lucy/trunk/Lucy/Diamonds/State.pm: Fix typobug in
+	  State::irc_nick
+
+2006-08-25 01:27  trevorj
+
+	* [r4] lucy/trunk/db/mysql.schema: Seperated schema into two files
+
+2006-08-25 01:26  trevorj
+
+	* [r3] lucy/trunk/.project, lucy/trunk/Lucy/Config.pm,
+	  lucy/trunk/db/mysql_users.schema: Changed mysql schema slightly
+
+2006-08-24 03:17  trevorj
+
+	* [r2] xbmc, xbmc/branches, xbmc/tags, xbmc/trunk,
+	  xbmc/trunk/.project, xbmc/trunk/XBMC, xbmc/trunk/XBMC/Api.pm,
+	  xbmc/trunk/gtk, xbmc/trunk/gtk/xbmc.glade,
+	  xbmc/trunk/gtk/xbmc.gladep, xbmc/trunk/gtk/xbmcgui.pl,
+	  xbmc/trunk/irssi, xbmc/trunk/irssi/xbmc.pl,
+	  xbmc/trunk/irssi/xbmc_helper-irssi.pl,
+	  xbmc/trunk/irssi/xbmc_helper.pl: Added xbmc repo again, without
+	  history
+
+2006-08-24 03:12  trevorj
+
+	* [r1] lucy, lucy/branches, lucy/tags, lucy/trunk,
+	  lucy/trunk/.project, lucy/trunk/COPYING,
+	  lucy/trunk/ChangeLog.old, lucy/trunk/ChangeLog.old.html,
+	  lucy/trunk/Lucy, lucy/trunk/Lucy/Common.pm,
+	  lucy/trunk/Lucy/Config.pm.example, lucy/trunk/Lucy/Diamonds,
+	  lucy/trunk/Lucy/Diamonds/ChuckNorris.pm,
+	  lucy/trunk/Lucy/Diamonds/Dict.pm,
+	  lucy/trunk/Lucy/Diamonds/FileServe.pm,
+	  lucy/trunk/Lucy/Diamonds/Google.pm,
+	  lucy/trunk/Lucy/Diamonds/Google_ng.pm,
+	  lucy/trunk/Lucy/Diamonds/Google_nsrdn.pm,
+	  lucy/trunk/Lucy/Diamonds/InfoBot.pm,
+	  lucy/trunk/Lucy/Diamonds/Logger.pm,
+	  lucy/trunk/Lucy/Diamonds/NetTools_ng.pm,
+	  lucy/trunk/Lucy/Diamonds/NickTrackar.pm,
+	  lucy/trunk/Lucy/Diamonds/RSS.pm,
+	  lucy/trunk/Lucy/Diamonds/Reminder.pm,
+	  lucy/trunk/Lucy/Diamonds/Responses.pm,
+	  lucy/trunk/Lucy/Diamonds/Songs.pm,
+	  lucy/trunk/Lucy/Diamonds/State.pm,
+	  lucy/trunk/Lucy/Diamonds/Weather.pm,
+	  lucy/trunk/Lucy/MsgHandler.pm, lucy/trunk/Lucy/Sky.pm,
+	  lucy/trunk/TODO, lucy/trunk/db, lucy/trunk/db/irc_events,
+	  lucy/trunk/db/mysql.schema, lucy/trunk/db/rss,
+	  lucy/trunk/db/weather, lucy/trunk/lib, lucy/trunk/lib/Acme,
+	  lucy/trunk/lib/Acme/Magic8Ball.pm, lucy/trunk/lib/Acme/Scurvy,
+	  lucy/trunk/lib/Acme/Scurvy/Whoreson,
+	  lucy/trunk/lib/Acme/Scurvy/Whoreson/BilgeRat,
+	  lucy/trunk/lib/Acme/Scurvy/Whoreson/BilgeRat.pm,
+	  lucy/trunk/lib/Acme/Scurvy/Whoreson/BilgeRat/Backend,
+	  lucy/trunk/lib/Acme/Scurvy/Whoreson/BilgeRat/Backend/insultserver.pm,
+	  lucy/trunk/lib/Acme/Scurvy/Whoreson/BilgeRat/Backend/lala.pm,
+	  lucy/trunk/lib/Acme/Scurvy/Whoreson/BilgeRat/Backend/pirate.pm,
+	  lucy/trunk/lib/POE, lucy/trunk/lib/POE/Component,
+	  lucy/trunk/lib/POE/Component/RSSAggregator.pm,
+	  lucy/trunk/lib/SQL, lucy/trunk/lib/SQL/Abstract.pm,
+	  lucy/trunk/lib/serialize.pm, lucy/trunk/lib/serialize.readme,
+	  lucy/trunk/log, lucy/trunk/log/.log,
+	  lucy/trunk/log/neoturbine2.log, lucy/trunk/log/privmsg.log,
+	  lucy/trunk/lucy.pl, lucy/trunk/lucystats.pl,
+	  lucy/trunk/lucystats.xsl, lucy/trunk/test: Added lucy back in
+	  svn, without saving history =/
+

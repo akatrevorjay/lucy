@@ -50,8 +50,7 @@ sub irc_bot_command {
 
 		$lucy->privmsg( $where,
 			Lucy::font( 'red', $nick ) . ": " . $self->getseen($args) );
-	} else {
-		return 0;
+		return 1;
 	}
 }
 

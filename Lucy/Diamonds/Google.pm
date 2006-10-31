@@ -43,7 +43,8 @@ sub irc_bot_command {
 		&& ( defined $Lucy::config->{GoogleApi_Key} ) )
 	{
 
-# it is important to return 0 when you want the event to continue to other plugins
+# it is important to return 1 when you want the event to NOT continue to other plugins
+# otherwise, 0 or undef will do just fine.
 		return 0;
 	}
 	$where = $where->[0];
@@ -63,7 +64,7 @@ sub irc_bot_command {
 			$i++;
 		} @{ $search->results() };
 		undef $i;
-		
+
 		undef $google;
 		undef $search;
 	} else {
@@ -71,6 +72,8 @@ sub irc_bot_command {
 			Lucy::font( 'red', '!! ' )
 			  . 'Searches have a 4 character minimum' );
 	}
+	
+	return 1;
 }
 
 1;

@@ -101,8 +101,7 @@ sub irc_bot_command {
 			);
 			$lucy->yield( ctcp => $where => 'ACTION' => $r[ int rand( $#r + 1 ) ] );
 		}
-	} else {
-		return 0;
+		return 1;
 	}
 }
 

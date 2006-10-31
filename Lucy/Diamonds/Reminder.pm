@@ -53,6 +53,7 @@ sub irc_bot_command {
 		);
 		$lucy->privmsg( $where,
 			Lucy::font( 'darkred', $nick ) . ": ok, saving reminder for $to" );
+		return 1;
 	} elsif ( ( $cmd eq 'unremind' )
 		&& ( ($to) = $args =~ /^(\w{3,30})$/ ) )
 	{
@@ -61,8 +62,7 @@ sub irc_bot_command {
 		$lucy->privmsg( $where,
 			Lucy::font( 'darkred', $nick )
 			  . ": ok, I removed all reminders from you to $to" );
-	} else {
-		return 0;
+		return 1;
 	}
 }
 
