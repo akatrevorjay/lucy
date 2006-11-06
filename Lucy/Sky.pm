@@ -194,7 +194,7 @@ sub _default {
 				'Event' . $pri,
 				"$state on "
 				  . join( ',', keys( %{ $self->{Diamonds_map}[$pri] } ) ),
-				8
+				9
 			);
 
 			#TODO is this really needed in this foreach as well as the next??
@@ -209,7 +209,11 @@ sub _default {
 					0
 				  )
 				  if $@;
-				last if $ret;
+				if ($ret) {
+					Lucy::debug( 'Event' . $pri,
+						$d . ' stopped event of ' . $state, 9 );
+					last;
+				}
 			}
 			last if $ret;
 		}

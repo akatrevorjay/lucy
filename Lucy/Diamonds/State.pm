@@ -81,17 +81,23 @@ sub init {
 # Logger->log hook
 sub log {
 	my $self = shift;
-	return ( defined $Lucy::lucy->{Diamonds}{Logger} )
-	  ? $Lucy::lucy->{Diamonds}{Logger}->log(@_)
-	  : undef;
+
+	#TODO does this fix the weird irc_public bug?
+	# apparently, perl returns the last sub's return value if you call it. wtf?
+	$Lucy::lucy->{Diamonds}{Logger}->log(@_)
+	  if ( defined $Lucy::lucy->{Diamonds}{Logger} );
+	return undef;
 }
 
 # NickTrackar->updateseen hook
 sub updateseen {
 	my $self = shift;
-	return ( defined $Lucy::lucy->{Diamonds}{NickTrackar} )
-	  ? $Lucy::lucy->{Diamonds}{NickTrackar}->updateseen(@_)
-	  : undef;
+
+	#TODO does this fix the weird irc_public bug?
+	# apparently, perl returns the last sub's return value if you call it. wtf?
+	$Lucy::lucy->{Diamonds}{NickTrackar}->updateseen(@_)
+	  if ( defined $Lucy::lucy->{Diamonds}{NickTrackar} );
+	return undef;
 }
 
 ###
