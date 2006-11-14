@@ -136,6 +136,7 @@ sub updateseen {
 ###
 ### Returns the seen for $nick as ()
 ###
+#TODO merge these with Responses
 sub getseen {
 	my ( $self, $nick ) = @_;
 

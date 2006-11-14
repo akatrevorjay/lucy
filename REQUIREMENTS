@@ -1,0 +1,16 @@
+Lucy required modules
+	Time::Interval
+	Crypt::Random
+	POE::Component::IRC::State
+	#POE::Component::Client::DNS
+	DBIx::Simple
+
+Diamond required modules
+	POE::Component::Client::HTTP
+	Net::Google
+	LWP::Simple
+	Weather::Com::Simple
+	WWW::Search
+	XML::Smart
+	Math::Expression
+	XML::RSS::Feed

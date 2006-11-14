@@ -53,6 +53,10 @@ $dbh = DBIx::Simple->connect(
   )
   or die "Cannot connect to DB!";
 
+# Automatically reconnect to the db.
+#WTF This is mysql only. Does this fix the reconnect issue with MySQL?
+$dbh->{mysql_auto_reconnect} = 1;
+
 # Lucy in the Skyyyyy with Diamonds
 $lucy = Lucy::Sky->new();
 
