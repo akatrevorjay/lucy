@@ -23,62 +23,42 @@
 #	along with Lucy; if not, write to the Free Software
 #	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
-# These alter the paths for perl to look for Lucy::Config and Lucy libs.
-BEGIN {
-	my $lucy_path = "/home/trevorj/code/perl/lucy";
-	unshift( @INC, $lucy_path . '/lib' );
-	unshift( @INC, $lucy_path );
-}
-use CGI qw(:standard);
+package Lucy::Stats::GoldenRetriever;
 use Lucy::Config;
-use Cache::FileCache;
+use DBIx::Simple;
 use warnings;
 use strict;
-use vars qw($VERSION);
-$VERSION = "0.41";
 
-#use Data::Dumper;
+sub new {
+	my $class = shift;
+	return bless {}, $class;
+}
 
-# grab cache object
-my $cache =
-  new Cache::FileCache(
-	{ 'namespace' => 'LucyStats', 'default_expires_in' => 600 } );
+# fetch stats data into a raw hash
+sub fetch {
+	my $self   = shift;
+	my $filter = shift;
 
-my $type =
-  ( param('type') && param('type') =~ /^(?:xml|php)$/ ) ? param('type') : 'xml';
+	# can we load the filter?
+	eval( 'use Lucy::Stats::' . $filter . ';' );
+	my $f = eval( 'return Lucy::Stats::' . $filter . '->new();' );
+	return unless ( eval { $f->can('runTheSilkScreen') } );
 
-#$cache->clear();
-unless ( $cache->get( 'lucystats-' . $VERSION . "-timestamp" ) ) {
-
-	# stats are more than 10 minutes old, regenerate.
-	my $stats = updatestats();
-
-	# save new stats to cache
-	if ($stats) {
-		$cache->set( 'lucystats-' . $VERSION . '-xml',
-			updatestats_xml($stats) );
-		$cache->set( 'lucystats-' . $VERSION . '-php',
-			updatestats_php($stats) );
-		$cache->set( 'lucystats-' . $VERSION . '-timestamp', time );
+# This is so you can run fetch() more than once without grabbing the stats again.
+	unless ( exists( $self->{donuts} ) ) {
+		$self->{donuts} = $self->fetch_raw();
 	}
-
-	undef $stats;
+	my $frosting = $f->runTheSilkScreen( $self->{donuts} );
+	return $frosting;
 }
 
-if ( $type eq 'php' ) {
-	print header('text/plain'), $cache->get( 'lucystats-' . $VERSION . '-php' );
-} elsif ( $type eq 'xml' ) {
-	print header('text/xml'), $cache->get( 'lucystats-' . $VERSION . '-xml' );
+sub clear_cache {
+	my $self = shift;
+	delete( $self->{donuts} );
 }
 
-exit;
-
-###
-### Update the stats file for dynamicness
-###
-sub updatestats {
-	use DBIx::Simple;
-
+sub fetch_raw {
+	my $self   = shift;
 	my $donuts = {};
 
 	# grab dbi object
@@ -121,7 +101,7 @@ sub updatestats {
 
 		#TODO chan.topictime - modes: aqv
 		$donuts->{channel}[$i]{user} = $dbh->query(
-"SELECT nick, connecttime, away, country, seen, ts, lucy_users.mode_lo
+"SELECT nick, connecttime, away, country, seen, ts, lucy_users.mode_lo, lucy_users.mode_la, lucy_users.mode_lq, lucy_users.mode_lv
 FROM lucy_users, chan, ison
 WHERE chan.channel = ? AND lucy_users.nickid = ison.nickid AND chan.chanid = ison.chanid
 ORDER BY ts DESC LIMIT 20", $channel
@@ -142,31 +122,4 @@ ORDER BY ts DESC LIMIT 20", $channel
 	return $donuts;
 }
 
-sub updatestats_php {
-	my $mmm = shift;
-	use serialize;
-
-	return serialize($mmm);
-}
-
-sub updatestats_xml {
-	my $mmm = shift;
-	use XML::Smart;
-
-	#print Data::Dumper->Dump([$mmm], [qw(stats)]);
-
-	my $XML   = XML::Smart->new();
-	my $stats = $XML->{lucystats};
-	$stats->set_auto(0);
-
-	### Save timestamp
-	$stats->{ts} = $mmm->{ts};
-	$stats->{ts}->set_node(1);
-	foreach ( keys %$mmm ) {
-		$stats->{$_} = $mmm->{$_};
-	}
-
-	return q`<?xml version="1.0" encoding="utf-8" ?>
-<?xml-stylesheet type="text/xsl" href="lucystats.xsl"?>
-` . $XML->data( noheader => 1, nometagen => 1 );
-}
+1;
