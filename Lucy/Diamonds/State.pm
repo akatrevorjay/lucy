@@ -226,6 +226,26 @@ sub irc_join {
 	$self->updateseen( $nick, 'join', $channel );
 }
 
+###
+### respond to invitations
+### TODO: this should really not go in this module!
+###
+sub irc_invite {
+	# stuff echoline doesn't understand.  HELP! CLEAN UP!
+        my ( $kernel, $self, $lucy, $who, $channel ) =
+          @_[ KERNEL, OBJECT, SENDER, ARG0, ARG1 ];
+        my $nick     = ( split /!/, $who )[0];
+        my $userhost = ( split /!/, $who )[1];
+        my ( $user, $host ) = split( /\@/, $userhost );
+        Lucy::debug( "invite", "$nick has invited me to $channel", 2 );
+
+	# add channel to config, join, and log.
+	$Lucy::config->{Channels}{$channel} = { log => "$channel.log", };
+	$lucy->yield( join => $channel );
+        $self->log( $Lucy::config->{Channels}{$channel}{log},
+                "-!- invited to $channel by $nick" );
+}
+
 ####
 #### Someone has part
 ####
