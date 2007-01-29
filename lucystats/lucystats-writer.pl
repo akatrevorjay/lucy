@@ -37,7 +37,7 @@ use vars qw($VERSION);
 $VERSION = "0.42";
 
 my $stats = Lucy::Stats->new();
-my $quiet = 0;
+my $quiet = 1;
 
 # parse each argument as type=filename
 for ( my $i = 0 ; $i <= $#ARGV ; $i++ ) {
@@ -46,9 +46,13 @@ for ( my $i = 0 ; $i <= $#ARGV ; $i++ ) {
 	if ( $ARGV[$i] =~ /^quiet=([0-1])$/ ) {
 		$quiet = $1;
 		next;
-	} elsif ( $ARGV[$i] =~ /^([\w_-]+)=(.+)$/ ) {
+	} elsif ( $ARGV[$i] =~ /^([\w_-]+)(?:=(.+))?$/ ) {
 		$filter = $1;
-		$file   = $2;
+		if ($2) {
+			$file = $2;
+		} else {
+			$file = 'stdout';
+		}
 	} else {
 		next;
 	}
@@ -57,6 +61,10 @@ for ( my $i = 0 ; $i <= $#ARGV ; $i++ ) {
 	  unless $quiet;
 
 	if ( my $out = $stats->fetch($filter) ) {
-		write_file( $file, $out );
+		if ( $file eq 'stdout' ) {
+			print $out;
+		} else {
+			write_file( $file, $out );
+		}
 	}
 }
