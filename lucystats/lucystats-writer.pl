@@ -37,34 +37,30 @@ use vars qw($VERSION);
 $VERSION = "0.42";
 
 my $stats = Lucy::Stats->new();
-my $quiet = 1;
 
-# parse each argument as type=filename
+my %args;
+$args{quiet} = 1;
+
+# parse @ARGV
 for ( my $i = 0 ; $i <= $#ARGV ; $i++ ) {
-	my ( $filter, $file );
-
-	if ( $ARGV[$i] =~ /^quiet=([0-1])$/ ) {
-		$quiet = $1;
-		next;
-	} elsif ( $ARGV[$i] =~ /^([\w_-]+)(?:=(.+))?$/ ) {
-		$filter = $1;
-		if ($2) {
-			$file = $2;
-		} else {
-			$file = 'stdout';
-		}
-	} else {
-		next;
+	if ( $ARGV[$i] =~ /^-*([\w_-]+)(?:=(.+))?$/ ) {
+		$args{$1} = $2;
 	}
+}
 
-	print "Saving $filter into $file...\n"
-	  unless $quiet;
+foreach my $f ( keys %args ) {
+	next if $f eq 'quiet';
+	next unless $f =~ /^[\w_-]+$/;
+	$args{$f} = 'stdout' unless $args{$f};
 
-	if ( my $out = $stats->fetch($filter) ) {
-		if ( $file eq 'stdout' ) {
-			print $out;
+	print "Saving $f into $args{$f} ...\n"
+	  unless $args{quiet};
+
+	if ( my $o = $stats->fetch($f) ) {
+		if ( $args{$f} eq 'stdout' ) {
+			print $o;
 		} else {
-			write_file( $file, $out );
+			write_file( $args{$f}, $o );
 		}
 	}
 }
