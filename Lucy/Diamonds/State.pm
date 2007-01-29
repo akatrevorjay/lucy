@@ -273,10 +273,6 @@ sub irc_quit {
 
 	# find out what channels the user was on and log it
 	foreach ( @{$channels} ) {
-
-		#TODO remove this when the time is right.
-		print "quit on channel $_\n";
-
 		$self->log( $Lucy::config->{Channels}{$_}{log},
 			"-!- $nick has quit IRC" );
 	}
