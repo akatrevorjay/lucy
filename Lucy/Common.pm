@@ -138,8 +138,7 @@ sub font {
 	my ( $attribs, $text ) = @_;
 
 	if ( $Lucy::config->{UseIRCColors} ) {
-		my $header;
-		my $footer;
+		my ($header, $footer);
 		foreach my $attrib ( split( / /, $attribs ) ) {
 			switch ($attrib) {
 				case 'black' {

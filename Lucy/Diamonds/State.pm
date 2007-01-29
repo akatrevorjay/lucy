@@ -85,7 +85,7 @@ sub log {
 	#TODO does this fix the weird irc_public bug?
 	# apparently, perl returns the last sub's return value if you call it. wtf?
 	$Lucy::lucy->{Diamonds}{Logger}->log(@_)
-	  if ( defined $Lucy::lucy->{Diamonds}{Logger} );
+	  if ( $Lucy::lucy->is_diamond_loaded('Logger') );
 	return undef;
 }
 
@@ -96,7 +96,7 @@ sub updateseen {
 	#TODO does this fix the weird irc_public bug?
 	# apparently, perl returns the last sub's return value if you call it. wtf?
 	$Lucy::lucy->{Diamonds}{NickTrackar}->updateseen(@_)
-	  if ( defined $Lucy::lucy->{Diamonds}{NickTrackar} );
+	  if ( defined $Lucy::lucy->is_diamond_loaded('NickTrackar') );
 	return undef;
 }
 
@@ -231,19 +231,22 @@ sub irc_join {
 ### TODO: this should really not go in this module!
 ###
 sub irc_invite {
+
 	# stuff echoline doesn't understand.  HELP! CLEAN UP!
-        my ( $kernel, $self, $lucy, $who, $channel ) =
-          @_[ KERNEL, OBJECT, SENDER, ARG0, ARG1 ];
-        my $nick     = ( split /!/, $who )[0];
-        my $userhost = ( split /!/, $who )[1];
-        my ( $user, $host ) = split( /\@/, $userhost );
-        Lucy::debug( "invite", "$nick has invited me to $channel", 2 );
+	my ( $kernel, $self, $lucy, $who, $channel ) =
+	  @_[ KERNEL, OBJECT, SENDER, ARG0, ARG1 ];
+	my $nick     = ( split /!/, $who )[0];
+	my $userhost = ( split /!/, $who )[1];
+	my ( $user, $host ) = split( /\@/, $userhost );
+	Lucy::debug( "invite", "$nick has invited me to $channel", 2 );
 
 	# add channel to config, join, and log.
 	$Lucy::config->{Channels}{$channel} = { log => "$channel.log", };
 	$lucy->yield( join => $channel );
-        $self->log( $Lucy::config->{Channels}{$channel}{log},
-                "-!- invited to $channel by $nick" );
+	$self->log(
+		$Lucy::config->{Channels}{$channel}{log},
+		"-!- invited to $channel by $nick"
+	);
 }
 
 ####

@@ -213,11 +213,14 @@ sub irc_bot_command {
 			if ( $lucy->reload_diamond() ) {
 				$lucy->yield( privmsg => $where => "$nick: ok" );
 			} else {
-				$lucy->yield(
-					privmsg => $where => "$nick: failed to reload $args" );
+				$lucy->yield( privmsg => $where => "$nick: failed to reload" );
 			}
 		}
 		return 1;
+	} elsif ( $cmd eq 'timesince' && $args =~ /^\d+$/ ) {
+		$lucy->yield( privmsg => $where => "$nick: $args was "
+			  . Lucy::timesince($args)
+			  . ' ago.' );
 	}
 }
 
