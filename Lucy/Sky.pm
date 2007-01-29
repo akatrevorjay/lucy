@@ -91,7 +91,14 @@ sub remove_diamond {
 sub reload_diamond {
 	my ( $self, @diamonds ) = @_;
 	if (@diamonds) {
-		$self->remove_diamond(@diamonds);
+
+		# refresh the diamonds, if modified
+		foreach (@diamonds) {
+			$self->{refresher}
+			  ->refresh_module_if_modified("Lucy/Diamonds/$_.pm");
+		}
+
+		# add_diamond will unload the diamond if it's already loaded.
 		$self->add_diamond(@diamonds);
 	} else {
 		$self->{refresher}->refresh();

@@ -7,13 +7,13 @@ $VERSION = "0.10_01";
 
 BEGIN {
 
-    # Turn on the debugger's symbol source tracing
-    $^P |= 0x10;
+	# Turn on the debugger's symbol source tracing
+	$^P |= 0x10;
 
-    # Work around bug in pre-5.8.7 perl where turning on $^P
-    # causes caller() to be confused about eval {}'s in the stack.
-    # (See http://rt.perl.org/rt3/Ticket/Display.html?id=35059 for more info.)
-    eval 'sub DB::sub' if $] < 5.008007;
+	# Work around bug in pre-5.8.7 perl where turning on $^P
+	# causes caller() to be confused about eval {}'s in the stack.
+	# (See http://rt.perl.org/rt3/Ticket/Display.html?id=35059 for more info.)
+	eval 'sub DB::sub' if $] < 5.008007;
 }
 
 =head1 NAME
@@ -50,10 +50,10 @@ Initialize the module refresher.
 =cut
 
 sub new {
-    my $proto = shift;
-    my $self = ref($proto) || $proto;
-    $self->update_cache($_) for keys %INC;
-    return ($self);
+	my $proto = shift;
+	my $self = ref($proto) || $proto;
+	$self->update_cache($_) for keys %INC;
+	return ($self);
 }
 
 =head2 refresh
@@ -71,14 +71,14 @@ making a change to it) in order for it to be reloaded.
 =cut
 
 sub refresh {
-    my $self = shift;
+	my $self = shift;
 
-    return $self->new if !%CACHE;
+	return $self->new if !%CACHE;
 
-    foreach my $mod ( sort keys %INC ) {
-        $self->refresh_module_if_modified($mod);
-    }
-    return ($self);
+	foreach my $mod ( sort keys %INC ) {
+		$self->refresh_module_if_modified($mod);
+	}
+	return ($self);
 }
 
 =head2 refresh_module_if_modified $module
@@ -89,15 +89,15 @@ If $module has been modified on disk, refresh it. Otherwise, do nothing
 =cut
 
 sub refresh_module_if_modified {
-    my $self = shift;
-    return $self->new if !%CACHE;
-    my $mod = shift;
+	my $self = shift;
+	return $self->new if !%CACHE;
+	my $mod = shift;
 
-    if ( !$CACHE{$mod} ) {
-        $self->update_cache($mod);
-    } elsif ( $self->mtime( $INC{$mod} ) ne $CACHE{$mod} ) {
-        $self->refresh_module($mod);
-    }
+	if ( !$CACHE{$mod} ) {
+		$self->update_cache($mod);
+	} elsif ( $self->mtime( $INC{$mod} ) ne $CACHE{$mod} ) {
+		$self->refresh_module($mod);
+	}
 
 }
 
@@ -110,17 +110,22 @@ Note that it only accepts module names like C<Foo/Bar.pm>, not C<Foo::Bar>.
 =cut
 
 sub refresh_module {
-    my $self = shift;
-    my $mod  = shift;
+	my $self = shift;
+	my $mod  = shift;
 
-    $self->unload_module($mod);
+	$self->unload_module($mod);
 
-    local $@;
-    eval { require $mod; 1 } or warn $@;
+	local $@;
+	eval { require $mod; 1 } or warn $@;
 
-    $self->update_cache($mod);
+	$self->update_cache($mod);
 
-    return ($self);
+	#FUCK this makes sure lucy reloads the diamond when needed.
+	if ( $mod =~ /Lucy\/Diamonds\/(.+)\.pm$/ ) {
+		$Lucy::lucy->add_diamond($1);
+	}
+
+	return ($self);
 }
 
 =head2 unload_module $module
@@ -130,15 +135,15 @@ Remove a module from C<%INC>, and remove all subroutines defined in it.
 =cut
 
 sub unload_module {
-    my $self = shift;
-    my $mod  = shift;
-    my $file = $INC{$mod};
+	my $self = shift;
+	my $mod  = shift;
+	my $file = $INC{$mod};
 
-    delete $INC{$mod};
-    delete $CACHE{$mod};
-    $self->unload_subs($file);
+	delete $INC{$mod};
+	delete $CACHE{$mod};
+	$self->unload_subs($file);
 
-    return ($self);
+	return ($self);
 }
 
 =head2 mtime $file
@@ -148,7 +153,7 @@ Get the last modified time of $file in seconds since the epoch;
 =cut
 
 sub mtime {
-    return join ' ', ( stat( $_[1] ) )[ 1, 7, 9 ];
+	return join ' ', ( stat( $_[1] ) )[ 1, 7, 9 ];
 }
 
 =head2 update_cache $file
@@ -158,10 +163,10 @@ Updates the cached "last modified" time for $file.
 =cut
 
 sub update_cache {
-    my $self      = shift;
-    my $module_pm = shift;
+	my $self      = shift;
+	my $module_pm = shift;
 
-    $CACHE{$module_pm} = $self->mtime( $INC{$module_pm} );
+	$CACHE{$module_pm} = $self->mtime( $INC{$module_pm} );
 }
 
 =head2 unload_subs $file
@@ -171,33 +176,34 @@ Wipe out subs defined in $file.
 =cut
 
 sub unload_subs {
-    my $self = shift;
-    my $file = shift;
+	my $self = shift;
+	my $file = shift;
 
-    foreach my $sym ( grep { index( $DB::sub{$_}, "$file:" ) == 0 }
-        keys %DB::sub )
-    {
-        warn "Deleting $sym from $file" if ( $sym =~ /freeze/ );
-        eval { undef &$sym };
-        warn "$sym: $@" if $@;
-        delete $DB::sub{$sym};
-    }
+	foreach my $sym (
+		grep { index( $DB::sub{$_}, "$file:" ) == 0 }
+		keys %DB::sub
+	  )
+	{
+		warn "Deleting $sym from $file" if ( $sym =~ /freeze/ );
+		eval { undef &$sym };
+		warn "$sym: $@" if $@;
+		delete $DB::sub{$sym};
+	}
 
-    return $self;
+	return $self;
 }
 
 # "Anonymize" all our subroutines into unnamed closures; so we can safely
 # refresh this very package.
 BEGIN {
-    no strict 'refs';
-    foreach my $sym ( sort keys %{ __PACKAGE__ . '::' } ) {
-        next
-            if $sym eq
-            'VERSION';    # Skip the version sub, inherited from UNIVERSAL
-        my $code = __PACKAGE__->can($sym) or next;
-        delete ${ __PACKAGE__ . '::' }{$sym};
-        *$sym = sub { goto &$code };
-    }
+	no strict 'refs';
+	foreach my $sym ( sort keys %{ __PACKAGE__ . '::' } ) {
+		next
+		  if $sym eq 'VERSION'; # Skip the version sub, inherited from UNIVERSAL
+		my $code = __PACKAGE__->can($sym) or next;
+		delete ${ __PACKAGE__ . '::' }{$sym};
+		*$sym = sub { goto &$code };
+	}
 
 }
 

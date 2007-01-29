@@ -77,7 +77,6 @@ sub irc_bot_command {
 	} elsif ( $cmd eq 'factoid' ) {
 		my $q;
 
-		#TODO I don't like this here. it belongs inside of the if.
 		my $max_results = 3;
 		if ( $args =~ s/\s+max=([1-5])$// ) {
 			$max_results = $1;
@@ -87,7 +86,7 @@ sub irc_bot_command {
 
 			# search the factoids for $args
 			$q = $Lucy::dbh->query(
-				"SELECT fact, definition, who FROM "
+				"SELECT fact, definition, who, ts FROM "
 				  . $self->tablename
 				  . " WHERE MATCH (fact,definition) AGAINST (?) LIMIT "
 				  . $max_results,
@@ -97,7 +96,7 @@ sub irc_bot_command {
 
 			# no $args, return a random one (fast random row on larger tables)
 			$q = $Lucy::dbh->query(
-				    "SELECT fact,definition,who FROM "
+				    "SELECT fact, definition, who, ts FROM "
 				  . $self->tablename
 				  . " AS r1 JOIN
 			(SELECT ROUND(RAND() * (SELECT MAX(id) FROM "
@@ -109,7 +108,11 @@ sub irc_bot_command {
 		# grab the returned factoids
 		for my $f ( $q->hashes ) {
 			$lucy->privmsg( $where,
-				$f->{who} . " says " . $f->{fact} . " " . $f->{definition} );
+				    $f->{who} . " said "
+				  . $f->{fact} . " "
+				  . $f->{definition} . " ("
+				  . Lucy::timesince( $f->{ts} )
+				  . " ago)" );
 		}
 		return 1;
 	}
@@ -140,7 +143,7 @@ sub irc_public {
 		if (
 			my $f = $Lucy::dbh->select(
 				$self->tablename,
-				[ 'definition', 'who' ],
+				[ 'definition', 'who', 'ts' ],
 				{ fact => $fact }
 			)->hash
 		  )
@@ -149,8 +152,9 @@ sub irc_public {
 				$lucy->privmsg( $where,
 					    "$nick: $fact "
 					  . $f->{definition} . ' ['
-					  . $f->{who}
-					  . ']' );
+					  . $f->{who} . ': '
+					  . Lucy::timesince( $f->{ts} )
+					  . " ago]" );
 			}
 		}
 	}
