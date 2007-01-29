@@ -29,12 +29,12 @@ BEGIN {
 	unshift( @INC, $lucy_path . '/lib' );
 	unshift( @INC, $lucy_path );
 }
-use Lucy::Stats::GoldenRetriever;
+use Lucy::Stats;
 use warnings;
 use strict;
 use vars qw($VERSION);
 $VERSION = "0.42";
 
 my $type = $ARGV[0] || 'xml';
-my $stats = Lucy::Stats::GoldenRetriever->new();
+my $stats = Lucy::Stats->new();
 print $stats->fetch($type);

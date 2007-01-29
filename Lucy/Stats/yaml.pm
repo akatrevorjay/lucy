@@ -23,8 +23,8 @@
 #	along with Lucy; if not, write to the Free Software
 #	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
-package Lucy::Stats::xml;
-use XML::Smart;
+package Lucy::Stats::yaml;
+use YAML;
 use warnings;
 use strict;
 
@@ -34,22 +34,7 @@ sub new {
 }
 
 sub runTheSilkScreen {
-	my $class = shift;
-	my $mmm   = shift;
-
-	my $XML   = XML::Smart->new();
-	my $stats = $XML->{lucystats};
-	$stats->set_auto(0);
-
-	### Save timestamp
-	foreach ( keys %$mmm ) {
-		$stats->{$_} = $mmm->{$_};
-	}
-	$stats->{ts}->set_node(1);
-
-	return q`<?xml version="1.0" encoding="utf-8" ?>
-<?xml-stylesheet type="text/xsl" href="lucystats.xsl"?>
-` . $XML->data( noheader => 1, nometagen => 1 );
+	return YAML::Dump( $_[1] );
 }
 
 1;

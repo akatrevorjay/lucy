@@ -48,8 +48,8 @@ my $type =
 unless ( $cache->get("lucystats-$VERSION-$type-timestamp") ) {
 
 	# stats are more than 10 minutes old, regenerate.
-	use Lucy::Stats::GoldenRetriever;
-	my $goldenRetriever = Lucy::Stats::GoldenRetriever->new();
+	use Lucy::Stats;
+	my $goldenRetriever = Lucy::Stats->new();
 	my $stats           = $goldenRetriever->fetch($type);
 
 	# save new stats to cache

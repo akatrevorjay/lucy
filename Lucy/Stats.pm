@@ -23,7 +23,7 @@
 #	along with Lucy; if not, write to the Free Software
 #	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
-package Lucy::Stats::GoldenRetriever;
+package Lucy::Stats;
 use Lucy::Config;
 use DBIx::Simple;
 use warnings;
@@ -36,25 +36,49 @@ sub new {
 
 # fetch stats data into a raw hash
 sub fetch {
-	my $self   = shift;
-	my $filter = shift;
+	my $self        = shift;
+	my $filter_name = shift || 'xml';
+
+	# sanitize the filter name for badness
+	unless ( $filter_name =~ /^[\w_-]+$/ ) {
+		warn "WTF. $filter_name has bad characters in it.\n";
+		return;
+	}
+
+	# easy-access zipper
+	my $filter = "Lucy::Stats::$filter_name";
 
 	# can we load the filter?
-	eval( 'use Lucy::Stats::' . $filter . ';' );
-	my $f = eval( 'return Lucy::Stats::' . $filter . '->new();' );
-	return unless ( eval { $f->can('runTheSilkScreen') } );
+	#always returns false.
+	eval("use $filter");
+
+	# can we make a new instance of it?
+	my $f = eval("return $filter->new();");
+	unless ($f) {
+		warn "WTF. Could not run $filter\n";
+		return;
+	}
+
+	# can we runTheSilkScreen?
+	unless ( eval { $f->can('runTheSilkScreen') } ) {
+		warn 'WTF. Lucy::Stats::' . $filter
+		  . '->can("runTheSilkScreen") returned false!';
+		return;
+	}
 
 # This is so you can run fetch() more than once without grabbing the stats again.
-	unless ( exists( $self->{donuts} ) ) {
-		$self->{donuts} = $self->fetch_raw();
+	unless ( exists( $self->{donuts_ts} ) && $self->{donuts_ts} + 10 > time ) {
+		$self->{donuts}    = $self->fetch_raw();
+		$self->{donuts_ts} = time;
 	}
 	my $frosting = $f->runTheSilkScreen( $self->{donuts} );
 	return $frosting;
 }
 
-sub clear_cache {
+sub clear_table {
 	my $self = shift;
 	delete( $self->{donuts} );
+	delete( $self->{donuts_ts} );
 }
 
 sub fetch_raw {
@@ -93,10 +117,12 @@ sub fetch_raw {
 "SELECT topic, topicauthor, kickcount FROM chan WHERE chan.channel = ?",
 			$channel
 		)->hash;
-		$donuts->{channel}[$i]{topic}       = $q->{topic};
-		$donuts->{channel}[$i]{topicauthor} = $q->{topicauthor};
-		$donuts->{channel}[$i]{kickcount}   = $q->{kickcount};
-		$donuts->{channel}[$i]{name}        = $channel;
+		$donuts->{channel}[$i] = \%$q;
+
+		#		$donuts->{channel}[$i]{topic}       = $q->{topic};
+		#		$donuts->{channel}[$i]{topicauthor} = $q->{topicauthor};
+		#		$donuts->{channel}[$i]{kickcount}   = $q->{kickcount};
+		$donuts->{channel}[$i]{name} = $channel;
 		undef $q;
 
 		#TODO chan.topictime - modes: aqv

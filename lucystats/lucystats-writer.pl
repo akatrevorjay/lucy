@@ -29,49 +29,34 @@ BEGIN {
 	unshift( @INC, $lucy_path . '/lib' );
 	unshift( @INC, $lucy_path );
 }
-use CGI::Fast qw(:standard);
 use Lucy::Stats;
-use Cache::FileCache;
+use File::Slurp;
 use warnings;
 use strict;
 use vars qw($VERSION);
 $VERSION = "0.42";
 
-sub mainloop() {
-	while ( new CGI::Fast ) {
+my $stats = Lucy::Stats->new();
+my $quiet = 0;
 
-		# grab cache object
-		my $cache =
-		  new Cache::FileCache(
-			{ 'namespace' => 'LucyStats', 'default_expires_in' => 600 } );
+# parse each argument as type=filename
+for ( my $i = 0 ; $i <= $#ARGV ; $i++ ) {
+	my ( $filter, $file );
 
-		my $type = ( param('type') =~ /^(?:xml|php)$/ ) ? param('type') : 'xml';
+	if ( $ARGV[$i] =~ /^quiet=([0-1])$/ ) {
+		$quiet = $1;
+		next;
+	} elsif ( $ARGV[$i] =~ /^([\w_-]+)=(.+)$/ ) {
+		$filter = $1;
+		$file   = $2;
+	} else {
+		next;
+	}
 
-		#$cache->clear();
-		unless ( $cache->get("lucystats-$VERSION-$type-timestamp") ) {
+	print "Saving $filter into $file...\n"
+	  unless $quiet;
 
-			# stats are more than 10 minutes old, regenerate.
-			my $goldenRetriever = Lucy::Stats->new();
-			my $stats           = $goldenRetriever->fetch($type);
-
-			# save new stats to cache
-			if ($stats) {
-				$cache->set( "lucystats-$VERSION-$type",           $stats );
-				$cache->set( "lucystats-$VERSION-$type-timestamp", time );
-			}
-
-			undef $goldenRetriever;
-			undef $stats;
-		}
-
-		if ( $type eq 'php' ) {
-			print header('text/plain');
-		} elsif ( $type eq 'xml' ) {
-			print header('text/xml');
-		}
-
-		print $cache->get("lucystats-$VERSION-$type");
+	if ( my $out = $stats->fetch($filter) ) {
+		write_file( $file, $out );
 	}
 }
-
-mainloop();
