@@ -62,13 +62,21 @@ sub irc_bot_command {
 		if (
 			my $f = $Lucy::dbh->select(
 				$self->tablename,
-				[ 'definition', 'who' ],
+				[ 'definition', 'who', 'ts' ],
 				{ fact => $fact }
 			)->hash
 		  )
 		{
+			my $timesince =
+			  ( $f->{ts} > 0 )
+			  ? ': ' . Lucy::timesince( $f->{ts} ) . ' ago'
+			  : '';
 			$lucy->privmsg( $where,
-				"$nick: $fact " . $f->{definition} . " [" . $f->{who} . "]" );
+				    "$nick: $fact "
+				  . $f->{definition} . " ["
+				  . $f->{who}
+				  . $timesince
+				  . ']' );
 		} else {
 			$lucy->privmsg( $where,
 				"$nick: Look, I don't know wtf $fact is, nor do I care!" );
@@ -107,12 +115,15 @@ sub irc_bot_command {
 
 		# grab the returned factoids
 		for my $f ( $q->hashes ) {
+			my $timesince =
+			  ( $f->{ts} > 0 )
+			  ? ' (' . Lucy::timesince( $f->{ts} ) . ' ago)'
+			  : '';
 			$lucy->privmsg( $where,
 				    $f->{who} . " said "
 				  . $f->{fact} . " "
-				  . $f->{definition} . " ("
-				  . Lucy::timesince( $f->{ts} )
-				  . " ago)" );
+				  . $f->{definition}
+				  . $timesince );
 		}
 		return 1;
 	}
@@ -149,12 +160,16 @@ sub irc_public {
 		  )
 		{
 			unless ( $f->{definition} eq 'is ignored' ) {
+				my $timesince =
+				  ( $f->{ts} > 0 )
+				  ? ': ' . Lucy::timesince( $f->{ts} ) . ' ago'
+				  : '';
 				$lucy->privmsg( $where,
 					    "$nick: $fact "
 					  . $f->{definition} . ' ['
-					  . $f->{who} . ': '
-					  . Lucy::timesince( $f->{ts} )
-					  . " ago]" );
+					  . $f->{who}
+					  . $timesince
+					  . ']' );
 			}
 		}
 	}
