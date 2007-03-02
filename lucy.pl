@@ -63,43 +63,6 @@ $lucy = Lucy::Sky->new();
 ## Diamonds, aka plugins if you're lame
 $lucy->add_diamond( @{ $config->{Diamonds} } );
 
-#TODO move this into the plugins, so that we only use the ones we need
-$lucy->add_event(
-	qw(
-	  irc_disconnected
-	  irc_error
-	  irc_mode
-	  irc_socketerr
-	  irc_001
-	  irc_315
-	  irc_324
-	  irc_352
-	  irc_364
-	  irc_365
-	  irc_invite
-	  irc_join
-	  irc_part
-	  irc_quit
-	  irc_kick
-	  irc_topic
-	  irc_ctcp_action
-	  irc_public
-	  irc_msg
-	  irc_bot_command
-	  irc_bot_msg
-	  irc_bot_public
-	  irc_nick
-	  irc_mode
-	  irc_notice
-	  irc_snotice
-	  )
-);
-
-#	  got_pong
-#  irc_isupport
-#  irc_bot_connected
-#  irc_ping
-
 $poe_kernel->run();
 exit(0);
 

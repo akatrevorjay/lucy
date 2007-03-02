@@ -35,8 +35,6 @@ use strict;
 no strict 'refs';
 use vars qw($AUTOLOAD);
 
-#use Data::Dumper;
-
 ###
 ### Diamond stuff
 ###
@@ -48,12 +46,22 @@ sub add_diamond {
 			$self->{Diamonds}{$d} =
 			  eval( 'return Lucy::Diamonds::' . $d . '->new() or undef;' );
 
+			# Set the diamond priority
 			my $priority =
 			  ( exists $self->{Diamonds}{$d}->{priority} )
 			  ? $self->{Diamonds}{$d}->{priority}
 			  : $self->{default_priority};
 			if ( $priority >= 0 ) {
 				$self->{Diamonds_map}[$priority]{$d} = 1;
+			}
+
+			# On-demand events
+			foreach ( $self->{Diamonds}{$d}->methods() ) {
+				next unless s/^irc_//;
+				$self->{Diamonds_events}{$d}{$_} = 1;
+
+  #TODO Does this help with efficiency much at all? Maybe it just eats more ram.
+				$self->{Events}{$_} = 1;
 			}
 
 			Lucy::debug( "Sky", "Loaded diamond $d [priority=$priority]", 2 );
@@ -110,13 +118,6 @@ sub is_diamond_loaded {
 	return ( defined $self->{Diamonds}{$diamond} ) ? 1 : undef;
 }
 
-sub add_event {
-	my $self = shift;
-	while ( my $method = shift ) {
-		$self->{Events}{$method} = 1 unless defined $self->{Events}{$method};
-	}
-}
-
 ###
 ### IRC
 ###
@@ -144,7 +145,7 @@ sub init {
 	# Create the component that will represent an IRC network.
 	$self->{__irc} =
 	  POE::Component::IRC::State->spawn(
-		Debug => ( $Lucy::config->{debug_level} >= 8 ) ? 1 : 0 );
+		Debug => ( $Lucy::config->{debug_level} > 9 ) ? 1 : 0 );
 
 	POE::Session->create(
 		object_states => [ $self => [ '_start', '_stop', '_default' ], ], );
@@ -193,23 +194,22 @@ sub _default {
 	# run it on Sky if we can
 	$self->$state(@new_) if $self->can($state);
 
-	# run the event on the diamonds, in order of prioritizationg
-	if ( $self->{Events}{$state} ) {
+	# since we save the events without irc_, lets get rid of it.
+	( my $state_name = $state ) =~ s/^irc_//;
+
+	# run the event on the diamonds, in order of prioritizationing
+	if ( $self->{Events}{$state_name} ) {
 		foreach my $pri ( 0 .. $#{ $self->{Diamonds_map} } ) {
 			next unless defined $self->{Diamonds_map}[$pri];
-			Lucy::debug(
-				'Event' . $pri,
-				"$state on "
-				  . join( ',', keys( %{ $self->{Diamonds_map}[$pri] } ) ),
-				9
-			);
+			Lucy::debug( 'Event' . $pri, "Sending $state", 9 );
 
 			#TODO is this really needed in this foreach as well as the next??
 			my $ret;
 			foreach my $d ( keys %{ $self->{Diamonds_map}[$pri] } ) {
-				my $meth = $self->{Diamonds}{$d}->can($state);
-				next unless $meth;
-				$ret = eval { $meth->( $self->{Diamonds}{$d}, @new_ ) };
+				next
+				  unless ( $self->{Diamonds_events}{$d}{$state_name} );
+				$ret = eval { $self->{Diamonds}{$d}->$state(@new_) };
+
 				Lucy::debug(
 					'Sky',
 					'Compilation of ' . $state . ' @ ' . $d . ' failed: ' . $@,
@@ -224,6 +224,7 @@ sub _default {
 			}
 			last if $ret;
 		}
+
 	}
 	return 0;
 }

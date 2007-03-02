@@ -45,6 +45,7 @@ use strict;
 ##		my @r = (
 ##			'Hows Chuck Norris doing?',
 ##			'Lets talk about sex and stargates',
+##			'How about sex WITH a stargate??!? o_O',
 ##			'someone pinch me, I think my ear is bleeding'
 ##		);
 ##		$lucy->privmsg( $where, $r[ Lucy::crand($#r+1) ] );
@@ -97,7 +98,7 @@ sub irc_bot_command {
 		&& ( my ( $iwho, $itype ) = $args =~ /^(.*?)\s*(?:like an? (\w+))?$/i )
 	  )
 	{
-		my %langs = { insultserver => 1, pirate => 1 };
+		my %langs = ( insultserver => 1, pirate => 1, lala => 1 );
 
 		unless ( exists $langs{$itype} ) {
 			my @langtypes = keys %langs;

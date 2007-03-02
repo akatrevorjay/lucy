@@ -43,6 +43,7 @@ sub crand {
 	# We can't use zero as a lower, so, bump.
 	$lower++;
 	$upper++;
+
 	return (
 		Crypt::Random::makerandom_itv(
 			Strength => 1,
@@ -53,43 +54,39 @@ sub crand {
 }
 
 sub debug {
+	return undef unless $Lucy::config->{debug_level} >= $_[2];
+
 	my ( $name, $desc, $level ) = @_;
-	my $color;
-	if ( $level <= 4 ) {
-		$color = 'bold';
-	}
-	if ( $Lucy::config->{debug_level} >= $level ) {
-		$name = pack( "A8", $name );
-		print colored( time, 'white' )
-		  . " $level|"
-		  . colored( $name, $color )
-		  . "| $desc\n";
-	}
+	$name = pack( "A8", $name );
+	print colored( time, 'white' )
+	  . " $level|"
+	  . colored( $name, ( $level <= 4 ) ? 'bold' : '' )
+	  . "| $desc\n";
 }
 
 sub parseumask {
 	my ($who) = @_;
+
 	if ( my ( $nick, $username, $host ) = split( /[@!]/, $who, 3 ) ) {
 		return {
 			nick     => $nick,
 			username => $username,
 			host     => $host
 		};
-	} else {
-		return undef;
 	}
+	undef;
 }
 
 sub parsenick {
 	my ($nick) = @_;
+
 	if ( $nick =~ /^([\&\@\+\%\~]?)(.*)$/ ) {
 		return {
 			status => $1,
 			nick   => $2
 		};
-	} else {
-		return undef;
 	}
+	undef;
 }
 
 sub timesince {
@@ -98,6 +95,7 @@ sub timesince {
 		seconds => ( time() - $ts ),
 		string  => 1,
 	);
+
 	my $timesince;
 	foreach (qw/days hours minutes seconds/) {
 		if ( $pit->{$_} ) {
@@ -111,6 +109,7 @@ sub timesince {
 
 sub ison {
 	my ( $self, $nick ) = @_;
+
 	if (
 		my $ref = $Lucy::dbh->query(
 "SELECT COUNT(*) FROM ison, user WHERE ison.nickid = user.nickid AND user.nick = ?",
@@ -119,15 +118,15 @@ sub ison {
 	  )
 	{
 		return $ref->[0];
-	} else {
-		return undef;
 	}
+	undef;
 }
 
 # trims $what to a certain length
 sub trim {
 	my $what   = shift || return undef;
 	my $length = shift || 30;
+
 	if ( length($what) > $length ) {
 		$what = substr( $what, 0, $length ) . '...';
 	}
@@ -138,7 +137,7 @@ sub font {
 	my ( $attribs, $text ) = @_;
 
 	if ( $Lucy::config->{UseIRCColors} ) {
-		my ($header, $footer);
+		my ( $header, $footer );
 		foreach my $attrib ( split( / /, $attribs ) ) {
 			switch ($attrib) {
 				case 'black' {
@@ -244,6 +243,38 @@ sub ishostname {
 		return 1;
 	}
 	undef;
+}
+
+1;
+
+package UNIVERSAL;
+
+use strict;
+
+sub methods {
+	my ( $class, $types ) = @_;
+	$class = ref $class || $class;
+	$types ||= '';
+	my %classes_seen;
+	my %methods;
+	my @class = ($class);
+
+	no strict 'refs';
+	while ( $class = shift @class ) {
+		next if $classes_seen{$class}++;
+		unshift @class, @{"${class}::ISA"} if $types eq 'all';
+
+		# Based on methods_via() in perl5db.pl
+		for my $method (
+			grep { not /^[(_]/ and defined &{ ${"${class}::"}{$_} } }
+			keys %{"${class}::"}
+		  )
+		{
+			$methods{$method} = wantarray ? undef: $class->can($method);
+		}
+	}
+
+	wantarray ? keys %methods : \%methods;
 }
 
 1;
