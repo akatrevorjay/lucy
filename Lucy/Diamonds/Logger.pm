@@ -23,6 +23,7 @@
 #	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 package Lucy::Diamonds::Logger;
+use base qw(Lucy::Diamond);
 use POE;
 use Cwd;
 use Fcntl qw(:DEFAULT :flock :seek);

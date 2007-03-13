@@ -24,6 +24,7 @@
 #
 #TODO add garbage collection
 package Lucy::Diamonds::Reminder;
+use base qw(Lucy::Diamond);
 use POE;
 use strict;
 use warnings;

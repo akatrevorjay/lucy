@@ -246,35 +246,3 @@ sub ishostname {
 }
 
 1;
-
-package UNIVERSAL;
-
-use strict;
-
-sub methods {
-	my ( $class, $types ) = @_;
-	$class = ref $class || $class;
-	$types ||= '';
-	my %classes_seen;
-	my %methods;
-	my @class = ($class);
-
-	no strict 'refs';
-	while ( $class = shift @class ) {
-		next if $classes_seen{$class}++;
-		unshift @class, @{"${class}::ISA"} if $types eq 'all';
-
-		# Based on methods_via() in perl5db.pl
-		for my $method (
-			grep { not /^[(_]/ and defined &{ ${"${class}::"}{$_} } }
-			keys %{"${class}::"}
-		  )
-		{
-			$methods{$method} = wantarray ? undef: $class->can($method);
-		}
-	}
-
-	wantarray ? keys %methods : \%methods;
-}
-
-1;

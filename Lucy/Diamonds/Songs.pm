@@ -25,6 +25,7 @@
 #	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 package Lucy::Diamonds::Songs;
+use base qw(Lucy::Diamond);
 use POE;
 use LWP::Simple;
 use XML::Smart;

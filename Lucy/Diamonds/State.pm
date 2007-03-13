@@ -39,6 +39,7 @@
 ### whats going on.
 ###
 package Lucy::Diamonds::State;
+use base qw(Lucy::Diamond);
 use POE;
 use Switch;
 use warnings;

@@ -1,5 +1,6 @@
 #!/usr/bin/perl
-# SVN: $Id: Google.pm 174 2006-05-01 21:47:48Z trevorj $
+# SVN: $Id: Common.pm 206 2006-05-19 03:51:55Z trevorj $
+# Diamond parent class
 # _____________
 # Lucy; irc bot
 # ~trevorj <[trevorjoynson@gmail.com]>
@@ -22,39 +23,34 @@
 #	along with Lucy; if not, write to the Free Software
 #	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
-package Lucy::Diamonds::Alice;
-use base qw(Lucy::Diamond);
-use POE;
-use IO::Socket;
+package Lucy::Diamond;
 use warnings;
 use strict;
 
-### Mmmm. We have been loaded.
-sub new {
-	my $class = shift;
+sub methods {
+	my ( $class, $types ) = @_;
+	$class = ref $class || $class;
+	$types ||= '';
+	my %classes_seen;
+	my %methods;
+	my @class = ($class);
 
-	# use the lowest priority
-	return bless { priority => 9 }, $class;
-}
+	no strict 'refs';
+	while ( $class = shift @class ) {
+		next if $classes_seen{$class}++;
+		unshift @class, @{"${class}::ISA"} if $types eq 'all';
 
-sub irc_bot_command {
-	my ( $self, $lucy, $who, $where, $what, $cmd, $args, $type ) =
-	  @_[ OBJECT, SENDER, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5 ];
-	my $nick = ( split( /[@!]/, $who, 2 ) )[0];
-	$where = $where->[0];
-	Lucy::debug( 'Alice', "got command $cmd", 8 );
-
-	my ( $sock, $msg );
-
-	if ( $sock = IO::Socket::UNIX->new('/tmp/alice') ) {
-		$sock->write("$nick\007$cmd $args");
-		$sock->read( $msg, 1024 );
-		$sock->close;
-		$lucy->privmsg( $where, Lucy::font( 'bold', $nick ) . ": " . $msg );
-	} else {
-		$lucy->privmsg( $where,
-			Lucy::font( 'red', $nick ) . ": unable to connect to socket" );
+		# Based on methods_via() in perl5db.pl
+		for my $method (
+			grep { not /^[(_]/ and defined &{ ${"${class}::"}{$_} } }
+			keys %{"${class}::"}
+		  )
+		{
+			$methods{$method} = wantarray ? undef: $class->can($method);
+		}
 	}
+
+	wantarray ? keys %methods : \%methods;
 }
 
 1;

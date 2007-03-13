@@ -26,7 +26,7 @@
 #		and it will spit out the description
 # subclass of PoCo::RSSAggregator to make it diamond-compat
 package Lucy::Diamonds::RSS;
-use base qw(POE::Component::RSSAggregator);
+use base qw(Lucy::Diamond POE::Component::RSSAggregator);
 use POE;
 use Cwd;
 use warnings;

@@ -23,6 +23,7 @@
 #	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 package Lucy::Diamonds::ChuckNorris;
+use base qw(Lucy::Diamond);
 use POE;
 use XML::Smart;
 use Acme::Magic8Ball qw(ask);
