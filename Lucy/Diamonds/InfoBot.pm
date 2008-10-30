@@ -91,7 +91,7 @@ sub irc_bot_command {
 			$max_results = $1;
 		}
 
-		if ( $args =~ /^[\w ]{3,30}$/ ) {
+		if ( $args =~ /^[\w ]{1,30}$/ ) {
 
 			# search the factoids for $args
 			$q = $Lucy::dbh->query(
