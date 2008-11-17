@@ -176,7 +176,31 @@ sub irc_bot_command {
 	} elsif ( $cmd eq 'rss' ) {
 		my ( $subcmd, @subargs ) = split / /, $args or return 0;
 
-		if ( $subcmd eq 'add' ) {
+		if ( $subcmd eq 'list' ) {
+			my $feeds = $self->feeds();
+
+			map { $_->{db} = 1; $feeds->{ $_->{name} } = $_; }
+			  $Lucy::dbh->select( $self->tablename,
+				[qw(url name delay enabled)] )->hashes;
+
+			foreach my $name ( keys %$feeds ) {
+				my $f = $feeds->{$name};
+				$name .= "*" if exists $f->{db};
+
+				my $append;
+				foreach (qw/url delay enabled/) {
+					next unless ( exists $f->{$_} );
+					$append .= " $_=" . $f->{$_};
+				}
+
+				$lucy->yield( privmsg => $where => "$nick: " 
+					  . "feed: [" 
+					  . $name . "]"
+					  . $append );
+			}
+
+			undef $feeds;
+		} elsif ( $subcmd eq 'add' ) {
 			my $feed = {};
 			foreach my $arg (@subargs) {
 				if ( $arg =~ /^name=([\w\s]{3,30})$/ ) {
@@ -186,7 +210,7 @@ sub irc_bot_command {
 						$feed->{url} = $1;
 					} else {
 						$lucy->privmsg( $where,
-							"$nick: sorry man, but your url is faulty." );
+							"$nick : sorry man, but your url is faulty . " );
 						return 1;
 					}
 				}
@@ -196,7 +220,7 @@ sub irc_bot_command {
 			foreach my $s (qw(name url)) {
 				unless ( exists $feed->{$s} ) {
 					$lucy->privmsg( $where,
-						"$nick: your rss feed needs a $s=blah" );
+						"$nick : your rss feed needs a $s= blah " );
 					return 1;
 				}
 			}
@@ -217,8 +241,11 @@ sub irc_bot_command {
 			$kernel->post( 'rss' => 'remove_feed', $subargs[0] );
 
 			#$Lucy::dbh->delete( $self->tablename, {name => $subargs[0]} );
-			$lucy->privmsg( $where,
-"$nick: ok, I removed it from memory. It will be back when I am restarted though."
+			$lucy->privmsg(
+				$where,
+				"$nick : ok,
+					I removed it from memory
+					  . It will be back when I am restarted though . "
 			);
 		} elsif ( $subcmd eq 'pause' && $subargs[0] =~ /^[\w\s]{3,30}$/ ) {
 			Lucy::debug( 'RSS', 'pausing feed [' . $subargs[0] . ']', 6 );
@@ -229,7 +256,7 @@ sub irc_bot_command {
 				{ enabled => 'N' },
 				{ name    => $subargs[0] }
 			);
-			$lucy->privmsg( $where, "$nick: ok" );
+			$lucy->privmsg( $where, "$nick : ok " );
 		} elsif ( $subcmd eq 'resume' && $subargs[0] =~ /^[\w\s]{3,30}$/ ) {
 			Lucy::debug( 'RSS', 'resuming feed [' . $subargs[0] . ']', 6 );
 
@@ -239,7 +266,7 @@ sub irc_bot_command {
 				{ enabled => 'Y' },
 				{ name    => $subargs[0] }
 			);
-			$lucy->privmsg( $where, "$nick: ok" );
+			$lucy->privmsg( $where, "$nick : ok " );
 		}
 		return 1;
 	}

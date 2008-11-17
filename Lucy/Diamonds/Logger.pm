@@ -43,6 +43,8 @@ sub new {
 ### The OS should be able to take care of disk queueing.
 sub log {
 	my ( $self, $log, $payload ) = @_;
+	return unless defined $log;
+	
 	$log =~ s/\.log$//;
 
 	eval {

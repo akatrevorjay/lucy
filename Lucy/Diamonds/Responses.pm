@@ -41,56 +41,58 @@ sub irc_public {
 	my $responsecmd;
 	if ( $what =~ /chuck norris/i ) {
 		$responsecmd = 'chuck';
-		$what = "norris"
+		$what        = "norris";
 	} elsif ( $what =~ /smok|marijuana|ganja|bong|joint|blunt/i ) {
 		$responsecmd = 'ganja';
 	} else {
-		#TODO choose a random word over over 3 chars and look to see if it's in the db
+
+#TODO choose a random word over over 3 chars and look to see if it's in the db
 		return 0;
 	}
 
-       	return unless ( Lucy::crand(6) == 1 );
+	return unless ( Lucy::crand(6) == 1 );
 
 	my $args = $what;
-        my %tr = ( command => 'public', nick => $nick, where => $where );
-        $tr{args} = $args if defined $args;
-#        $tr{args_or_nick} = ( length($args) > 0 ) ? $args : $nick;
-        $tr{args_or_nick} = $nick;
+	my %tr = ( command => 'public', nick => $nick, where => $where );
+	$tr{args} = $args if defined $args;
+
+	#        $tr{args_or_nick} = ( length($args) > 0 ) ? $args : $nick;
+	$tr{args_or_nick} = $nick;
 
 ##### THIS IS HACKERY. THIS IS FIX ASAP. THIS ARGS SUBST. NEEDS TO BE IN IT'S OWN SUB AND NOT REPEATED.
-        if ( my $map = $self->getresponsemap($responsecmd) ) {
-                if ( my $res = $self->getresponsefromkey( $map->{responsekey} ) ) {
-                        if ( defined $map->{args_regex} && defined $args ) {
-                                if ( $args =~ /$map->{args_regex}/ ) {
+	if ( my $map = $self->getresponsemap($responsecmd) ) {
+		if ( my $res = $self->getresponsefromkey( $map->{responsekey} ) ) {
+			if ( defined $map->{args_regex} && defined $args ) {
+				if ( $args =~ /$map->{args_regex}/ ) {
 
-                                        #TODO find a better way of doing this
-                                        $tr{arg0} = $1 || undef;
-                                        $tr{arg1} = $2 || undef;
-                                        $tr{arg2} = $3 || undef;
-                                } else {
-                                        Lucy::debug( "Responses",
-                                                "irc_public: args didn't match the regex", 7 );
-                                        return 0;
-                                }
-                        }
+					#TODO find a better way of doing this
+					$tr{arg0} = $1 || undef;
+					$tr{arg1} = $2 || undef;
+					$tr{arg2} = $3 || undef;
+				} else {
+					Lucy::debug( "Responses",
+						"irc_public: args didn't match the regex", 7 );
+					return 0;
+				}
+			}
 
-                        # replace the %var%'s with $var's
-                        foreach ( keys %tr ) {
-                                $res->{response} =~ s/%$_%/$tr{$_}/;
-                        }
+			# replace the %var%'s with $var's
+			foreach ( keys %tr ) {
+				$res->{response} =~ s/%$_%/$tr{$_}/;
+			}
 
-                        if ( $res->{type} eq 'action' ) {
-                                $lucy->yield( ctcp => $where => ACTION => $res->{response} );
-                        } elsif ( $res->{type} eq 'reply' ) {
-                                $lucy->yield(
-                                        privmsg => $where => $nick . ': ' . $res->{response} );
-                        } else {
-                                $lucy->yield( privmsg => $where => $res->{response} );
-                        }
+			if ( $res->{type} eq 'action' ) {
+				$lucy->yield( ctcp => $where => ACTION => $res->{response} );
+			} elsif ( $res->{type} eq 'reply' ) {
+				$lucy->yield(
+					privmsg => $where => $nick . ': ' . $res->{response} );
+			} else {
+				$lucy->yield( privmsg => $where => $res->{response} );
+			}
 
-                        return 1;
-                }
-        }
+			return 1;
+		}
+	}
 #### END HACKERY
 
 	undef %tr;
@@ -136,7 +138,7 @@ sub irc_bot_command {
 			} else {
 				$lucy->yield( privmsg => $where => $res->{response} );
 			}
-			
+
 			return 1;
 		}
 	}

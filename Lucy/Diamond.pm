@@ -34,19 +34,21 @@ sub methods {
 	my %classes_seen;
 	my %methods;
 	my @class = ($class);
-
 	no strict 'refs';
 	while ( $class = shift @class ) {
 		next if $classes_seen{$class}++;
 		unshift @class, @{"${class}::ISA"} if $types eq 'all';
 
-		# Based on methods_via() in perl5db.pl
+#TODO find out why this was needed to be eval'd for Logger alone, and only in newer perl installations.
+# Based on methods_via() in perl5db.pl
 		for my $method (
-			grep { not /^[(_]/ and defined &{ ${"${class}::"}{$_} } }
-			keys %{"${class}::"}
+			eval {
+				grep { not /^[(_]/ and defined &{ ${"${class}::"}{$_} } }
+				  keys %{"${class}::"};
+			}
 		  )
 		{
-			$methods{$method} = wantarray ? undef: $class->can($method);
+			$methods{$method} = wantarray ? undef : $class->can($method);
 		}
 	}
 
