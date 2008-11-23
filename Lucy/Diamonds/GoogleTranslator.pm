@@ -36,23 +36,20 @@ sub search {
 	my ( $self, $v ) = @_;
 	my @msg;
 
-	Lucy::debug( 'Google', 'query for [' . $v->{query} . ']', 6 );
+	Lucy::debug( 'GoogleTranslator', 'query for [' . $v->{query} . ']', 6 );
 
 	my $glang  = WebService::Google::Language->new( %{ $v->{config} } );
 	my $result = $glang->translate( $v->{query} );
 
 	if ( $result->error ) {
 		push( @msg,
-			    Lucy::font( 'red bold', 'error(' )
-			  . $result->code
-			  . Lucy::font( 'red bold', ': ' )
-			  . $result->message );
+			$result->message
+			  . Lucy::font( 'red bold', ' [error=' . $result->code . ']' ) );
 	} else {
 		push( @msg,
-			    Lucy::font( 'yellow bold', 'translation: ' )
-			  . $result->translation
-			  . Lucy::font( 'red bold', ' lang: ' )
-			  . $result->language );
+			  $result->translation
+			  . Lucy::font( 'yellow bold', ' [lang=' . $result->language . ']' )
+		);
 	}
 
 	#  $result = $service->detect('Bonjour tout le monde');

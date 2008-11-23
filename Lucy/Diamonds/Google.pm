@@ -52,7 +52,7 @@ sub search {
 		last if ( $i > $max_results );
 
 		push( @msg,
-			Lucy::font( 'red bold', $result->number . '.' ) . " "
+			Lucy::font( 'bold', $result->number . '.' ) . " "
 			  . $result->uri );
 		$i++;
 		$result = $result->next;

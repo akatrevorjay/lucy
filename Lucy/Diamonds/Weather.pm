@@ -44,8 +44,8 @@ sub irc_bot_command {
 	my ( $self, $lucy, $who, $where, $what, $cmd, $args, $type ) =
 	  @_[ OBJECT, SENDER, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5 ];
 	unless ( ( $cmd eq 'weather' )
-		&& ( defined $Lucy::config->{WeatherApi_key} )
-		&& ( defined $Lucy::config->{WeatherApi_partner} ) )
+		&& ( defined $Lucy::config->{Diamonds}{Weather}{license} )
+		&& ( defined $Lucy::config->{Diamonds}{Weather}{partner_id} ) )
 	{
 		return 0;
 	}
@@ -58,8 +58,8 @@ sub irc_bot_command {
 		# grab weather object
 		my $sweather = Weather::Com::Simple->new(
 			'cache'      => cwd() . '/db/weather',
-			'partner_id' => $Lucy::config->{WeatherApi_partner},
-			'license'    => $Lucy::config->{WeatherApi_key},
+			'partner_id' => $Lucy::config->{Diamonds}{Weather}{partner_id},
+			'license'    => $Lucy::config->{Diamonds}{Weather}{license},
 			'place'      => $args,
 		);
 		if ( defined $sweather ) {
