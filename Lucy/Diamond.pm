@@ -24,6 +24,7 @@
 #	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 package Lucy::Diamond;
+use POE;
 use warnings;
 use strict;
 
@@ -53,6 +54,71 @@ sub methods {
 	}
 
 	wantarray ? keys %methods : \%methods;
+}
+
+##
+## What follows is for easy-to-create Diamonds, at the expense of functionality
+## - A normal Diamond already more than likely uses these methods, so they
+## -   just won't run, since this is a sub-class.
+##
+
+### Mmmm. We have been loaded.
+sub new {
+	my $class = shift;
+	$class =~ /([^:]+)$/;
+	my $name = $1;
+
+	my $self = bless { __abstract => 1, __name => $name }, $class;
+	$self->__init($class);
+
+	return $self;
+}
+
+## Create a command map {command}{sub} from the array.
+## This is really just to make it easier to make command aliases.
+sub __init {
+	my ( $self, $class ) = @_;
+	my %commands = %{ $self->commands };
+
+	foreach my $c ( keys %commands ) {
+		foreach ( @{ $commands{$c} } ) {
+			$self->{__cmd_map}{$_} = $c;
+		}
+	}
+}
+
+sub irc_bot_command {
+	unless ( $_[OBJECT]->{__cmd_map}{ $_[ARG3] } ) {
+		return undef;
+	}
+
+	my ( $self, $lucy, $who, $where, $what, $cmd, $args, $type ) =
+	  @_[ OBJECT, SENDER, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5 ];
+	my $nick = ( split( /[@!]/, $who, 2 ) )[0];
+	$where = $where->[0];
+
+	my $vars = {
+		config => $Lucy::config->{Diamond_Config}{ $self->{__name} },
+		query  => $args,
+		nick   => $nick,
+		where  => $where,
+	};
+
+	#TODO text replacement mechanism? like %nick%, or %red%this is red%red%
+	if ( my $ret =
+		eval( 'return $self->' . $self->{__cmd_map}{$cmd} . '($vars);' ) )
+	{
+
+		#use Data::Dumper;
+		#print Dumper($ret);
+		foreach ( eval { @{$ret} } ) {
+			$lucy->privmsg(
+				$where => Lucy::font( 'yellow bold', "$nick: " ) . $_ );
+		}
+	} else {
+		print $@;
+	}
+
 }
 
 1;

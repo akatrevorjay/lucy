@@ -300,6 +300,12 @@ sub irc_kick {
 		"-!- " . $nick . " has quit [" . $channel . "]"
 	);
 	$self->updateseen( $nick, 'kick', $channel, $kicker, $reason );
+
+	if ( $nick eq $lucy->nick_name ) {
+		Lucy::debug( "kick", "Rejoining $channel in 5s because I was kicked",
+			2 );
+		$lucy->delay( [ join => $channel ], 5 );
+	}
 }
 
 sub irc_disconnected {
@@ -338,7 +344,14 @@ sub irc_nick {
 	Lucy::debug( "nick", "$nick changed nicks to $new.", 2 );
 
 	### log it
-	foreach ( @{ $lucy->nick_channels($nick) } ) {
+	foreach (
+		eval {
+			@{ $lucy->nick_channels($new) }
+			  || @{ $lucy->nick_channels($new) }
+			  || [];
+		}
+	  )
+	{
 		$self->log( $Lucy::config->{Channels}{$_}{log},
 			"-!- " . $nick . " changed nicks to [" . $new . "]" );
 	}
@@ -351,9 +364,9 @@ sub irc_nick {
 	#	$to, "nick|$nick|$to", time(), $nick
 	#);
 
-	#	if ( $nick eq $Lucy::lucy->nick_name ) {
-	#		$Lucy::lucy->nick_name = $new;
-	#	}
+	#if ( $nick eq $Lucy::lucy->nick_name ) {
+	#	$Lucy::lucy->nick_name = $new;
+	#}
 }
 
 ## Channel MODE

@@ -57,36 +57,45 @@ sub debug {
 	return undef unless $Lucy::config->{debug_level} >= $_[2];
 
 	my ( $name, $desc, $level ) = @_;
-	$name = pack( "A8", $name );
-	print colored( time, 'white' )
-	  . " $level|"
-	  . colored( $name, ( $level <= 4 ) ? 'bold' : '' )
-	  . "| $desc\n";
+	$name = pack( "A12", $name );
+
+	my $time = colored(time, 'white');
+	
+	if ($level <= 1) {
+		$name = colored($name, 'bold white on_red');
+		$desc = colored($desc, 'bold white on_red');
+	} elsif ($level <= 2) {
+		$name = colored($name, 'bold blue on_black');
+	} elsif ($level <= 4) {
+		$name = colored($name, 'bold green on_black');
+	} elsif ($level <= 6) {
+		$name = colored($name, 'bold');
+	}
+
+	print "$time $level|$name| $desc\n"
 }
 
 sub parseumask {
 	my ($who) = @_;
 
-	if ( my ( $nick, $username, $host ) = split( /[@!]/, $who, 3 ) ) {
-		return {
-			nick     => $nick,
-			username => $username,
-			host     => $host
-		};
+	if ( my ( $full_nick, $username, $host ) = split( /[@!]/, $who, 3 ) ) {
+		my ($nick_status, $nick) = parsenick($full_nick);
+		$nick = $full_nick unless defined $nick;
+
+		my %ret;
+		foreach ([qw(full_nick nick nick_status username host)]) {
+			$ret{$_} = eval("return \$$_ or undef");
+		}
+		return %ret;
 	}
-	undef;
 }
 
 sub parsenick {
 	my ($nick) = @_;
 
 	if ( $nick =~ /^([\&\@\+\%\~]?)(.*)$/ ) {
-		return {
-			status => $1,
-			nick   => $2
-		};
+		return wantarray ? { nick => $2, status => $1 } : $2;
 	}
-	undef;
 }
 
 sub timesince {

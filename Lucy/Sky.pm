@@ -56,7 +56,15 @@ sub add_diamond {
 			}
 
 			# On-demand events
-			foreach ( $self->{Diamonds}{$d}->methods() ) {
+			my @methods = $self->{Diamonds}{$d}->methods();
+			
+			#TODO this doesn't really belong here..
+			# We need a way for methods() to see the subs in the Diamond
+			# sub-class as well. Then we could avoid this ugliness.
+			push( @methods, 'irc_bot_command' )
+			  if ( $self->{Diamonds}{$d}{__abstract});
+
+			foreach (@methods) {
 				next unless s/^irc_//;
 				$self->{Diamonds_events}{$d}{$_} = 1;
 
@@ -85,6 +93,7 @@ sub remove_diamond {
 			}
 
 			delete $self->{Diamonds}{$d};
+			delete $self->{Diamonds_events}{$d};
 			$self->{refresher}->unload_module( 'Lucy/Diamonds/' . $d . '.pm' );
 
 			Lucy::debug( "Sky", "Unloaded diamond $d", 2 );
@@ -108,8 +117,10 @@ sub reload_diamond {
 
 		# add_diamond will unload the diamond if it's already loaded.
 		$self->add_diamond(@diamonds);
-	} else {
-		$self->{refresher}->refresh();
+
+   #} else {
+   #TODO this is kind of broken, as it doesn't remove and add the diamond again.
+   #$self->{refresher}->refresh();
 	}
 }
 
@@ -214,8 +225,7 @@ sub _default {
 					'Sky',
 					'Compilation of ' . $state . ' @ ' . $d . ' failed: ' . $@,
 					0
-				  )
-				  if $@;
+				) if $@;
 				if ($ret) {
 					Lucy::debug( 'Event' . $pri,
 						$d . ' stopped event of ' . $state, 9 );
@@ -248,8 +258,7 @@ sub AUTOLOAD {
 			'Sky',
 			'Compilation of ' . $method . ' @ Sky:AUTOLOAD_else failed: ' . $@,
 			0
-		  )
-		  if $@;
+		) if $@;
 	}
 	return $ret;
 }

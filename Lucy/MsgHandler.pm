@@ -32,7 +32,8 @@ sub new {
 	my $class = shift;
 	return bless {
 		cmd_regex => '
-(?:nigga\s+|when\s+)?
+(?:nigga\s+)?
+(?:when\s+)?
 (?:have\s+|will\s+|can\s+)?
 (?:you\s+)?
 (?:please\s+)?
@@ -70,10 +71,27 @@ sub S_public {
 	  $what =~ /^(?:$botnick:\s+|$botnick,\s+|!)$self->{cmd_regex}/ix;
 	if ($cmd) {
 		$cmd = lc($cmd);
-		Lucy::debug( "MsgHandler", "Sending command ($cmd,$args)", 7 );
+		Lucy::debug( "MsgHandler", "Sending irc_bot_command ($cmd,$args)", 7 );
 
 		$lucy->_send_event( 'irc_bot_command', $who, $where, $what, $cmd, $args,
 			'pub' );
+
+		my %nick = parsenick($who);
+		$where = $where->[0];
+		$lucy->_send_event(
+			'irc_bot_command_hash',
+			$cmd,
+			{
+				who         => $who,
+				where       => $where,
+				nick        => $nick{nick},
+				nick_status => $nick{status},
+				what        => $what,
+				cmd         => $cmd,
+				args        => $args,
+				type        => 'msg',
+			},
+		);
 	}
 
 	# Return an exit code
@@ -88,16 +106,34 @@ sub S_msg {
 	#my ($where)   = ${ $_[1] };
 	my ($what)    = ${ $_[2] };
 	my ($botnick) = $lucy->nick_name();
-	my $nick  = ( split( /[@!]/, $who, 2 ) )[0];
-	my $where = [$nick];
+	my $nick      = parsenick($who);
+	my $where     = [$nick];
 
 	my ( $cmd, $args ) = $what =~ /^!?$self->{cmd_regex}/iox;
 	if ($cmd) {
 		$cmd = lc($cmd);
-		Lucy::debug( 'MsgHandler', "Sending privmsg command ($cmd,$args)", 7 );
+		Lucy::debug( 'MsgHandler',
+			"Sending privmsg irc_bot_command ($cmd,$args)", 7 );
 
 		$lucy->_send_event( 'irc_bot_command', $who, $where, $what, $cmd, $args,
 			'msg' );
+
+		my %nick = parsenick($who);
+		$where = $where->[0];
+		$lucy->_send_event(
+			'irc_bot_command_hash',
+			$cmd,
+			{
+				who         => $who,
+				where       => $where,
+				nick        => $nick{nick},
+				nick_status => $nick{status},
+				what        => $what,
+				cmd         => $cmd,
+				args        => $args,
+				type        => 'msg',
+			},
+		);
 	}
 
 	# Return an exit code
@@ -160,8 +196,8 @@ sub S_433 {
 	$lucy->yield( nick => $Lucy::config->{Nick} . $$ % 1000 )
 	  unless $lucy->nick_name =~ /^$Lucy::config->{Nick}\d{1,4}$/;
 
-	# try to change it again 60s later
-	$lucy->delay( [ nick => $Lucy::config->{Nick} ], 60 );
+	# try to change it again 10s later
+	$lucy->delay( [ nick => $Lucy::config->{Nick} ], 10 );
 	return PCI_EAT_NONE;
 }
 

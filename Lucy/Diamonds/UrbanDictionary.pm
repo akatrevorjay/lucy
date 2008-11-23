@@ -22,70 +22,52 @@
 #	along with Lucy; if not, write to the Free Software
 #	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
-package Lucy::Diamonds::Dict;
+package Lucy::Diamonds::UrbanDictionary;
 use base qw(Lucy::Diamond);
-use POE;
 use warnings;
 use strict;
 use WWW::Search;
 
-### Mmmm. We have been loaded.
-sub new {
-	my $class = shift;
-	return bless {}, $class;
+sub commands {
+	return { search => [qw(slang urban)], };
 }
 
-sub irc_bot_command {
-	my ( $self, $lucy, $who, $where, $what, $cmd, $args, $type ) =
-	  @_[ OBJECT, SENDER, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5 ];
-	unless ( ( ( $cmd eq 'dict' ) || ( $cmd eq 'define' ) )
-		&& ( defined $Lucy::config->{UrbanDictApi_key} )
-		&& ( defined $args ) )
-	{
-		return 0;
-	}
+sub search {
+	my ( $self, $v ) = @_;
+	my @msg;
 
-	my $nick = ( split( /[@!]/, $who, 2 ) )[0];
+	Lucy::debug( 'UrbanDictionary', 'query for [' . $v->{query} . ']', 6 );
+
 	my $max_results = 2;
-	if ( $args =~ s/\s+max=([1-5])$// ) {
+	if ( $v->{query} =~ s/\s+max=([1-5])$// ) {
 		$max_results = $1;
 	}
-	$where = $where->[0];
-	Lucy::debug( 'UrbanDict', 'query for [' . $args . ']', 6 );
 
-	my $search =
-	  WWW::Search->new( 'UrbanDictionary',
-		key => $Lucy::config->{UrbanDictApi_key} );
-	$search->native_query($args);
+	my $search = WWW::Search->new( 'UrbanDictionary', %{ $v->{config} } );
+	$search->native_query( $v->{query} );
 
 	my $i = 1;
 	while ( my $result = $search->next_result() ) {
 		if ( $i > $max_results ) {
 			last;
-		} elsif ( $i == 1 ) {
-			$lucy->privmsg( $where,
-				Lucy::font( 'red', $nick ) . ': Definition for ' . $args );
 		}
+
 		my $description = $result->{definition};
 		$description =~ s/\n/ /g;
-		$lucy->privmsg( $where,
-			    Lucy::font( 'yellow bold', $i . ': ' )
-			  . $description . '['
-			  . Lucy::font( 'red', $result->{author} )
-			  . ']' );
+		push( @msg,
+			$description . ' [' . Lucy::font( 'red', $result->{author} ) . ']' );
 		if ( my $example = $result->{example} ) {
 			$example =~ s/\n/ /g;
-			$lucy->privmsg( $where,
-				Lucy::font( 'yellow bold', "ex: " ) . $example );
+			push( @msg, Lucy::font( 'yellow bold', "ex: " ) . $example );
 		}
+
 		$i++;
 	}
 	if ( $i == 1 ) {
-		$lucy->privmsg( $where,
-			Lucy::font( 'red', $nick ) . ': No definition found for ' . $args );
+		return undef;
 	}
-
-	return 1;
+	
+	return \@msg;
 }
 
 1;

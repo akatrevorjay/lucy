@@ -22,44 +22,26 @@
 #	along with Lucy; if not, write to the Free Software
 #	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
-package Lucy::Diamonds::Google;
+package Lucy::Diamonds::GoogleCalculator;
 use base qw(Lucy::Diamond);
 use warnings;
 use strict;
-use Google::Search;
+use WWW::Google::Calculator;
 
 sub commands {
-	return { search => [qw(google g goog search)], };
+	return { search => [qw(googlecalc gcalc calc)], };
 }
 
 sub search {
 	my ( $self, $v ) = @_;
 	my @msg;
 
-	Lucy::debug( 'Google', 'query for [' . $v->{query} . ']', 6 );
+	Lucy::debug( 'GoogleCalculator', 'query for [' . $v->{query} . ']', 6 );
 
-	my $max_results = 2;
-	if ( $v->{query} =~ s/\s+max=([1-5])$// ) {
-		$max_results = $1;
-	}
-
-	$v->{config}{q} = $v->{query};
-	my $search = Google::Search->Web( %{ $v->{config} } );
-	my $result = $search->first;
-
-	my $i = 1;
-	while ($result) {
-		last if ( $i > $max_results );
-
-		push( @msg,
-			Lucy::font( 'red bold', $result->number . '.' ) . " "
-			  . $result->uri );
-		$i++;
-		$result = $result->next;
-	}
-	undef $search;
-	return undef if ( $i == 1 );
-
+    my $calc = WWW::Google::Calculator->new;    
+	push( @msg, $calc->calc($v->{query}) );
+	undef $calc;
+	
 	return \@msg;
 }
 

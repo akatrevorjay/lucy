@@ -18,7 +18,6 @@ to		|
 ### State Plugin
 Move the $lucy->{state} into the db. Way too much information is duplicated imo, and
  I would like to reduce that.
-Update the code to whats in PoCo::IRC::State again. They've been busy, and I have been lazy.
 # DB Psuedo-format
 lucy_state_users = {
 	id => 0,

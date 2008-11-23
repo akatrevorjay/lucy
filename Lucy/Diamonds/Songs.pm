@@ -26,45 +26,40 @@
 #
 package Lucy::Diamonds::Songs;
 use base qw(Lucy::Diamond);
-use POE;
-use LWP::Simple;
-use XML::Smart;
 use warnings;
 use strict;
+use LWP::Simple;
+use XML::Smart;
 
-### Mmmm. We have been loaded.
-sub new {
-	my $class = shift;
-	return bless {}, $class;
+sub commands {
+	return { search => [qw(lastfm song songs)], };
 }
 
 ### Let's try to do something interesting now
-sub irc_bot_command {
-	my ( $self, $lucy, $who, $where, $what, $cmd, $args, $type ) =
-	  @_[ OBJECT, SENDER, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5 ];
-	my $nick = ( split( /[@!]/, $who, 2 ) )[0];
-	$where = $where->[0];
+sub search {
+	my ( $self, $v ) = @_;
+	my @msg;
 
-	if (
-		( $cmd =~ /^(?:lastfm|songs?)$/ )
-		&& ( my ( $swho, $ssong ) =
-			$args =~ /^(\w{3,30})(?:\s+t?(?:rack\=)?(\d))?$/ )
-	  )
+	if ( my ( $swho, $ssong ) =
+		$v->{query} =~ /^(\w{3,30})(?:\s+t?(?:rack\=)?(\d))?$/ )
 	{
 		### If the track number is provided, use that
 		my $ssong = 0 unless defined $ssong;
 
 		Lucy::debug( "Songs",
-			"[$nick] requested recent track $ssong of [$swho]", 6 );
+			'[' . $v->{nick} . "] requested recent track $ssong of [$swho]",
+			6 );
 		my ( $content, $url );
 
 		# Cool people with no need for lastfm
-		if ( $swho eq 'echoline' ) {
-			$url     = "http://eli.neoturbine.net/song";
-			$content = get $url;
+		#if ( $swho eq 'echoline' ) {
+		#	$url     = "http://eli.neoturbine.net/song";
+		#	$content = get $url;
+		#
+		#	# Else, try audioscrobbler/lastfm
+		#} elsif (
 
-			# Else, try audioscrobbler/lastfm
-		} elsif (
+		if (
 			my $XML = XML::Smart->new(
 				"http://ws.audioscrobbler.com/1.0/user/$swho/recenttracks.xml")
 		  )
@@ -79,30 +74,29 @@ sub irc_bot_command {
 				&& length( $track->{name} ) > 0 )
 			{
 				$content =
-				    Lucy::font( 'bold', $track->{artist} ) . " - "
-				  . Lucy::font( 'bold', $track->{name} );
+				    Lucy::font( 'green bold', $track->{artist} ) . " - "
+				  . Lucy::font( 'blue bold', $track->{name} );
 			}
 			undef $XML;
 		}
 		### If any content was found, display it in a sensible fashion
 		if ( defined $content ) {
+			my $swho = Lucy::font( 'bold', $swho );
 			my @r = (
 				"$swho is listening to $content",
 				"$swho is jammin' out to $content",
 				"$swho is rockin' out to $content"
 			);
-			$lucy->privmsg( $where,
-				Lucy::font( 'yellow', $nick ) . ': '
-				  . $r[ int rand( $#r + 1 ) ] );
+			push( @msg, $r[ int rand( $#r + 1 ) ] );
 		} else {
 			my @r = (
-				"suggests the beatles to $nick",
+				"suggests the beatles to " . $v->{nick},
 				"suggests QOTSA [Queens of the Stone Age]",
 				"demands some floyd!"
 			);
-			$lucy->yield( ctcp => $where => 'ACTION' => $r[ int rand( $#r + 1 ) ] );
+			push( @msg, $r[ int rand( $#r + 1 ) ] );
 		}
-		return 1;
+		return \@msg;
 	}
 }
 

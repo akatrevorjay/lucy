@@ -22,43 +22,52 @@
 #	along with Lucy; if not, write to the Free Software
 #	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
-package Lucy::Diamonds::Google;
+package Lucy::Diamonds::CraigsList;
 use base qw(Lucy::Diamond);
 use warnings;
 use strict;
-use Google::Search;
+use WWW::Search;
 
 sub commands {
-	return { search => [qw(google g goog search)], };
+	return { search => [qw(craigs craigslist cl)], };
 }
 
 sub search {
 	my ( $self, $v ) = @_;
 	my @msg;
 
-	Lucy::debug( 'Google', 'query for [' . $v->{query} . ']', 6 );
+	Lucy::debug( 'CraigsList', 'query for [' . $v->{query} . ']', 6 );
 
 	my $max_results = 2;
 	if ( $v->{query} =~ s/\s+max=([1-5])$// ) {
 		$max_results = $1;
 	}
 
-	$v->{config}{q} = $v->{query};
-	my $search = Google::Search->Web( %{ $v->{config} } );
-	my $result = $search->first;
+	my $search = WWW::Search->new( 'CraigsList', %{ $v->{config} } );
+	$search->native_query( WWW::Search::escape_query( $v->{query} ) );
 
 	my $i = 1;
-	while ($result) {
-		last if ( $i > $max_results );
+	while ( my $result = $search->next_result() ) {
+		if ( $i > $max_results ) {
+			last;
+		}
 
 		push( @msg,
-			Lucy::font( 'red bold', $result->number . '.' ) . " "
-			  . $result->uri );
+			    "$i. "
+			  . $result->{title} . '['
+			  . Lucy::font( 'red', $result->{source} )
+			  . ']' );
+		push( @msg,
+			    "$i. "
+			  . $result->{url} . ' ['
+			  . Lucy::font( 'red', $result->{change_date} )
+			  . ']' );
+
 		$i++;
-		$result = $result->next;
 	}
-	undef $search;
-	return undef if ( $i == 1 );
+	if ( $i == 1 ) {
+		return undef;
+	}
 
 	return \@msg;
 }
