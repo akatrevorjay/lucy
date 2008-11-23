@@ -115,6 +115,8 @@ sub irc_bot_command {
 			$lucy->privmsg(
 				$where => Lucy::font( 'yellow bold', "$nick: " ) . $_ );
 		}
+		
+		return 1;
 	} else {
 		print $@;
 	}
