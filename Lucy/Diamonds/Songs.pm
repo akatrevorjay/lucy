@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# SVN: $Id: Songs.pm 200 2006-05-15 03:23:16Z trevorj $
+# SVN: $Id$
 # Changelog
 # trevorj - added audioscrobbler support
 # _____________

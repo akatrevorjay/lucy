@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# SVN: $Id: lucystats.pl 194 2006-05-11 20:44:45Z trevorj $
+# SVN: $Id$
 # This is meant as a replacement for the Stats plugin. It's meant for your cgi-bin.
 # _____________
 # Lucy; irc bot

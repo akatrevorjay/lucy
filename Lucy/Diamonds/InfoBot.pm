@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# SVN: $Id: InfoBot.pm 205 2006-05-17 06:29:45Z trevorj $
+# SVN: $Id$
 # InfoBot functionality
 # _____________
 # Lucy; irc bot

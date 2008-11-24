@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: NickTrackar.pm 197 2006-05-13 18:50:53Z trevorj $
+# $Id$
 # _____________
 # Lucy; irc bot
 # ~trevorj <[trevorjoynson@gmail.com]>

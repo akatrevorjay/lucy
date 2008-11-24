@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# SVN: $Id: NetTools_ng.pm 205 2006-05-17 06:29:45Z trevorj $
+# SVN: $Id$
 # _____________
 # Lucy; irc bot
 # ~trevorj <[trevorjoynson@gmail.com]>

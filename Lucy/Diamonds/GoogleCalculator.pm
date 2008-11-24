@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# SVN: $Id: Dict.pm 85 2006-03-10 21:08:12Z echoline $
+# SVN: $Id$
 # _____________
 # Lucy; irc bot
 # ~trevorj <[trevorjoynson@gmail.com]>

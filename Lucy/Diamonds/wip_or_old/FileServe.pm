@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# SVN: $Id: Google.pm 174 2006-05-01 21:47:48Z trevorj $
+# SVN: $Id$
 # _____________
 # Lucy; irc bot
 # ~trevorj <[trevorjoynson@gmail.com]>

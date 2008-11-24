@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# SVN: $Id: MsgHandler.pm 202 2006-05-16 06:41:49Z trevorj $
+# SVN: $Id$
 # ____________
 # Lucy; irc bot
 # ~trevorj <[trevorjoynson@gmail.com]>

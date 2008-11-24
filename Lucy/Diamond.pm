@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# SVN: $Id: Common.pm 206 2006-05-19 03:51:55Z trevorj $
+# SVN: $Id$
 # Diamond parent class
 # _____________
 # Lucy; irc bot

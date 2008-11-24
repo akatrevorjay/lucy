@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: Logger.pm 192 2006-05-11 17:22:33Z trevorj $
+# $Id$
 # ____________
 # Lucy; irc bot
 # ~trevorj <[trevorjoynson@gmail.com]>

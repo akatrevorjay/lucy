@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# SVN: $Id: Weather.pm 159 2006-04-24 05:36:16Z trevorj $
+# SVN: $Id$
 # Weather diamond, uses weather.com api
 # NEEDS - A weather.com partnerid and licensekey. They are freely available
 #         from weather.com.
