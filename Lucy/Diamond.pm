@@ -70,6 +70,8 @@ sub new {
 
 	my $self = bless { __abstract => 1, __name => $name }, $class;
 	$self->__init($class);
+	
+	eval { $self->init(); };
 
 	return $self;
 }

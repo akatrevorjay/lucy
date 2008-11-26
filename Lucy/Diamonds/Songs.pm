@@ -28,15 +28,14 @@ package Lucy::Diamonds::Songs;
 use base qw(Lucy::Diamond);
 use warnings;
 use strict;
-use LWP::Simple;
 use XML::Smart;
 
 sub commands {
-	return { search => [qw(lastfm song songs)], };
+	return { lastfm_recent_track => [qw(lastfm song songs)], };
 }
 
 ### Let's try to do something interesting now
-sub search {
+sub lastfm_recent_track {
 	my ( $self, $v ) = @_;
 	my @msg;
 
@@ -50,15 +49,7 @@ sub search {
 			'[' . $v->{nick} . "] requested recent track $ssong of [$swho]",
 			6 );
 		my ( $content, $url );
-
-		# Cool people with no need for lastfm
-		#if ( $swho eq 'echoline' ) {
-		#	$url     = "http://eli.neoturbine.net/song";
-		#	$content = get $url;
-		#
-		#	# Else, try audioscrobbler/lastfm
-		#} elsif (
-
+		
 		if (
 			my $XML = XML::Smart->new(
 				"http://ws.audioscrobbler.com/1.0/user/$swho/recenttracks.xml")
