@@ -33,69 +33,43 @@ sub tablename_map { return 'lucy_responsemap'; }
 
 ### The acronyms of defeat shall pwn thee
 sub irc_public {
+	return unless ( Lucy::crand(6) == 1 );
+
 	my ( $self, $lucy, $who, $where, $what ) =
 	  @_[ OBJECT, SENDER, ARG0, ARG1, ARG2 ];
 	my $nick = ( split( /[@!]/, $who, 2 ) )[0];
 	$where = $where->[0];
 
-	my $responsecmd;
+	my $responsecmd = ( split( /\s+/, $what, 2 ) )[0];
+
+	# lets help it out a lil
 	if ( $what =~ /chuck norris/i ) {
 		$responsecmd = 'chuck';
 		$what        = "norris";
 	} elsif ( $what =~ /smok|marijuana|ganja|bong|joint|blunt/i ) {
 		$responsecmd = 'ganja';
-	} else {
-
-#TODO choose a random word over over 3 chars and look to see if it's in the db
-		return 0;
 	}
 
-	return unless ( Lucy::crand(6) == 1 );
+	my $tr = { command => 'public', nick => $nick, where => $where };
+	$tr->{args} = $what if defined $what;
+	$tr->{args_or_nick} = ( length($what) > 0 ) ? $what : $nick;
 
-	my $args = $what;
-	my %tr = ( command => 'public', nick => $nick, where => $where );
-	$tr{args} = $args if defined $args;
+	#$tr->{args_or_nick} = $nick;
 
-	#        $tr{args_or_nick} = ( length($args) > 0 ) ? $args : $nick;
-	$tr{args_or_nick} = $nick;
-
-##### THIS IS HACKERY. THIS IS FIX ASAP. THIS ARGS SUBST. NEEDS TO BE IN IT'S OWN SUB AND NOT REPEATED.
-	if ( my $map = $self->getresponsemap($responsecmd) ) {
-		if ( my $res = $self->getresponsefromkey( $map->{responsekey} ) ) {
-			if ( defined $map->{args_regex} && defined $args ) {
-				if ( $args =~ /$map->{args_regex}/ ) {
-
-					#TODO find a better way of doing this
-					$tr{arg0} = $1 || undef;
-					$tr{arg1} = $2 || undef;
-					$tr{arg2} = $3 || undef;
-				} else {
-					Lucy::debug( "Responses",
-						"irc_public: args didn't match the regex", 7 );
-					return 0;
-				}
-			}
-
-			# replace the %var%'s with $var's
-			foreach ( keys %tr ) {
-				$res->{response} =~ s/%$_%/$tr{$_}/;
-			}
-
-			if ( $res->{type} eq 'action' ) {
-				$lucy->yield( ctcp => $where => ACTION => $res->{response} );
-			} elsif ( $res->{type} eq 'reply' ) {
-				$lucy->yield(
-					privmsg => $where => $nick . ': ' . $res->{response} );
-			} else {
-				$lucy->yield( privmsg => $where => $res->{response} );
-			}
-
-			return 1;
+	if ( my $res = $self->getresponse( $responsecmd, $tr ) ) {
+		if ( $res->{type} eq 'action' ) {
+			$lucy->yield( ctcp => $where => ACTION => $res->{response} );
+		} elsif ( $res->{type} eq 'reply' ) {
+			$lucy->yield(
+				privmsg => $where => $nick . ': ' . $res->{response} );
+		} else {
+			$lucy->yield( privmsg => $where => $res->{response} );
 		}
-	}
-#### END HACKERY
 
-	undef %tr;
+		return 1;
+	}
+
+	undef $tr;
 }
 
 ### I'm Spider Man, Bitch.
@@ -105,45 +79,44 @@ sub irc_bot_command {
 	my $nick = ( split( /[@!]/, $who, 2 ) )[0];
 	$where = $where->[0];
 
-	my %tr = ( command => $cmd, nick => $nick, where => $where );
-	$tr{args} = $args if defined $args;
-	$tr{args_or_nick} = ( length($args) > 0 ) ? $args : $nick;
+	my $tr = { command => $cmd, nick => $nick, where => $where };
+	$tr->{args} = $args if defined $args;
+	$tr->{args_or_nick} = ( length($args) > 0 ) ? $args : $nick;
+
+	if ( my $res = $self->getresponse( $cmd, $tr, $args ) ) {
+		if ( $res->{type} eq 'action' ) {
+			$lucy->yield( ctcp => $where => ACTION => $res->{response} );
+		} elsif ( $res->{type} eq 'reply' ) {
+			$lucy->yield(
+				privmsg => $where => $nick . ': ' . $res->{response} );
+		} else {
+			$lucy->yield( privmsg => $where => $res->{response} );
+		}
+
+		return 1;
+	}
+}
+
+sub getresponse {
+	my $self = shift;
+	my $cmd  = shift;
+	my $tr   = shift || {};
+	my $args = shift;
 
 	if ( my $map = $self->getresponsemap($cmd) ) {
 		if ( my $res = $self->getresponsefromkey( $map->{responsekey} ) ) {
-			if ( defined $map->{args_regex} && defined $args ) {
-				if ( $args =~ /$map->{args_regex}/ ) {
-
-					#TODO find a better way of doing this
-					$tr{arg0} = $1 || undef;
-					$tr{arg1} = $2 || undef;
-					$tr{arg2} = $3 || undef;
-				} else {
-					Lucy::debug( "Responses",
-						"sendresponse: args didn't match the regex", 7 );
-					return 0;
-				}
+			if (
+				my $response = $self->tre_filter(
+					$res->{response}, $tr, $map->{args_regex}, $args
+				)
+			  )
+			{
+				return undef unless ( length($response) > 0 );
+				$res->{response} = $response;
+				return { type => $res->{type}, response => $res->{response} };
 			}
-
-			# replace the %var%'s with $var's
-			foreach ( keys %tr ) {
-				$res->{response} =~ s/%$_%/$tr{$_}/;
-			}
-
-			if ( $res->{type} eq 'action' ) {
-				$lucy->yield( ctcp => $where => ACTION => $res->{response} );
-			} elsif ( $res->{type} eq 'reply' ) {
-				$lucy->yield(
-					privmsg => $where => $nick . ': ' . $res->{response} );
-			} else {
-				$lucy->yield( privmsg => $where => $res->{response} );
-			}
-
-			return 1;
 		}
 	}
-
-	undef %tr;
 }
 
 sub getresponsemap {
@@ -183,6 +156,35 @@ sub getresponsefromkey {
 		return $q if defined $q->{response};
 	}
 	undef;
+}
+
+sub tre_filter {
+	my $self  = shift;
+	my $str   = shift;
+	my $tr    = shift;
+	my $regex = shift || undef;
+	my $args  = shift || undef;
+
+	if ( defined $regex && defined $args ) {
+		if ( $args =~ /$regex/ ) {
+			my $count = 1;
+			while ( my $m = eval( 'return $' . $count . ' or undef;' ) ) {
+				$tr->{ 'arg' . $count } = $m;
+				$count++;
+			}
+		} else {
+			Lucy::debug( "Responses", "tre_filter: args didn't match the regex",
+				7 );
+			return 0;
+		}
+	}
+
+	# replace the %var%'s with $var's
+	foreach ( keys %{$tr} ) {
+		$str =~ s/%$_%/$tr->{$_}/;
+	}
+
+	return $str;
 }
 
 ### Mmmm. We have been loaded.
