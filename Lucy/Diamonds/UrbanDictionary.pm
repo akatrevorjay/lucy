@@ -29,7 +29,7 @@ use strict;
 use WWW::Search;
 
 sub commands {
-	return { search => [qw(slang urban)], };
+	return { search => [qw(slang urban define dict)], };
 }
 
 sub search {
