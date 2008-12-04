@@ -65,12 +65,9 @@ sub methods {
 ### Mmmm. We have been loaded.
 sub new {
 	my $class = shift;
-	$class =~ /([^:]+)$/;
-	my $name = $1;
-
-	my $self = bless { __abstract => 1, __name => $name }, $class;
+	my $self = bless {}, $class;
 	$self->__init($class);
-	
+
 	eval { $self->init(); };
 
 	return $self;
@@ -80,8 +77,13 @@ sub new {
 ## This is really just to make it easier to make command aliases.
 sub __init {
 	my ( $self, $class ) = @_;
-	my %commands = %{ $self->commands };
 
+	$class =~ /([^:]+)$/;
+	my $name = $1;
+	$self->{__abstract} = 1;
+	$self->{__name}     = $name;
+
+	my %commands = %{ $self->commands };
 	foreach my $c ( keys %commands ) {
 		foreach ( @{ $commands{$c} } ) {
 			$self->{__cmd_map}{$_} = $c;
@@ -117,7 +119,7 @@ sub irc_bot_command {
 			$lucy->privmsg(
 				$where => Lucy::font( 'yellow bold', "$nick: " ) . $_ );
 		}
-		
+
 		return 1;
 	} else {
 		print $@;

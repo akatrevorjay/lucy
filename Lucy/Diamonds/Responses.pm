@@ -33,7 +33,7 @@ sub tablename_map { return 'lucy_responsemap'; }
 
 ### The acronyms of defeat shall pwn thee
 sub irc_public {
-	return unless ( Lucy::crand(6) == 1 );
+	return unless ( int(rand(6)) == 1 );
 
 	my ( $self, $lucy, $who, $where, $what ) =
 	  @_[ OBJECT, SENDER, ARG0, ARG1, ARG2 ];
@@ -41,14 +41,6 @@ sub irc_public {
 	$where = $where->[0];
 
 	my $responsecmd = ( split( /\s+/, $what, 2 ) )[0];
-
-	# lets help it out a lil
-	if ( $what =~ /chuck norris/i ) {
-		$responsecmd = 'chuck';
-		$what        = "norris";
-	} elsif ( $what =~ /smok|marijuana|ganja|bong|joint|blunt/i ) {
-		$responsecmd = 'ganja';
-	}
 
 	my $tr = { command => 'public', nick => $nick, where => $where };
 	$tr->{args} = $what if defined $what;
