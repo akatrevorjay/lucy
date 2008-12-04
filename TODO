@@ -43,7 +43,7 @@ $user = {
 ######
 ###### MEDIUM
 ######
-	
+
 ### Plugin architecture
 POE::Component::Pool::Thread - A POE Managed Boss/Worker threadpool.
 POE::Component::ForkManager - Perl extension for managing a preforking server in POE
@@ -99,6 +99,13 @@ POE::Component::FastCGI - POE FastCGI server
 ############ Old code, may come in handy some day
 ############
 
+($changed = $original) =~ s/$RE{some}{pattern}/$replacement/;
+
+## URI regex
+m~(?:https?://(?:(?:(?:(?:(?:[a-zA-Z\d](?:(?:[a-zA-Z\d]|-)*[a-zA-Z\d])?)\.)*(?:[a-zA-Z](?:(?:[a-zA-Z\d]|-)*[a-zA-Z\d])?))|(?:(?:\d+)(?:\.(?:\d+)){3}))(?::(?:\d+))?)(?:\/(?:(?:(?:(?:[a-zA-Z\d\$\-_.+!*'(),]|(?:%[a-fA-F\d]{2}))|[;:@&=])*)(?:/(?:(?:(?:[a-zA-Z\d\$\-_.+!*'(),]|(?:%[a-fA-F\d]{2}))|[;:@&=])*))*)(?:\?(?:(?:(?:[a-zA-Z\d\$\-_.+!*'(),]|(?:%[a-fA-F\d]{2}))|[;:@&=])*))?)?)~o
+## Hostname/IP regex
+m/(?:(?:(?:(?:[a-zA-Z\d](?:(?:[a-zA-Z\d]|-)*[a-zA-Z\d])?)\.)*(?:[a-zA-Z](?:(?:[a-zA-Z\d]|-)*[a-zA-Z\d])?))|(?:(?:\d+)(?:\.(?:\d+)){3}))/o
+
 #####
 ## Generic cache object
 ##
@@ -128,125 +135,126 @@ POE::Component::FastCGI - POE FastCGI server
 #                   cache, or when cache is being DESTROY'd
 #
 ############################################################################
-#package Lucy::CacheLRU;
-#use warnings;
-#use strict;
-#use vars qw(@ISA);
-#@ISA = qw(Tie::Cache);
-#
-#sub read {
-#	my ( $self, $key ) = @_;
-#	print "cache miss for $key, read() data\n";
-#	undef;
-#}
-#
-#sub write {
-#	my ( $self, $key, $value ) = @_;
-#	print "flushing [$key, $value] from cache, write() data\n";
-#}
-#
-#1;
+package Lucy::CacheLRU;
+use warnings;
+use strict;
+use vars qw(@ISA);
+@ISA = qw(Tie::Cache);
 
-######
-### Generic ancessor object.
-### Could come in handy ;) especially to subclass.
-###
-##TODO make this capable of being an LRU cache
-#package Lucy::GenericObject;
-#use strict;
-#use Carp;
-#use vars qw($AUTOLOAD);
-#
-#sub AUTOLOAD {
-#	my $self = shift;
-#	my $attr = $AUTOLOAD;
-#	$attr =~ s/.*:://;
-#	return unless $attr =~ /[^A-Z]/;    # skip DESTROY and all-cap methods
-#	return 1 if ( $attr =~ /_init|_put|_get|_delete/ );
-#
-#	# Are there any args? if so, put.
-#	if (@_) {
-#		$self->put( $attr, @_ );
-#	}
-#	return $self->get($attr);
-#}
-#
-## get rid of it
-#sub delete {
-#	my ( $self, $attr ) = @_;
-#
-#	# Convert to uppercase if case insensitive?
-#	$attr = uc $attr if defined $self->{case_insensitive};
-#
-#	#TODO should this only delete the key if the _delete function returns ok?
-#	if ( $self->_delete($attr) ) {
-#		delete $self->{$attr};
-#		return 1;
-#	}
-#	return undef;
-#}
-#
-## we're saving something.
-#sub put {
-#	my ( $self, $attr ) = @_;
-#
-#	# Convert to uppercase if case insensitive
-#	$attr = uc $attr if defined $self->{case_insensitive};
-#
-#	# do we have a defined set of fields?
-#	if ( defined $self->{fields} ) {
-#		return undef unless defined $self->{fields}{$attr};
-#	}
-#
-#	if ( my $data = shift ) {
-#
-#		#TODO should this only put the data if the _put function returns ok?
-#		if ( $self->_put( $attr, $data ) ) {
-#			$self->{data}{$attr} = $data;
-#			return 1;
-#		}
-#	} else {
-#		#return $self->delete($attr);
-#	}
-#
-#	return undef;
-#}
-#
-## get it damnit.
-#sub get {
-#	my ( $self, $attr ) = @_;
-#
-#	# Convert to uppercase if case insensitive
-#	$attr = uc $attr if defined $self->{case_insensitive};
-#
-#	$self->{data}{$attr} = $self->_get($attr)
-#	  unless defined $self->{data}{$attr};
-#	return $self->{data}{$attr} || undef;
-#}
-#
-#sub new {
-#	my $class = shift;
-#
-#	#my $class = ref($proto) || $proto;
-#	#my $parent = ref($proto) && $proto;
-#
-#	my %params;
-#	if ( @_ % 2 ) {
-#		%params = @_;
-#
-#		# Convert to uppercase if case insensitive
-#		if ( $params{case_insensitive} ) {
-#			foreach ( keys %{ $params{data} } ) {
-#				next if uc($_) eq $_;
-#				$params{data}{ uc $_ } = $params{data}{$_};
-#				delete $params{data}{$_};
-#			}
-#		}
-#	}
-#	my $self = bless \%params, $class;
-#	undef %params;
-#	$self->_init;
-#	return $self;
-#}
-#
-#1;
+sub read {
+	my ( $self, $key ) = @_;
+	print "cache miss for $key, read() data\n";
+	rand() * $key;
+}
+
+sub write {
+	my ( $self, $key, $value ) = @_;
+	print "flushing [$key, $value] from cache, write() data\n";
+}
+
+
+
+
+#####
+## Generic ancessor object.
+## Could come in handy ;) especially to subclass.
+##
+#TODO make this capable of being an LRU cache
+package Lucy::GenericObject;
+use strict;
+use Carp;
+use vars qw($AUTOLOAD);
+
+sub AUTOLOAD {
+	my $self = shift;
+	my $attr = $AUTOLOAD;
+	$attr =~ s/.*:://;
+	return unless $attr =~ /[^A-Z]/;    # skip DESTROY and all-cap methods
+	return 1 if ( $attr =~ /_init|_put|_get|_delete/ );
+
+	# Are there any args? if so, put.
+	if (@_) {
+		$self->put( $attr, @_ );
+	}
+	return $self->get($attr);
+}
+
+# get rid of it
+sub delete {
+	my ( $self, $attr ) = @_;
+
+	# Convert to uppercase if case insensitive?
+	$attr = uc $attr if defined $self->{case_insensitive};
+
+	#TODO should this only delete the key if the _delete function returns ok?
+	if ( $self->_delete($attr) ) {
+		delete $self->{$attr};
+		return 1;
+	}
+	return undef;
+}
+
+# we're saving something.
+sub put {
+	my ( $self, $attr ) = @_;
+
+	# Convert to uppercase if case insensitive
+	$attr = uc $attr if defined $self->{case_insensitive};
+
+	# do we have a defined set of fields?
+	if ( defined $self->{fields} ) {
+		return undef unless defined $self->{fields}{$attr};
+	}
+
+	if ( my $data = shift ) {
+
+		#TODO should this only put the data if the _put function returns ok?
+		if ( $self->_put( $attr, $data ) ) {
+			$self->{data}{$attr} = $data;
+			return 1;
+		}
+	} else {
+		#return $self->delete($attr);
+	}
+
+	return undef;
+}
+
+# get it damnit.
+sub get {
+	my ( $self, $attr ) = @_;
+
+	# Convert to uppercase if case insensitive
+	$attr = uc $attr if defined $self->{case_insensitive};
+
+	$self->{data}{$attr} = $self->_get($attr)
+	  unless defined $self->{data}{$attr};
+	return $self->{data}{$attr} || undef;
+}
+
+sub new {
+	my $class = shift;
+
+	#my $class = ref($proto) || $proto;
+	#my $parent = ref($proto) && $proto;
+
+	my %params;
+	if ( @_ % 2 ) {
+		%params = @_;
+
+		# Convert to uppercase if case insensitive
+		if ( $params{case_insensitive} ) {
+			foreach ( keys %{ $params{data} } ) {
+				next if uc($_) eq $_;
+				$params{data}{ uc $_ } = $params{data}{$_};
+				delete $params{data}{$_};
+			}
+		}
+	}
+	my $self = bless \%params, $class;
+	undef %params;
+	$self->_init;
+	return $self;
+}
+
+1;

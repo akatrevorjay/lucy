@@ -103,9 +103,10 @@ sub irc_bot_command {
 
 	my $vars = {
 		config => $Lucy::config->{Diamond_Config}{ $self->{__name} },
-		query  => $args,
+		args   => $args,
 		nick   => $nick,
 		where  => $where,
+		type   => $type,
 	};
 
 	#TODO text replacement mechanism? like %nick%, or %red%this is red%red%

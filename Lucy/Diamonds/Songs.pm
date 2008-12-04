@@ -40,7 +40,7 @@ sub lastfm_recent_track {
 	my @msg;
 
 	if ( my ( $swho, $ssong ) =
-		$v->{query} =~ /^(\w{3,30})(?:\s+t?(?:rack\=)?(\d))?$/ )
+		$v->{args} =~ /^(\w{3,30})(?:\s+t?(?:rack\=)?(\d))?$/ )
 	{
 		### If the track number is provided, use that
 		my $ssong = 0 unless defined $ssong;

@@ -27,6 +27,7 @@ package Lucy::Common;
 use Term::ANSIColor;
 use Time::Interval;
 use Crypt::Random;
+use Regexp::Common qw/URI Hostname/;
 use warnings;
 use strict;
 use Switch;
@@ -59,31 +60,31 @@ sub debug {
 	my ( $name, $desc, $level ) = @_;
 	$name = pack( "A12", $name );
 
-	my $time = colored(time, 'white');
-	
-	if ($level <= 1) {
-		$name = colored($name, 'bold white on_red');
-		$desc = colored($desc, 'bold white on_red');
-	} elsif ($level <= 2) {
-		$name = colored($name, 'bold blue on_black');
-	} elsif ($level <= 4) {
-		$name = colored($name, 'bold green on_black');
-	} elsif ($level <= 6) {
-		$name = colored($name, 'bold');
+	my $time = colored( time, 'white' );
+
+	if ( $level <= 1 ) {
+		$name = colored( $name, 'bold white on_red' );
+		$desc = colored( $desc, 'bold white on_red' );
+	} elsif ( $level <= 2 ) {
+		$name = colored( $name, 'bold blue on_black' );
+	} elsif ( $level <= 4 ) {
+		$name = colored( $name, 'bold green on_black' );
+	} elsif ( $level <= 6 ) {
+		$name = colored( $name, 'bold' );
 	}
 
-	print "$time $level|$name| $desc\n"
+	print "$time $level|$name| $desc\n";
 }
 
 sub parseumask {
 	my ($who) = @_;
 
 	if ( my ( $full_nick, $username, $host ) = split( /[@!]/, $who, 3 ) ) {
-		my ($nick_status, $nick) = parsenick($full_nick);
+		my ( $nick_status, $nick ) = parsenick($full_nick);
 		$nick = $full_nick unless defined $nick;
 
 		my %ret;
-		foreach ([qw(full_nick nick nick_status username host)]) {
+		foreach ( [qw(full_nick nick nick_status username host)] ) {
 			$ret{$_} = eval("return \$$_ or undef");
 		}
 		return %ret;
@@ -146,111 +147,101 @@ sub font {
 	my ( $attribs, $text ) = @_;
 
 	if ( $Lucy::config->{UseIRCColors} ) {
-		my ( $header, $footer );
+		my ( $h, $f );
 		foreach my $attrib ( split( / /, $attribs ) ) {
 			switch ($attrib) {
 				case 'black' {
-					$header .= "\3" . "1";
-					$footer .= "\3";
+					$h .= "\3" . "1";
+					$f .= "\3";
 				}
 				case 'darkblue' {
-					$header .= "\3" . "2";
-					$footer .= "\3";
+					$h .= "\3" . "2";
+					$f .= "\3";
 				}
 				case 'darkgreen' {
-					$header .= "\3" . "3";
-					$footer .= "\3";
+					$h .= "\3" . "3";
+					$f .= "\3";
 				}
 				case 'red' {
-					$header .= "\3" . "4";
-					$footer .= "\3";
+					$h .= "\3" . "4";
+					$f .= "\3";
 				}
 				case 'darkred' {
-					$header .= "\3" . "5";
-					$footer .= "\3";
+					$h .= "\3" . "5";
+					$f .= "\3";
 				}
 				case 'darkpurple' {
-					$header .= "\3" . "6";
-					$footer .= "\3";
+					$h .= "\3" . "6";
+					$f .= "\3";
 				}
 				case /brown|orange/ {
-					$header .= "\3" . "7";
-					$footer .= "\3";
+					$h .= "\3" . "7";
+					$f .= "\3";
 				}
 				case 'yellow' {
-					$header .= "\3" . "8";
-					$footer .= "\3";
+					$h .= "\3" . "8";
+					$f .= "\3";
 				}
 				case 'green' {
-					$header .= "\3" . "9";
-					$footer .= "\3";
+					$h .= "\3" . "9";
+					$f .= "\3";
 				}
 				case 'teal' {
-					$header .= "\3" . "10";
-					$footer .= "\3";
+					$h .= "\3" . "10";
+					$f .= "\3";
 				}
 				case 'lightblue' {
-					$header .= "\3" . "11";
-					$footer .= "\3";
+					$h .= "\3" . "11";
+					$f .= "\3";
 				}
 				case 'blue' {
-					$header .= "\3" . "12";
-					$footer .= "\3";
+					$h .= "\3" . "12";
+					$f .= "\3";
 				}
 				case 'purple' {
-					$header .= "\3" . "13";
-					$footer .= "\3";
+					$h .= "\3" . "13";
+					$f .= "\3";
 				}
 				case /darkgr[ae]y/ {
-					$header .= "\3" . "14";
-					$footer .= "\3";
+					$h .= "\3" . "14";
+					$f .= "\3";
 				}
 				case /^gr[ae]y/ {
-					$header .= "\3" . "15";
-					$footer .= "\3";
+					$h .= "\3" . "15";
+					$f .= "\3";
 				}
 				case 'white' {
-					$header .= "\3" . "16";
-					$footer .= "\3";
+					$h .= "\3" . "16";
+					$f .= "\3";
 				}
 				case 'bold' {
-					$header .= "\2";
-					$footer .= "\2";
+					$h .= "\2";
+					$f .= "\2";
 				}
 				case /^inver/ {
-					$header .= "\26";
-					$footer .= "\26";
+					$h .= "\26";
+					$f .= "\26";
 				}
 				case 'underline' {
-					$header .= chr(31);
-					$footer .= chr(31);
+					$h .= chr(31);
+					$f .= chr(31);
 				}
 			}
 		}
-		return $header . $text . $footer;
+		return $h . $text . $f;
 	} else {
 		return $text;
 	}
 }
 
 sub isurl {
-	if ( $_[0] =~
-m~(?:https?://(?:(?:(?:(?:(?:[a-zA-Z\d](?:(?:[a-zA-Z\d]|-)*[a-zA-Z\d])?)\.)*(?:[a-zA-Z](?:(?:[a-zA-Z\d]|-)*[a-zA-Z\d])?))|(?:(?:\d+)(?:\.(?:\d+)){3}))(?::(?:\d+))?)(?:\/(?:(?:(?:(?:[a-zA-Z\d\$\-_.+!*'(),]|(?:%[a-fA-F\d]{2}))|[;:@&=])*)(?:/(?:(?:(?:[a-zA-Z\d\$\-_.+!*'(),]|(?:%[a-fA-F\d]{2}))|[;:@&=])*))*)(?:\?(?:(?:(?:[a-zA-Z\d\$\-_.+!*'(),]|(?:%[a-fA-F\d]{2}))|[;:@&=])*))?)?)~o
-	  )
-	{
-		return 1;
-	}
+	return 1 if ( $_[0] =~ /^$RE{URI}$/ );
 	undef;
 }
 
 # checks if $hostname is a valid hostname or ip
 sub ishostname {
-	if ( $_[0] =~
-/(?:(?:(?:(?:[a-zA-Z\d](?:(?:[a-zA-Z\d]|-)*[a-zA-Z\d])?)\.)*(?:[a-zA-Z](?:(?:[a-zA-Z\d]|-)*[a-zA-Z\d])?))|(?:(?:\d+)(?:\.(?:\d+)){3}))/o
-	  )
-	{
-		return 1;
-	}
+	return 1 if ( $_[0] =~ /$RE{Hostname}/o );
 	undef;
 }
 

@@ -24,20 +24,239 @@
 #
 package Lucy::Diamonds::ChuckNorris;
 use base qw(Lucy::Diamond);
-use POE;
-use XML::Smart;
-use Acme::Magic8Ball qw(ask);
-use Acme::Scurvy::Whoreson::BilgeRat;
-use Math::Expression;
 use warnings;
 use strict;
 
+sub commands {
+	return {
+		russianroulette_load  => [qw(load)],
+		russianroulette_shoot => [qw(shoot bang)],
+		eightball             => [qw(ask eightball 8ball)],
+		insult                => [qw(insult)],
+		math                  => [qw(math calc)],
+		rot13                 => [qw(rot13 xor)],
+		terror_level          => [qw(terror)],
+
+		diamond_load   => [qw(diamond_load dload dadd)],
+		diamond_unload => [qw(diamond_unload dunload ddel)],
+		diamond_reload => [qw(diamond_reload dreload drel reload)],
+		timesince      => [qw(timesince)],
+		use_irc_colors => [qw(colors)],
+		debug_level    => [qw(debug)],
+	};
+}
+
+##
+## Russian roulette
+##
+
+sub russianroulette_load {
+	my ( $self, $v ) = @_;
+
+	if ( defined $self->{gunchamber} ) {
+		$Lucy::lucy::lucy->yield( kill => $v->{nick} =>
+			  "BANG - Don't stuff bullets into a loaded gun" );
+	} else {
+		$self->{gunchamber} = 1 + Lucy::crand(6);
+		$Lucy::lucy::lucy->yield( ctcp => $v->{where} => 'ACTION' =>
+			  'loads the gun and sets it on the table' );
+	}
+}
+
+sub russianroulette_shoot {
+	my ( $self, $v ) = @_;
+	my @msg;
+
+	if (   ( !defined $self->{gunchamber} )
+		|| ( $self->{gunchamber} <= 0 ) )
+	{
+		push( @msg,
+			"You probrably want to !load the gun first, don't you think?" );
+		return @msg;
+	} else {
+		$self->{gunchamber}--;
+		if ( $self->{gunchamber} == 0 ) {
+			$Lucy::lucy::lucy->yield( privmsg => $v->{nick} => "Bang!!!" );
+			$Lucy::lucy::lucy->yield(
+				privmsg => $v->{nick} => "Better luck next time, $v->{nick}" );
+			$Lucy::lucy::lucy->yield( kill => $v->{nick} => "BANG!!!!" );
+			delete $self->{gunchamber};
+		} else {
+			$Lucy::lucy::lucy->yield( privmsg => $v->{nick} => "click" );
+		}
+	}
+}
+
+## insultserver mimick
+use Acme::Scurvy::Whoreson::BilgeRat;
+
+sub insult {
+	my ( $self, $v ) = @_;
+
+	if ( my ( $iwho, $itype ) = $v->{args} =~ /^(.*?)\s*(?:like an? (\w+))?$/i )
+	{
+		my %langs = ( insultserver => 1, pirate => 1, lala => 1 );
+
+		unless ( exists $langs{$itype} ) {
+			my @langtypes = keys %langs;
+			$itype = $langtypes[ int rand( $#langtypes + 1 ) ];
+		}
+		$iwho = $v->{nick} unless ($iwho);
+
+		my $insult =
+		  Acme::Scurvy::Whoreson::BilgeRat->new( language => $itype );
+		$Lucy::lucy->yield( privmsg => $v->{where} => "$iwho: $insult" );
+		undef $insult;
+	}
+}
+
+# Run math expressions
+use Math::Expression;
+
+sub math {
+	my ( $self, $v ) = @_;
+
+	if ( $v->{args} eq 'help' ) {
+		$Lucy::lucy->yield( privmsg => $v->{where} =>
+"$v->{nick}: syntax is available at http://search.cpan.org/~addw/Math-Expression-1.14/Expression.pm"
+		);
+	}
+
+# Idea borrowed from Bot::BasicBot ;)
+# The author of it, Simon Wistow, is a great man with some great code. Check him out on CPAN!
+	my $calc = Math::Expression->new;
+	$calc->SetOpt( PrintErrFunc => sub { } );
+
+	my $answer = $calc->EvalToScalar( $calc->Parse( $v->{args} ) )
+	  || undef;
+	undef $calc;
+	if ($answer) {
+		$Lucy::lucy->yield( privmsg => $v->{where} => "$v->{nick}: $answer" );
+	} else {
+		$Lucy::lucy->yield(
+			privmsg => $v->{where} => "$v->{nick}: expression failed bitch" );
+	}
+}
+
+# Current US terror level
+use XML::Smart;
+
+sub terror_level {
+	my ( $self, $v ) = @_;
+
+	if ( my $XML =
+		XML::Smart->new("http://www.dhs.gov/dhspublic/getAdvisoryCondition") )
+	{
+		$XML = $XML->cut_root;
+		$Lucy::lucy::lucy->yield(
+			privmsg => $v->{where} => "WHOA!! TAKE COVER!!! TERROR LEVEL IS "
+			  . $XML->{CONDITION} );
+		undef $XML;
+	}
+	return 1;
+}
+
+# Magic Eight Ball
+use Acme::Magic8Ball qw(ask);
+
+sub eightball {
+	my ( $self, $v ) = @_;
+	$Lucy::lucy->privmsg( $v->{where}, "$v->{nick}: " . ask( $v->{args} ) );
+}
+
+# Rot13 unbreakable encryption
+sub rot13 {
+	my ( $self, $v ) = @_;
+	$v->{args} =~ tr[a-zA-Z][n-za-mN-ZA-M];
+	$Lucy::lucy->yield( privmsg => $v->{where} => $v->{args} );
+}
+
+# change the debug level
+sub debug_level {
+	my ( $self, $v ) = @_;
+	if ( $v->{args} =~ /(?:level=)?([4-8])/ ) {
+		Lucy::debug( "debug", "--- SET DEBUG LEVEL TO $1 ---", 2 );
+		$Lucy::lucy::config->{debug_level} = scalar($1);
+	}
+}
+
+# Turn colors on/off
+sub use_irc_colors {
+	my ( $self, $v ) = @_;
+	if ( $v->{args} =~ /^(?:on|off)$/i ) {
+		$Lucy::lucy::config->{UseIRCColors} = ( $v->{args} eq 'on' ) ? 1 : 0;
+	}
+}
+
+##
+## Diamond-related functions
+##
+#TODO some kind of auth system is required for such powerful functions
+#FUCK diamond_load doesn't work correctly. remove|reload work fine.
+sub diamond_load {
+	my ( $self, $v ) = @_;
+
+	if (   $v->{type} eq 'pub'
+		&& $Lucy::lucy->is_channel_admin( $v->{where}, $v->{nick} )
+		&& $v->{args} =~ /\w{3,20}/ )
+	{
+		Lucy::debug( "ChuckNorris",
+			"Loading diamond $v->{args} by $v->{nick}\'s request..", 1 );
+		$Lucy::lucy->add_diamond( $v->{args} );
+	}
+}
+
+sub diamond_unload {
+	my ( $self, $v ) = @_;
+
+	if (   $v->{type} eq 'pub'
+		&& $Lucy::lucy->is_channel_admin( $v->{where}, $v->{nick} )
+		&& $v->{args} =~ /\w{3,20}/ )
+	{
+		Lucy::debug( "ChuckNorris",
+			"Unloading diamond $v->{args} by $v->{nick}\'s request..", 1 );
+		$Lucy::lucy->remove_diamond( $v->{args} );
+	}
+}
+
+sub diamond_reload {
+	my ( $self, $v ) = @_;
+
+	if (   $v->{type} eq 'pub'
+		&& $Lucy::lucy->is_channel_admin( $v->{where}, $v->{nick} ) )
+	{
+		Lucy::debug(
+			"ChuckNorris",
+			"Reloading diamonds that have changed by $v->{nick}\'s request...",
+			1
+		);
+		if ( $Lucy::lucy->reload_diamond() ) {
+			$Lucy::lucy->yield( privmsg => $v->{where} => "$v->{nick}: ok" );
+		} else {
+			$Lucy::lucy->yield(
+				privmsg => $v->{where} => "$v->{nick}: failed to reload" );
+		}
+	}
+}
+
+## DANANANAnanananaNA timesince!
+sub timesince {
+	my ( $self, $v ) = @_;
+
+	if ( $v->{args} =~ /^\d+$/ ) {
+		$Lucy::lucy->yield(
+			    privmsg => $v->{where} => "$v->{nick}: $v->{args} was "
+			  . Lucy::timesince( $v->{args} )
+			  . ' ago.' );
+	}
+}
+
 #### The acronyms of defeat shall pwn thee
 #sub irc_public {
-#	my ( $self, $lucy, $who, $where, $what ) =
+#	my ( $self, $Lucy::lucy, $who, $v->{where}, $what ) =
 #	  @_[ OBJECT, SENDER, ARG0, ARG1, ARG2 ];
-#	my $nick = ( split( /[@!]/, $who, 2 ) )[0];
-#	$where = $where->[0];
+#	my $v->{nick} = ( split( /[@!]/, $who, 2 ) )[0];
+#	$v->{where} = $v->{where}->[0];
 #
 ##-- Apparently, linolium doesn't like funny, spunky, and random injections into the conversation... =(
 ##	# Make lucy spit out random messages at times of boredom
@@ -49,186 +268,10 @@ use strict;
 ##			'How about sex WITH a stargate??!? o_O',
 ##			'someone pinch me, I think my ear is bleeding'
 ##		);
-##		$lucy->privmsg( $where, $r[ Lucy::crand($#r+1) ] );
+##		$Lucy::lucy->privmsg( $v->{where}, $r[ Lucy::crand($#r+1) ] );
 ##	}
 #
 #	return 0;
 #}
-
-### I'm Spider Man, Bitch.
-sub irc_bot_command {
-	my ( $self, $kernel, $lucy, $who, $where, $what, $cmd, $args, $type ) =
-	  @_[ OBJECT, KERNEL, SENDER, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5 ];
-	my $nick = ( split( /[@!]/, $who, 2 ) )[0];
-	$where = $where->[0];
-
-	# Russian roulette
-	if ( $cmd eq 'load' ) {
-		if ( defined $self->{gunchamber} ) {
-			$lucy->yield( kill => $nick =>
-				  "BANG - Don't stuff bullets into a loaded gun" );
-		} else {
-			$self->{gunchamber} = 1 + Lucy::crand(6);
-			$lucy->yield( ctcp => $where => 'ACTION' =>
-				  'loads the gun and sets it on the table' );
-		}
-		return 1;
-	} elsif ( $cmd eq 'shoot' ) {
-		if (   ( !defined $self->{gunchamber} )
-			|| ( $self->{gunchamber} <= 0 ) )
-		{
-			$lucy->yield( privmsg => $where =>
-"$nick: You probrably want to !load the gun first, don't you think?"
-			);
-		} else {
-			$self->{gunchamber}--;
-			if ( $self->{gunchamber} == 0 ) {
-				$lucy->yield( privmsg => $nick => "Bang!!!" );
-				$lucy->yield(
-					privmsg => $nick => "Better luck next time, $nick" );
-				$lucy->yield( kill => $nick => "BANG!!!!" );
-				delete $self->{gunchamber};
-			} else {
-				$lucy->yield( privmsg => $nick => "click" );
-			}
-		}
-		return 1;
-
-		# Insult
-	} elsif ( ( $cmd eq 'insult' )
-		&& ( my ( $iwho, $itype ) = $args =~ /^(.*?)\s*(?:like an? (\w+))?$/i )
-	  )
-	{
-		my %langs = ( insultserver => 1, pirate => 1, lala => 1 );
-
-		unless ( exists $langs{$itype} ) {
-			my @langtypes = keys %langs;
-			$itype = $langtypes[ int rand( $#langtypes + 1 ) ];
-		}
-		$iwho = $nick unless ($iwho);
-
-		my $insult =
-		  Acme::Scurvy::Whoreson::BilgeRat->new( language => $itype );
-		$lucy->yield( privmsg => $where => "$iwho: $insult" );
-		undef $insult;
-		return 1;
-
-		# Run math expressions
-	} elsif ( $cmd eq 'math' ) {
-		unless ( $args eq 'help' ) {
-
-# Idea borrowed from Bot::BasicBot ;)
-# The author of it, Simon Wistow, is a great man with some great code. Check him out on CPAN!
-			my $calc = Math::Expression->new;
-			$calc->SetOpt( PrintErrFunc => sub { } );
-
-			# should this need to be in an eval?
-			my $answer = $calc->EvalToScalar( $calc->Parse($args) )
-			  || undef;
-			undef $calc;
-			if ($answer) {
-				$lucy->yield( privmsg => $where => "$nick: $answer" );
-			} else {
-				$lucy->yield(
-					privmsg => $where => "$nick: expression failed bitch" );
-			}
-		} else {
-			$lucy->yield( privmsg => $where =>
-"$nick: syntax is available at http://search.cpan.org/~addw/Math-Expression-1.14/Expression.pm"
-			);
-		}
-		return 1;
-
-		# Current US terror level
-	} elsif ( $cmd eq 'terror' ) {
-		if (
-			my $XML = XML::Smart->new(
-				"http://www.dhs.gov/dhspublic/getAdvisoryCondition"
-			)
-		  )
-		{
-			$XML = $XML->cut_root;
-			$lucy->yield(
-				privmsg => $where => "WHOA!! TAKE COVER!!! TERROR LEVEL IS "
-				  . $XML->{CONDITION} );
-			undef $XML;
-		}
-		return 1;
-
-		# Magic Eight Ball
-	} elsif ( $cmd eq '8ball' ) {
-		$lucy->privmsg( $where, "$nick: " . ask($args) );
-		return 1;
-
-		# Rot13 unbreakable encryption
-	} elsif ( $cmd eq 'rot13' ) {
-		$args =~ tr[a-zA-Z][n-za-mN-ZA-M];
-		$lucy->yield( privmsg => $where => $args );
-
-		# change the debug level
-	} elsif ( $cmd eq 'debug' ) {
-		if ( $args =~ /(?:level=)?([4-8])/ ) {
-			Lucy::debug( "debug", "--- SET DEBUG LEVEL TO $1 ---", 2 );
-			$Lucy::config->{debug_level} = scalar($1);
-		}
-		return 1;
-
-		# Turn colors on/off
-	} elsif ( ( $cmd eq 'colors' )
-		&& ( $args =~ /^(?:on|off)$/i ) )
-	{
-		$Lucy::config->{UseIRCColors} = ( $args eq 'on' ) ? 1 : 0;
-		return 1;
-	}
-
-	#TODO some kind of auth system is required for such powerful functions
-	#FUCK diamond_add doesn't work correctly. remove|reload work fine.
-	elsif ( $cmd eq 'diamond_add' ) {
-		if (   $type eq 'pub'
-			&& $lucy->is_channel_admin( $where, $nick )
-			&& $args =~ /\w{3,20}/ )
-		{
-			Lucy::debug( "ChuckNorris",
-				"Loading diamond $args by $nick\'s request..", 1 );
-			$lucy->add_diamond($args);
-		}
-
-		return 1;
-	} elsif ( $cmd eq 'diamond_remove' ) {
-		if (   $type eq 'pub'
-			&& $lucy->is_channel_admin( $where, $nick )
-			&& $args =~ /\w{3,20}/ )
-		{
-			Lucy::debug( "ChuckNorris",
-				"Unloading diamond $args by $nick\'s request..", 1 );
-			$lucy->remove_diamond($args);
-		}
-
-		return 1;
-	} elsif ( $cmd eq 'reload' ) {
-		if (   $type eq 'pub'
-			&& $lucy->is_channel_admin( $where, $nick ) )
-		{
-			Lucy::debug( "ChuckNorris",
-				"Reloading diamonds that have changed by $nick\'s request...",
-				1 );
-			if ( $lucy->reload_diamond() ) {
-				$lucy->yield( privmsg => $where => "$nick: ok" );
-			} else {
-				$lucy->yield( privmsg => $where => "$nick: failed to reload" );
-			}
-		}
-		return 1;
-	} elsif ( $cmd eq 'timesince' && $args =~ /^\d+$/ ) {
-		$lucy->yield( privmsg => $where => "$nick: $args was "
-			  . Lucy::timesince($args)
-			  . ' ago.' );
-	}
-}
-
-### Mmmm. We have been loaded.
-sub new {
-	return bless {}, shift;
-}
 
 1;

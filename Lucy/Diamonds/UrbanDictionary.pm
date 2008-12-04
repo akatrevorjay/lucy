@@ -36,15 +36,15 @@ sub search {
 	my ( $self, $v ) = @_;
 	my @msg;
 
-	Lucy::debug( 'UrbanDictionary', 'query for [' . $v->{query} . ']', 6 );
+	Lucy::debug( 'UrbanDictionary', 'query for [' . $v->{args} . ']', 6 );
 
 	my $max_results = 2;
-	if ( $v->{query} =~ s/\s+max=([1-5])$// ) {
+	if ( $v->{args} =~ s/\s+max=([1-5])$// ) {
 		$max_results = $1;
 	}
 
 	my $search = WWW::Search->new( 'UrbanDictionary', %{ $v->{config} } );
-	$search->native_query( $v->{query} );
+	$search->native_query( $v->{args} );
 
 	my $i = 1;
 	while ( my $result = $search->next_result() ) {

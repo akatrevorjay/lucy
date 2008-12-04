@@ -33,7 +33,7 @@ sub tablename_map { return 'lucy_responsemap'; }
 
 ### The acronyms of defeat shall pwn thee
 sub irc_public {
-	return unless ( int(rand(6)) == 1 );
+	return unless ( int( rand(6) ) == 1 );
 
 	my ( $self, $lucy, $who, $where, $what ) =
 	  @_[ OBJECT, SENDER, ARG0, ARG1, ARG2 ];
