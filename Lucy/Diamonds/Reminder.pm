@@ -31,39 +31,46 @@ use warnings;
 
 sub tablename { return 'lucy_reminders'; }
 
-### Mmmm. We have been loaded.
-sub new {
-	my $class = shift;
-	return bless {}, $class;
+sub commands {
+	return {
+		remind   => [qw(remind)],
+		unremind => [qw(unremind)],
+	};
 }
 
-### Public message event
-sub irc_bot_command {
-	my ( $self, $lucy, $who, $where, $what, $cmd, $args, $type ) =
-	  @_[ OBJECT, SENDER, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5 ];
-	my $nick = ( split( /[@!]/, $who, 2 ) )[0];
-	$where = $where->[0];
+sub remind {
+	my ( $self, $v ) = @_;
 
 	# Only works with fixed SQL::Abstract [w/ mysql 5]
 	my ( $to, $reminder );
-	if (   ( $cmd eq 'remind' )
-		&& ( ( $to, $reminder ) = $args =~ /^(\w{3,30})\s*(.+)$/ ) )
-	{
-		$Lucy::dbh->insert( $self->tablename,
-			{ from => $nick, to => lc($to), reminder => $reminder, ts => time }
+	if ( ( $to, $reminder ) = $v->{args} =~ /^([\w\-\_\']{3,30})\s*(.+)$/ ) {
+		$Lucy::dbh->insert(
+			$self->tablename,
+			{
+				from     => $v->{nick},
+				to       => lc($to),
+				reminder => $reminder,
+				ts       => time
+			}
 		);
-		$lucy->privmsg( $where,
-			Lucy::font( 'darkred', $nick ) . ": ok, saving reminder for $to" );
+		$Lucy::lucy->privmsg( $v->{where},
+			Lucy::font( 'darkred', $v->{nick} )
+			  . ": ok, saving reminder for $to" );
 		return 1;
-	} elsif ( ( $cmd eq 'unremind' )
-		&& ( ($to) = $args =~ /^(\w{3,30})$/ ) )
-	{
+	}
+}
+
+sub unremind {
+	my ( $self, $v ) = @_;
+
+	# Only works with fixed SQL::Abstract [w/ mysql 5]
+	my ($to);
+	if ( ($to) = $v->{args} =~ /^([\w\-\_\']{3,30})$/ ) {
 		$Lucy::dbh->delete( $self->tablename,
-			{ from => $nick, to => lc($to) } );
-		$lucy->privmsg( $where,
-			Lucy::font( 'darkred', $nick )
+			{ from => $v->{nick}, to => lc($to) } );
+		$Lucy::lucy->privmsg( $v->{where},
+			Lucy::font( 'darkred', $v->{nick} )
 			  . ": ok, I removed all reminders from you to $to" );
-		return 1;
 	}
 }
 
@@ -77,8 +84,7 @@ sub check_for_reminders {
 	for my $r ( $q->hashes ) {
 		my $timesince = Lucy::timesince( $r->{ts} );
 		$timesince
-		  ? $timesince =
-		  ' around ' . $timesince . ' ago'
+		  ? $timesince = ' around ' . $timesince . ' ago'
 		  : $timesince = '';
 		$lucy->privmsg( $where,
 			Lucy::font( 'darkred', $nick )
@@ -87,13 +93,36 @@ sub check_for_reminders {
 	}
 }
 
+#TODO cleanup
+sub count_reminders {
+	my ( $self, $nick, $where ) = @_;
+
+	my $q = $Lucy::dbh->query(
+		'SELECT COUNT(*) FROM ' . $self->tablename . ' AS r WHERE r.to = ?',
+		lc($nick) )
+	  or return;
+
+	my ($rcount) = $q->list;
+	unless ( defined $rcount && $rcount >= 0 ) {
+		$rcount = 0;
+	}
+
+	return $rcount;
+}
+
 ###
 ### Someone has joined
 ###
 sub irc_join {
 	my ( $self, $lucy, $who, $where ) = @_[ OBJECT, SENDER, ARG0, ARG1 ];
 	my $nick = ( split( /[@!]/, $who, 2 ) )[0];
-	$self->check_for_reminders( $nick, $lucy, $where );
+
+	my $rcount = $self->count_reminders( $nick, $where );
+	$lucy->yield( privmsg => $where =>
+		  "$nick: You have $rcount reminder(s) available. Tell me you love me."
+	) if ( $rcount > 0 );
+
+	#	$self->check_for_reminders( $nick, $lucy, $where, 0 );
 	return 0;
 }
 
