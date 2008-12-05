@@ -157,7 +157,7 @@ sub tre_filter {
 	my $regex = shift || undef;
 	my $args  = shift || undef;
 
-	if ( defined $regex && defined $args ) {
+	if ( defined $regex && length($regex) > 0 && defined $args ) {
 		if ( $args =~ /$regex/ ) {
 			my $count = 1;
 			while ( my $m = eval( 'return $' . $count . ' or undef;' ) ) {

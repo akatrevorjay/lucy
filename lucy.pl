@@ -27,7 +27,7 @@ use warnings;
 use strict;
 no strict "refs";
 use vars qw($VERSION $dbh $sessid $lucy);
-$VERSION = "0.5svn";
+$VERSION = "0.6svn";
 
 BEGIN {
 	unshift( @INC, "./lib" );

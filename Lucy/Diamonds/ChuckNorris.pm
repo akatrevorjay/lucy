@@ -43,6 +43,7 @@ sub commands {
 		timesince      => [qw(timesince)],
 		use_irc_colors => [qw(colors)],
 		debug_level    => [qw(debug)],
+		version        => [qw(version)],
 	};
 }
 
@@ -249,6 +250,11 @@ sub timesince {
 			  . Lucy::timesince( $v->{args} )
 			  . ' ago.' );
 	}
+}
+
+sub version {
+	my ( $self, $v ) = @_;
+	return [ 'Lucy v' . $Lucy::VERSION ];
 }
 
 #### The acronyms of defeat shall pwn thee
