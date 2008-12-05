@@ -12,12 +12,12 @@
 #	it under the terms of the GNU General Public License as published by
 #	the Free Software Foundation; either version 2 of the License, or
 #	(at your option) any later version.
-#	
+#
 #	Lucy is distributed in the hope that it will be useful,
 #	but WITHOUT ANY WARRANTY; without even the implied warranty of
 #	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #	GNU General Public License for more details.
-#	
+#
 #	You should have received a copy of the GNU General Public License
 #	along with Lucy; if not, write to the Free Software
 #	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
@@ -32,9 +32,12 @@ require Exporter;
 
 ##### Config
 $config = {
+
 	# Diamonds, aka plugins if you're lame
-	# Add Google|Weather|Dict when you fill out the required config vars below
-	Diamonds => [qw(Logger State Reminder InfoBot ChuckNorris RSS Responses)],
+	# Add Google|Weather|UrbanDictionary when you fill out the required config vars below
+	Diamonds => [
+		qw(Logger State Reminder InfoBot ChuckNorris RSS Responses Songs)
+	],
 
 	# Database Settings ( can use any perl dbd driver )
 	DBdsn  => 'DBI:mysql:database=lucy;host=localhost',
@@ -48,32 +51,44 @@ $config = {
 
 # You can use the same log file for multiple channels ( .log extension is added if not there)
 	Channels => {
-		'#neobots' => { log => '#neobots.log', },
+		'#neobots'    => { log => '#neobots.log', },
 	},
-	Nick         => 'LucyBot',
-	Username     => 'Lucy',
-	Ircname      => 'Lucy In The Sky With Diamonds',
-# Uncomment these if you want nickserv ident
-#	NickServUser => 'NickServ',
-#	NickServPass => 'changeme',
-# Uncomment these if you want your bot to /oper on connect
-# ( needed for russian roulette game to kill a user )
-# it's reccommended that lucy is only allowed to kill users, and nothing more.
-#	OperUser     => 'notneeded',
-#	OperPass     => 'onlyusedinroulette',
+	Nick     => 'LucyBot',
+	Username => 'Lucy',
+	Ircname  => 'Lucy In The Sky With Diamonds',
 
-	# Bot Settings
-	Maintainer    => 'trevorj',
-	UseIRCColors  => 1,
-	debug_level   => 6,
+  # Uncomment these if you want nickserv ident
+  #	NickServUser => 'NickServ',
+  #	NickServPass => 'changeme',
+  # Uncomment these if you want your bot to /oper on connect
+  # ( needed for russian roulette game to kill a user )
+  # it's reccommended that lucy is only allowed to kill users, and nothing more.
+  #	OperUser     => 'notneeded',
+  #	OperPass     => 'onlyusedinroulette',
+  
+  # Bot Settings
+	Maintainer   => 'trevorj',
+	UseIRCColors => 1,
+	debug_level  => 6,
 
-	# This is a WIP feature. Loads certain subs on demand instead of at runtime. ( saves ram until it's needed )
+# This is a WIP feature. Loads certain subs on demand instead of at runtime. ( saves ram until it's needed )
 	load_ondemand => 1,
 
-	# Other Settings
-	#GoogleApi_Key => 'getonefrom google.com mofo',
-	#WeatherApi_partner => 'getonefrom weather.com mofo',
-	#WeatherApi_key     => 'getonefrom weather.com mofo',
-	#UrbanDictApi_key   => 'getonefrom urbandictionary.com mofo',
+	# Diamond-specific Settings
+	Diamond_Config => {
+		#UrbanDictionary => { key => '', },
+		#Google => {
+		#	key     => '',
+		#	referer => '',
+		#	src     => '',
+		#	dest    => 'en'
+		#},
+		#Weather => {
+		#	partner_id => '',
+		#	license    => '',
+		#},
+	},
 };
 ##### End of Config
+
+1;
