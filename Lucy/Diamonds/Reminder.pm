@@ -90,7 +90,7 @@ sub check_for_reminders {
 		  ? $timesince = ' around ' . $timesince . ' ago'
 		  : $timesince = '';
 		$lucy->privmsg( $where,
-			Lucy::font( 'darkblue', $r->{to} )
+			Lucy::font( 'blue', $r->{to} )
 			  . ": $r->{from} wanted to remind you $r->{reminder}$timesince" );
 		$Lucy::dbh->delete( $self->tablename, { id => $r->{id} } );
 	}
@@ -121,8 +121,8 @@ sub irc_join {
 	my $nick = ( split( /[@!]/, $who, 2 ) )[0];
 
 	my $rcount = $self->count_reminders( $nick, $where );
-	$lucy->yield( privmsg => $where => Lucy::font( 'darkblue', "$nick: " )
-		  . "You have $rcount reminder(s) available. Tell me you "
+	$lucy->yield( privmsg => $where => Lucy::font( 'blue', $nick )
+		  . ": You have $rcount reminder(s) available. Tell me you "
 		  . Lucy::font( 'darkred', 'love' )
 		  . ' me.' )
 	  if ( $rcount > 0 );
