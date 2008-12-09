@@ -121,7 +121,7 @@ sub irc_join {
 	my $nick = ( split( /[@!]/, $who, 2 ) )[0];
 
 	my $rcount = $self->count_reminders( $nick, $where );
-	$lucy->yield( privmsg => $where => Lucy::font( 'darkblue', "$nick " )
+	$lucy->yield( privmsg => $where => Lucy::font( 'darkblue', "$nick: " )
 		  . "You have $rcount reminder(s) available. Tell me you "
 		  . Lucy::font( 'darkred', 'love' )
 		  . ' me.' )
