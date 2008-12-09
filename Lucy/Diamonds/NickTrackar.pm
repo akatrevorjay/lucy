@@ -39,6 +39,8 @@ sub commands {
 	return { seen => [qw(seen lastseen)] };
 }
 
+# You only wish you looked as good as this code, bitch. This is pristine.
+# High-quality shit man. You sure you wanna fuck wit it?
 sub seen {
 	my ( $self, $v ) = @_;
 	Lucy::debug( "Trackar", "$v->{nick} asked for $v->{args} in $v->{where}",
