@@ -71,23 +71,26 @@ sub unremind {
 		$Lucy::lucy->privmsg( $v->{where},
 			Lucy::font( 'darkred', $v->{nick} )
 			  . ": ok, I removed all reminders from you to $to" );
+
+		return 1;
 	}
 }
 
 sub check_for_reminders {
 	my ( $self, $nick, $lucy, $where ) = @_;
 
-	my $q =
-	  $Lucy::dbh->select( $self->tablename, [qw(id from reminder ts)],
-		{ to => lc($nick) } )
-	  or return;
+	my $q = $Lucy::dbh->select(
+		$self->tablename,
+		[qw(id to from reminder ts)],
+		{ to => [ lc($nick), $lucy->nick_name ] }
+	) or return;
 	for my $r ( $q->hashes ) {
 		my $timesince = Lucy::timesince( $r->{ts} );
 		$timesince
 		  ? $timesince = ' around ' . $timesince . ' ago'
 		  : $timesince = '';
 		$lucy->privmsg( $where,
-			Lucy::font( 'darkred', $nick )
+			Lucy::font( 'darkblue', $r->{to} )
 			  . ": $r->{from} wanted to remind you $r->{reminder}$timesince" );
 		$Lucy::dbh->delete( $self->tablename, { id => $r->{id} } );
 	}
@@ -118,9 +121,11 @@ sub irc_join {
 	my $nick = ( split( /[@!]/, $who, 2 ) )[0];
 
 	my $rcount = $self->count_reminders( $nick, $where );
-	$lucy->yield( privmsg => $where =>
-		  "$nick: You have $rcount reminder(s) available. Tell me you love me."
-	) if ( $rcount > 0 );
+	$lucy->yield( privmsg => $where => Lucy::font( 'darkblue', "$nick " )
+		  . "You have $rcount reminder(s) available. Tell me you "
+		  . Lucy::font( 'darkred', 'love' )
+		  . ' me.' )
+	  if ( $rcount > 0 );
 
 	#	$self->check_for_reminders( $nick, $lucy, $where, 0 );
 	return 0;

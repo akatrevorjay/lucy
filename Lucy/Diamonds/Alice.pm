@@ -39,7 +39,7 @@ sub irc_bot_command {
 
 	my $out;
 	if ( my $msg = $self->do_alice( $nick, $cmd . ' ' . $args ) ) {
-		$out = Lucy::font( 'blue', $nick ) . ": " . $msg;
+		$out = Lucy::font( 'bold', $nick ) . ": " . $msg;
 	} else {
 		$out = Lucy::font( 'red', $nick ) . ": unable to connect to socket";
 	}
@@ -58,7 +58,7 @@ sub irc_public {
 
 	my $out;
 	if ( my $msg = $self->do_alice( $nick, $what ) ) {
-		$out = Lucy::font( 'blue', $nick ) . ": " . $msg;
+		$out = Lucy::font( 'bold', $nick ) . ": " . $msg;
 	} else {
 		$out = Lucy::font( 'red', $nick ) . ": unable to connect to socket";
 	}
