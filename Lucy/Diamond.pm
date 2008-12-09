@@ -128,11 +128,11 @@ sub irc_bot_command {
 				$where => Lucy::font( 'yellow bold', "$nick: " ) . $_ );
 		}
 	} else {
-		Lucy::Debug( 'Diamond',
+		Lucy::debug( 'Diamond',
 			'Failed to run [' . $self->{__cmd_map}{$cmd} . ']: ' . $@, 2 );
 	}
 	
-	return undef;
+	return 1;
 }
 
 1;

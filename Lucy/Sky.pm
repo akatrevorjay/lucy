@@ -226,6 +226,7 @@ sub _default {
 					'Compilation of ' . $state . ' @ ' . $d . ' failed: ' . $@,
 					0
 				) if $@;
+				
 				if ($ret) {
 					Lucy::debug( 'Event' . $pri,
 						$d . ' stopped event of ' . $state, 9 );
