@@ -91,6 +91,12 @@ sub __init {
 	}
 }
 
+sub diamond_config {
+	my $self = shift;
+	my $name = shift || $self->{__name};
+	return $Lucy::config->{Diamond_Config}{$name} || undef;
+}
+
 sub irc_bot_command {
 	unless ( $_[OBJECT]->{__cmd_map}{ $_[ARG3] } ) {
 		return undef;
@@ -103,6 +109,7 @@ sub irc_bot_command {
 
 	my $vars = {
 		config => $Lucy::config->{Diamond_Config}{ $self->{__name} },
+		cmd    => $cmd,
 		args   => $args,
 		nick   => $nick,
 		where  => $where,
@@ -123,7 +130,8 @@ sub irc_bot_command {
 
 		return 1;
 	} else {
-		print $@;
+		print Lucy::Debug( 'Diamond',
+			'Failed to run [' . $self->{__cmd_map}{$cmd} . ']: ' . $@, 2 );
 	}
 
 }

@@ -29,6 +29,43 @@ use IO::Socket;
 use warnings;
 use strict;
 
+### LOCKNESSSZZZ MONSTA IS MAI BITCH
+sub irc_bot_command {
+	my ( $self, $lucy, $who, $where, $what, $cmd, $args, $type ) =
+	  @_[ OBJECT, SENDER, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5 ];
+	my $nick = ( split( /[@!]/, $who, 2 ) )[0];
+	$where = $where->[0];
+	Lucy::debug( 'Alice', "got command $cmd", 7 );
+
+	my $out;
+	if ( my $msg = $self->do_alice( $nick, $cmd . ' ' . $args ) ) {
+		$out = Lucy::font( 'blue', $nick ) . ": " . $msg;
+	} else {
+		$out = Lucy::font( 'red', $nick ) . ": unable to connect to socket";
+	}
+
+	$lucy->yield( privmsg => $where => $out );
+}
+
+### The acronyms of defeat shall pwn thee
+sub irc_public {
+	return unless ( int( rand(60) ) == 1 );
+
+	my ( $self, $lucy, $who, $where, $what ) =
+	  @_[ OBJECT, SENDER, ARG0, ARG1, ARG2 ];
+	my $nick = ( split( /[@!]/, $who, 2 ) )[0];
+	$where = $where->[0];
+
+	my $out;
+	if ( my $msg = $self->do_alice( $nick, $what ) ) {
+		$out = Lucy::font( 'blue', $nick ) . ": " . $msg;
+	} else {
+		$out = Lucy::font( 'red', $nick ) . ": unable to connect to socket";
+	}
+
+	$lucy->yield( privmsg => $where => $out );
+}
+
 ### Mmmm. We have been loaded.
 sub new {
 	my $class = shift;
@@ -37,24 +74,21 @@ sub new {
 	return bless { priority => 9 }, $class;
 }
 
-sub irc_bot_command {
-	my ( $self, $lucy, $who, $where, $what, $cmd, $args, $type ) =
-	  @_[ OBJECT, SENDER, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5 ];
-	my $nick = ( split( /[@!]/, $who, 2 ) )[0];
-	$where = $where->[0];
-	Lucy::debug( 'Alice', "got command $cmd", 8 );
+### Heart and soul, Yo.
+sub do_alice {
+	my ( $self, $who, $msg ) = @_;
 
-	my ( $sock, $msg );
-
-	if ( $sock = IO::Socket::UNIX->new('/tmp/alice') ) {
-		$sock->write("$nick\007$cmd $args");
-		$sock->read( $msg, 1024 );
+	my $out;
+	if ( my $sock = IO::Socket::UNIX->new('/tmp/alice') ) {
+		$sock->write("$who\007$msg");
+		$sock->read( $out, 1024 );
 		$sock->close;
-		$lucy->privmsg( $where, Lucy::font( 'bold', $nick ) . ": " . $msg );
-	} else {
-		$lucy->privmsg( $where,
-			Lucy::font( 'red', $nick ) . ": unable to connect to socket" );
+
+		undef $sock;
+		return ( length($out) > 1 ) ? $out : undef;
 	}
+	
+	return undef;
 }
 
 1;

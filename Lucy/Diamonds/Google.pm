@@ -29,10 +29,11 @@ use strict;
 
 sub commands {
 	return {
-		search    => [qw(google g goog search)],
-		calc      => [qw(googlecalc gcalc calc)],
-		translate => [qw(trans gtrans googtrans gtranslate translate translator)],
-		googlism  => [qw(googlism spewshit)],
+		search => [qw(google g goog search)],
+		calc   => [qw(googlecalc gcalc calc)],
+		translate =>
+		  [qw(trans gtrans googtrans gtranslate translate translator)],
+		googlism => [qw(googlism spewshit)],
 	};
 }
 
@@ -42,14 +43,14 @@ sub search {
 	my ( $self, $v ) = @_;
 	my @msg;
 
-	Lucy::debug( 'Google', 'query for [' . $v->{query} . ']', 6 );
+	Lucy::debug( 'Google', 'query for [' . $v->{args} . ']', 6 );
 
 	my $max_results = 2;
-	if ( $v->{query} =~ s/\s+max=([1-5])$// ) {
+	if ( $v->{args} =~ s/\s+max=([1-5])$// ) {
 		$max_results = $1;
 	}
 
-	$v->{config}{q} = $v->{query};
+	$v->{config}{q} = $v->{args};
 	my $search = Google::Search->Web( %{ $v->{config} } );
 	my $result = $search->first;
 
@@ -74,10 +75,10 @@ sub calc {
 	my ( $self, $v ) = @_;
 	my @msg;
 
-	Lucy::debug( 'GoogleCalculator', 'query for [' . $v->{query} . ']', 6 );
+	Lucy::debug( 'GoogleCalculator', 'query for [' . $v->{args} . ']', 6 );
 
 	my $calc = WWW::Google::Calculator->new;
-	push( @msg, $calc->calc( $v->{query} ) );
+	push( @msg, $calc->calc( $v->{args} ) );
 	undef $calc;
 
 	return \@msg;
@@ -89,10 +90,10 @@ sub translate {
 	my ( $self, $v ) = @_;
 	my @msg;
 
-	Lucy::debug( 'GoogleTranslator', 'query for [' . $v->{query} . ']', 6 );
+	Lucy::debug( 'GoogleTranslator', 'query for [' . $v->{args} . ']', 6 );
 
 	my $glang  = WebService::Google::Language->new( %{ $v->{config} } );
-	my $result = $glang->translate( $v->{query} );
+	my $result = $glang->translate( $v->{args} );
 
 	if ( $result->error ) {
 		push( @msg,
@@ -120,20 +121,21 @@ sub googlism {
 	my ( $self, $v ) = @_;
 	my @msg;
 
-	Lucy::debug( 'Googlism', 'query for [' . $v->{query} . ']', 6 );
+	Lucy::debug( 'Googlism', 'query for [' . $v->{args} . ']', 6 );
 
 	my $max_results = 2;
-	if ( $v->{query} =~ s/\s+max=([1-5])\s*// ) {
+	if ( $v->{args} =~ s/\s+max=([1-5])\s*// ) {
 		$max_results = $1;
 	}
 
 	my $type = 'what';
-	if ( $v->{query} =~ s/\s+type=(who|what|where|when)\s*// ) {
+	if ( $v->{args} =~ s/\s+type=(who|what|where|when)\s*// ) {
 		$type = $1;
 	}
 
-	my $search = WWW::Search->new( 'Googlism', %{ $v->{config} } );
-	$search->native_query( WWW::Search::escape_query( $v->{query} ),
+	my $search =
+	  WWW::Search->new( 'Googlism', %{ $v->{config} } );
+	$search->native_query( WWW::Search::escape_query( $v->{args} ),
 		{ type => 'who' } );
 
 	my $i = 1;

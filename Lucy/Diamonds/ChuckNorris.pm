@@ -55,11 +55,11 @@ sub russianroulette_load {
 	my ( $self, $v ) = @_;
 
 	if ( defined $self->{gunchamber} ) {
-		$Lucy::lucy::lucy->yield( kill => $v->{nick} =>
+		$Lucy::lucy->yield( kill => $v->{nick} =>
 			  "BANG - Don't stuff bullets into a loaded gun" );
 	} else {
 		$self->{gunchamber} = 1 + Lucy::crand(6);
-		$Lucy::lucy::lucy->yield( ctcp => $v->{where} => 'ACTION' =>
+		$Lucy::lucy->yield( ctcp => $v->{where} => 'ACTION' =>
 			  'loads the gun and sets it on the table' );
 	}
 }
@@ -77,13 +77,13 @@ sub russianroulette_shoot {
 	} else {
 		$self->{gunchamber}--;
 		if ( $self->{gunchamber} == 0 ) {
-			$Lucy::lucy::lucy->yield( privmsg => $v->{nick} => "Bang!!!" );
-			$Lucy::lucy::lucy->yield(
+			$Lucy::lucy->yield( privmsg => $v->{nick} => "Bang!!!" );
+			$Lucy::lucy->yield(
 				privmsg => $v->{nick} => "Better luck next time, $v->{nick}" );
-			$Lucy::lucy::lucy->yield( kill => $v->{nick} => "BANG!!!!" );
+			$Lucy::lucy->yield( kill => $v->{nick} => "BANG!!!!" );
 			delete $self->{gunchamber};
 		} else {
-			$Lucy::lucy::lucy->yield( privmsg => $v->{nick} => "click" );
+			$Lucy::lucy->yield( privmsg => $v->{nick} => "click" );
 		}
 	}
 }
@@ -149,7 +149,7 @@ sub terror_level {
 		XML::Smart->new("http://www.dhs.gov/dhspublic/getAdvisoryCondition") )
 	{
 		$XML = $XML->cut_root;
-		$Lucy::lucy::lucy->yield(
+		$Lucy::lucy->yield(
 			privmsg => $v->{where} => "WHOA!! TAKE COVER!!! TERROR LEVEL IS "
 			  . $XML->{CONDITION} );
 		undef $XML;
