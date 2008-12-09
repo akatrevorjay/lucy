@@ -44,6 +44,27 @@ sub remind {
 	# Only works with fixed SQL::Abstract [w/ mysql 5]
 	my ( $to, $reminder );
 	if ( ( $to, $reminder ) = $v->{args} =~ /^([\w\-\_\']{3,30})\s*(.+)$/ ) {
+		unless ( $reminder =~ s/\s+(?:no)(?:replace|crap|help)(?:\=[01])?\s*$//ix )
+		{
+			$reminder = "   $reminder   ";
+
+			# I am -> s/he is
+			$reminder =~ s# (\s) I (\s) am (\s) #$1s/he$2is$3#gix;
+
+			# I -> s/he
+			$reminder =~ s# (\s) I (\s) #$1s/he$2#gix;
+
+			# s/he is -> you are
+			$reminder =~ s# (\s) (?:she|he) (\s) is (\s) #$1you$2are$3#gix;
+
+			# his|her -> your
+			$reminder =~ s# (\s) (?:his|her) (\s) #$1your$2#gix;
+
+			# why won't chop work?
+			$reminder =~ s/^\s+//;
+			$reminder =~ s/\s+$//;
+		}
+
 		$Lucy::dbh->insert(
 			$self->tablename,
 			{
