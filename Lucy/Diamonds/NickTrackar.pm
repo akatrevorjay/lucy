@@ -22,6 +22,7 @@
 #	along with Lucy; if not, write to the Free Software
 #	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
+#TODO make this use Responses for it's, er, responses.
 package Lucy::Diamonds::NickTrackar;
 use base qw(Lucy::Diamond);
 use POE;
@@ -34,25 +35,17 @@ no strict 'refs';
 sub tablename             { return 'lucy_user_seen'; }
 sub tablename_denora_user { return 'user'; }
 
-### Mmmm. We have been loaded.
-sub new {
-	my $class = shift;
-	return bless {}, $class;
+sub commands {
+	return { seen => [qw(seen lastseen)] };
 }
 
-### Bot command event
-sub irc_bot_command {
-	my ( $self, $lucy, $who, $where, $what, $cmd, $args, $type ) =
-	  @_[ OBJECT, SENDER, ARG0, ARG1, ARG2, ARG3, ARG4, ARG5 ];
-	if ( $cmd eq 'seen' ) {
-		my $nick = ( split( /[@!]/, $who, 2 ) )[0];
-		$where = $where->[0];
-		Lucy::debug( "Trackar", "$nick asked for $args in $where", 6 );
+sub seen {
+	my ( $self, $v ) = @_;
+	Lucy::debug( "Trackar", "$v->{nick} asked for $v->{args} in $v->{where}",
+		6 );
 
-		$lucy->privmsg( $where,
-			Lucy::font( 'red', $nick ) . ": " . $self->getseen($args) );
-		return 1;
-	}
+	$Lucy::lucy->privmsg( $v->{where},
+		Lucy::font( 'red', $v->{nick} ) . ": " . $self->getseen( $v->{args} ) );
 }
 
 #
@@ -148,7 +141,7 @@ sub getseen {
 			{ nick => lc($nick) } )->hash
 	  )
 	{
-		my @seen      = split( /\|/, $user->{seen} );
+		my @seen = split( /\|/, $user->{seen} );
 		my $timesince = Lucy::timesince( $user->{ts} );
 
 		switch ( $seen[0] ) {
