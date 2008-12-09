@@ -27,6 +27,7 @@ use base qw(Lucy::Diamond);
 use warnings;
 use strict;
 use WWW::Search;
+use HTML::Entities;
 
 sub commands {
 	return { search => [qw(slang urban define dict)], };
@@ -52,13 +53,17 @@ sub search {
 			last;
 		}
 
-		my $description = $result->{definition};
+		my $description = decode_entities( $result->{definition} );
 		$description =~ s/\n/ /g;
 		push( @msg,
-			$description . ' [' . Lucy::font( 'red', $result->{author} ) . ']' );
+			    $description . ' ['
+			  . Lucy::font( 'red', $result->{author} )
+			  . ']' );
 		if ( my $example = $result->{example} ) {
 			$example =~ s/\n/ /g;
-			push( @msg, Lucy::font( 'yellow bold', "ex: " ) . $example );
+			push( @msg,
+				    Lucy::font( 'yellow bold', "ex: " )
+				  . decode_entities($example) );
 		}
 
 		$i++;
@@ -66,7 +71,7 @@ sub search {
 	if ( $i == 1 ) {
 		return undef;
 	}
-	
+
 	return \@msg;
 }
 

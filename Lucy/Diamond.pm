@@ -108,7 +108,7 @@ sub irc_bot_command {
 	$where = $where->[0];
 
 	my $vars = {
-		config => $Lucy::config->{Diamond_Config}{ $self->{__name} },
+		config => $self->diamond_config,
 		cmd    => $cmd,
 		args   => $args,
 		nick   => $nick,

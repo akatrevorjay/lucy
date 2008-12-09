@@ -87,8 +87,6 @@ sub do_alice {
 		undef $sock;
 		return ( length($out) > 1 ) ? $out : undef;
 	}
-	
-	return undef;
 }
 
 1;
