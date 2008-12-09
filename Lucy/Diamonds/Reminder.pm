@@ -57,6 +57,9 @@ sub remind {
 			# s/he is -> you are
 			$reminder =~ s# (\s) (?:she|he) (\s) is (\s) #$1you$2are$3#gix;
 
+			# s/he -> you
+			$reminder =~ s# (\s) (?:she|he) (\s)#$1you$2#gix;
+
 			# his|her -> your
 			$reminder =~ s# (\s) (?:his|her) (\s) #$1your$2#gix;
 
