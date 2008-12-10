@@ -132,7 +132,7 @@ sub irc_bot_command {
 			'Failed to run [' . $self->{__cmd_map}{$cmd} . ']: ' . $@, 2 );
 	}
 	
-	return 0;
+	return 1;
 }
 
 1;
