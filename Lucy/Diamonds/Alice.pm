@@ -82,7 +82,9 @@ sub do_alice {
 	if ( my $sock = IO::Socket::UNIX->new('/tmp/alice') ) {
 		# remove any odd characters in $msg, because alicesocket does a
 		#   terrible job at staying alive when they are handed to her.
-		$msg =~ s/[^0-9a-z\!\@\#\$\%\^\&\*\(\)\-_\=\+[]\<\>\,\.\/\\?]//gi;
+		my %good = map {$_=>1} (9,10,13,32..127);
+		$msg =~ s/(.)/$good{ord($1)} ? $1 : ' '/eg;
+		undef %good;
 		
 		$sock->write("$who\007$msg");
 		$sock->read( $out, 1024 );
