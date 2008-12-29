@@ -141,7 +141,7 @@ ORDER BY ts DESC LIMIT 20", $channel
 	@{ $donuts->{factoid} } = $dbh->query(
 		"SELECT fact,definition,who,ts FROM lucy_factoids AS r1 JOIN
 			(SELECT ROUND(RAND() * (SELECT MAX(id) FROM lucy_factoids)) AS id) AS r2
-			WHERE r1.id >= r2.id ORDER BY r1.id ASC LIMIT 3"
+			WHERE r1.id >= r2.id ORDER BY r1.id ASC LIMIT 25"
 	)->hashes;
 
 	undef $dbh;
