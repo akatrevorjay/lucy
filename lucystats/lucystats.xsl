@@ -95,6 +95,7 @@ Mmmmmmm...<br />
 		<td><xsl:value-of select="@fact"/></td>
 		<td><xsl:value-of select="@definition"/></td>
 		<td><xsl:value-of select="@who"/></td>
+		<td><xsl:value-of select="@ts"/></td>
 	</tr>
 	</xsl:for-each>
 </table>
