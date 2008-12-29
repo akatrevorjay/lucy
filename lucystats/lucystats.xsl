@@ -64,7 +64,7 @@ Mmmmmmm...<br />
 	<tr>
 		<th>Nick</th>
 		<th>Seen</th>
-		<th>SeenTimestamp</th>
+		<th>Timestamp</th>
 		<th>ConnectTime</th>
 		<th>Country</th>
 		<th>Away?</th>
@@ -89,6 +89,7 @@ Mmmmmmm...<br />
 		<th>Factoid</th>
 		<th>Definition</th>
 		<th>Who</th>
+		<th>Timestamp</th>
 	</tr>
 	<xsl:for-each select="lucystats/factoid">
 	<tr>
