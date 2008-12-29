@@ -49,7 +49,7 @@ sub irc_bot_command {
 
 ### The acronyms of defeat shall pwn thee
 sub irc_public {
-	return unless ( int( rand(60) ) == 1 );
+	return unless ( int( rand(180) ) == 38 );
 
 	my ( $self, $lucy, $who, $where, $what ) =
 	  @_[ OBJECT, SENDER, ARG0, ARG1, ARG2 ];
@@ -59,8 +59,8 @@ sub irc_public {
 	my $out;
 	if ( my $msg = $self->do_alice( $nick, $what ) ) {
 		$out = Lucy::font( 'bold', $nick ) . ": " . $msg;
-	} else {
-		$out = Lucy::font( 'red', $nick ) . ": unable to connect to socket";
+#	} else {
+#		$out = Lucy::font( 'red', $nick ) . ": unable to connect to socket";
 	}
 
 	$lucy->yield( privmsg => $where => $out );
