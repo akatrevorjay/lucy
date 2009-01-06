@@ -212,11 +212,10 @@ sub fetch {
 		return;
 	}
 
+	my $rssfeed = $self->{feed_objs}{$feed_name};
 	#fuck trevorj, oTn
-	#my $rssfeed = $self->{feed_objs}{$feed_name};
-	my $rssfeed = $self->{feed_objs}{$feed_name} || exit;
-
-	my $req = HTTP::Request->new( GET => $rssfeed->url );
+	#my $req = HTTP::Request->new( GET => $rssfeed->url );	
+	my $req = HTTP::Request->new( GET => $rssfeed->url ) || return;	
 	warn "[" . $rssfeed->name . "] Attempting to fetch\n" if $self->{debug};
 	$kernel->post( $self->{http_alias}, 'request', 'response', $req,
 		$rssfeed->name );
