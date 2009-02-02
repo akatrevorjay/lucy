@@ -25,7 +25,7 @@
 #
 # These alter the paths for perl to look for Lucy::Config and Lucy libs.
 BEGIN {
-	my $lucy_path = "/home/trevorj/code/lucy";
+	my $lucy_path = "/home/lucy/lucy";
 	unshift( @INC, $lucy_path . '/lib' );
 	unshift( @INC, $lucy_path );
 }
@@ -64,7 +64,6 @@ foreach my $f (
 		tablename(),
 		{
 			ts         => $f->{ts},
-			id         => $f->{id},
 			fact       => $f->{fact},
 			definition => $f->{definition},
 			who        => $f->{who},
