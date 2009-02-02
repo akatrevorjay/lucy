@@ -132,7 +132,7 @@ sub search {
 				  . $_->{fact} . ' '
 				  . $_->{definition} . ' ['
 				  . $_->{who}
-				  . " $timesince] id="
+				  . "$timesince] id="
 				  . $_->{id}
 				  . " forgot="
 				  . $_->{forgotten} );
@@ -168,7 +168,7 @@ sub history {
 				  . $_->{fact} . ' '
 				  . $_->{definition} . ' ['
 				  . $_->{who}
-				  . " $timesince] id="
+				  . "$timesince] id="
 				  . $_->{id}
 				  . " forgot="
 				  . $_->{forgotten} );
