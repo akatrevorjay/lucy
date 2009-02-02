@@ -115,10 +115,11 @@ sub search {
 	return undef unless $what =~ /^$self->{fact_regex}$/;
 	my @msg;
 
-	Lucy::debug( "Roids", "search: $what", 7 );
+	Lucy::debug( "Roids", "search: [what=$what]", 7 );
 	if ( my @roids = $self->_search_roids( $what, $max_results ) ) {
 		my $i = 0;
 		foreach (@roids) {
+			next unless defined $_->{fact};
 			$i++;
 
 			my $timesince =
@@ -151,10 +152,11 @@ sub history {
 	return undef unless $what =~ /^$self->{fact_regex}$/;
 	my @msg;
 
-	Lucy::debug( "Roids", "history: $what", 7 );
+	Lucy::debug( "Roids", "history: [what=$what]", 7 );
 	if ( my @roids = $self->_search_roids( { fact => $what }, $max_results ) ) {
 		my $i = 0;
 		foreach (@roids) {
+			next unless defined $_->{fact};
 			$i++;
 
 			my $timesince =
@@ -343,18 +345,17 @@ sub _search_roids {
 	my $self        = shift;
 	my $fact        = shift;
 	my $max_results = shift || 3;
-	my $grab        = shift || [qw/r1.id fact definition who ts forgotten/];
-	my $order       = shift || 'r1.id ASC';
+	my $grab        = shift || [qw/id fact definition who ts forgotten/];
+	my $order       = shift || 'rand()';
 
 	Lucy::debug( "Roids", "_get_roid: $fact", 7 );
 
 	my ( $where, @bind_vars );
 	if ( UNIVERSAL::isa( $fact, 'HASH' ) ) {
 		( $where, @bind_vars ) = $Lucy::dbh->abstract->where($fact);
-		$where .= ' AND';
 	} else {
 		$where = "WHERE definition != 'is ignored' AND forgotten = 0 "
-		  . " AND MATCH (fact,definition,who) AGAINST (?) AND";
+		  . " AND MATCH (fact,definition,who) AGAINST (?)";
 		@bind_vars = ($fact);
 	}
 
@@ -364,16 +365,12 @@ sub _search_roids {
 		  . join( ', ', @{$grab} )
 		  . " FROM "
 		  . $self->tablename
-		  . " AS r1 JOIN (SELECT ROUND(RAND() * (SELECT MAX(id) FROM "
-		  . $self->tablename
-		  . " )) AS id) AS r2 "
-		  . " $where r1.id >= r2.id "
+		  . " $where"
 		  . " ORDER BY $order LIMIT $max_results",
 		@bind_vars
 	);
 
 	if ( my @roids = $q->hashes ) {
-		return undef unless $#roids > 0;
 		return @roids;
 	}
 }
