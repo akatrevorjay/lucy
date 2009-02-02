@@ -117,8 +117,6 @@ sub search {
 
 	Lucy::debug( "Roids", "search: $what", 7 );
 	if ( my @roids = $self->_search_roids( $what, $max_results ) ) {
-		return undef unless $#roids > 0;
-		
 		my $i = 0;
 		foreach (@roids) {
 			$i++;
@@ -317,13 +315,25 @@ sub _get_roid {
 	my $order = shift || 'ts DESC';
 	Lucy::debug( "Roids", "_get_roid: $fact", 7 );
 
-	my $where =
-	  ( UNIVERSAL::isa( $fact, 'HASH' ) )
-	  ? $fact
-	  : { forgotten => 0, fact => $fact };
+	unless ( UNIVERSAL::isa( $fact, 'HASH' ) ) {
+		$fact = { forgotten => 0, fact => $fact };
+	}
+	my ( $where, @bind_vars ) = $Lucy::dbh->abstract->where($fact);
 
-	if ( my $roid =
-		$Lucy::dbh->select( $self->tablename, $grab, $where, $order )->hash )
+	#	if ( my $roid =
+	#		$Lucy::dbh->select( $self->tablename, $grab, $where, $order )->hash )
+	#	{
+
+	if (
+		my $roid = $Lucy::dbh->query(
+			"SELECT "
+			  . join( ', ', @{$grab} )
+			  . " FROM "
+			  . $self->tablename
+			  . " $where ORDER BY $order LIMIT 1",
+			@bind_vars
+		)->hash
+	  )
 	{
 		return $roid unless $roid->{definition} eq 'is ignored';
 	}
@@ -363,6 +373,7 @@ sub _search_roids {
 	);
 
 	if ( my @roids = $q->hashes ) {
+		return undef unless $#roids > 0;
 		return @roids;
 	}
 }

@@ -1035,7 +1035,7 @@ CREATE TABLE  `lucy`.`lucy_roids` (
   `forgotten` tinyint(1) NOT NULL default '0',
   PRIMARY KEY  (`id`),
   FULLTEXT KEY `roid_search` (`fact`,`definition`,`who`)
-) ENGINE=MyISAM AUTO_INCREMENT=2377 DEFAULT CHARSET=latin1
+) ENGINE=MyISAM DEFAULT CHARSET=latin1
 
 
 
