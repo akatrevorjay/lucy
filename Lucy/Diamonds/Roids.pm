@@ -57,7 +57,7 @@ sub forget {
 	return undef
 	  unless my ( $fact, $f_key, $f_val ) =
 		  $v->{args} =~
-/^(?:unforget|remember)\s+($self->{fact_regex})\s*(?:(id|who|ts)=(\w+))?$/;
+		  /^\s*($self->{fact_regex})\s*(?:(id|who|ts)=(\w+))?\s*$/;
 	my @msg;
 
 	my $f_args;
@@ -84,7 +84,7 @@ sub unforget {
 	return undef
 	  unless my ( $fact, $f_key, $f_val ) =
 		  $v->{args} =~
-/^(?:unforget|remember)\s+($self->{fact_regex})\s*(?:(id|who|ts)=(\w+))?$/;
+		  /^\s*($self->{fact_regex})\s*(?:(id|who|ts)=(\w+))?\s*$/;
 	my @msg;
 
 	my $f_args;
