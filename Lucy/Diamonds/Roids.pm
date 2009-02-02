@@ -54,68 +54,128 @@ sub init {
 #TODO make this only forget the latest one, ie, sort by ts, then limit 1.
 sub forget {
 	my ( $self, $v ) = @_;
-	return undef unless $v->{args} =~ /^$self->{fact_regex}$/;
-	my $fact = $v->{args};
+	return undef
+	  unless my ( $fact, $f_key, $f_val ) =
+		  $v->{args} =~
+/^(?:unforget|remember)\s+($self->{fact_regex})\s*(?:(id|who|ts)=(\w+))?$/;
 	my @msg;
 
-	if ( $self->_forget_roid($fact) ) {
+	my $f_args;
+	if ($f_key) {
+		Lucy::debug( "Roids",
+			"forget: '$fact' is being forgot with $f_key=$f_val", 7 );
+		$f_args = { fact => $fact, "$f_key" => $f_val };
+	} else {
+		Lucy::debug( "Roids", "forget: '$fact' is being forgot", 7 );
+		$f_args = $fact;
+	}
+
+	if ( $self->_forget_roid($f_args) ) {
 		Lucy::debug( "Roids", "forget: $fact", 7 );
 		push( @msg, "Ok, I forgot $fact" );
 	}
 
-	return @msg;
+	return \@msg;
 }
 
 # Forget/hide a roid
 sub unforget {
 	my ( $self, $v ) = @_;
 	return undef
-	  unless my ( $fact, $key, $val ) =
+	  unless my ( $fact, $f_key, $f_val ) =
 		  $v->{args} =~
 /^(?:unforget|remember)\s+($self->{fact_regex})\s*(?:(id|who|ts)=(\w+))?$/;
 	my @msg;
 
-	my $unforget_args;
-	if ($key) {
+	my $f_args;
+	if ($f_key) {
 		Lucy::debug( "Roids",
-			"unforget: '$fact' is being remembered with $key=$val", 7 );
-		$unforget_args = { fact => $fact, "$key" => $val };
+			"unforget: '$fact' is being unforgot with $f_key=$f_val", 7 );
+		$f_args = { fact => $fact, "$f_key" => $f_val };
 	} else {
-		Lucy::debug( "Roids", "unforget: '$fact' is being remembered", 7 );
-		$unforget_args = $fact;
+		Lucy::debug( "Roids", "unforget: '$fact' is being unforgot", 7 );
+		$f_args = $fact;
 	}
 
-	if ( $self->_unforget_roid($unforget_args) ) {
+	if ( $self->_unforget_roid($f_args) ) {
 		push( @msg, "Ok, I remembered $fact" );
 	}
 
-	return @msg;
+	return \@msg;
 }
 
 # Look for roids. God help you if you find them.
 sub search {
 	my ( $self, $v ) = @_;
-	return undef unless $v->{args} =~ /^$self->{fact_regex}$/;
 	my $what = $v->{args};
+	my $max_results;
+	if ( $what =~ s/\s+max=(\d)$// ) {
+		$max_results = $1;
+	}
+	return undef unless $what =~ /^$self->{fact_regex}$/;
 	my @msg;
 
 	Lucy::debug( "Roids", "search: $what", 7 );
-	push( @msg, "Search $what" );
+	if ( my @roids = $self->_search_roids( $what, $max_results ) ) {
+		return undef unless $#roids > 0;
+		
+		my $i = 0;
+		foreach (@roids) {
+			$i++;
 
-	return @msg;
+			my $timesince =
+			  ( $_->{ts} > 0 )
+			  ? ': ' . Lucy::timesince( $_->{ts} ) . ' ago'
+			  : '';
+			push( @msg,
+				    "$i. "
+				  . $_->{fact} . ' '
+				  . $_->{definition} . ' ['
+				  . $_->{who}
+				  . " $timesince] id="
+				  . $_->{id}
+				  . " forgot="
+				  . $_->{forgotten} );
+		}
+	}
+
+	return \@msg;
 }
 
 # Show roid history
 sub history {
 	my ( $self, $v ) = @_;
-	return undef unless $v->{args} =~ /^$self->{fact_regex}$/;
 	my $what = $v->{args};
+	my $max_results;
+	if ( $what =~ s/\s+max=(\d)$// ) {
+		$max_results = $1;
+	}
+	return undef unless $what =~ /^$self->{fact_regex}$/;
 	my @msg;
 
-	Lucy::debug( "Lucyroids", "history: $what", 7 );
-	push( @msg, "History $what" );
+	Lucy::debug( "Roids", "history: $what", 7 );
+	if ( my @roids = $self->_search_roids( { fact => $what }, $max_results ) ) {
+		my $i = 0;
+		foreach (@roids) {
+			$i++;
 
-	return @msg;
+			my $timesince =
+			  ( $_->{ts} > 0 )
+			  ? ': ' . Lucy::timesince( $_->{ts} ) . ' ago'
+			  : '';
+			push( @msg,
+				    "$i. "
+				  . $_->{fact} . ' '
+				  . $_->{definition} . ' ['
+				  . $_->{who}
+				  . " $timesince] id="
+				  . $_->{id}
+				  . " forgot="
+				  . $_->{forgotten} );
+		}
+	}
+
+	return \@msg;
 }
 
 sub irc_public {
@@ -135,30 +195,48 @@ sub irc_public {
 			$self->_put_roid( $fact, $def, $nick, time );
 		}
 
-	} elsif ( my ($fact) = $what =~ /^forget\s+($self->{fact_regex})\s*$/ ) {
-		if ( $self->_forget_roid($fact) ) {
-			$lucy->yield( privmsg => $where => "$nick: Ok, I forgot $fact" );
-		} else {
-			Lucy::debug( "Roids", "irc_public: '$fact' has NOT been forgot",
-				6 );
-		}
-	} elsif ( my ( $fact, $key, $val ) =
+	} elsif ( my ( $fact, $f_key, $f_val ) =
 		$what =~
-/^(?:unforget|remember)\s+($self->{fact_regex})\s*(?:(id|who|ts)=(\w+))?$/
-	  )
+		/^forget\s+($self->{fact_regex})\s*(?:(id|who|ts)=([\w_\-]+))?$/ )
 	{
-		my $unforget_args;
-		if ($key) {
-			Lucy::debug( "Roids",
-				"irc_public: '$fact' is being remembered with $key=$val", 7 );
-			$unforget_args = { fact => $fact, "$key" => $val };
+		my $f_args;
+		if ($f_key) {
+			Lucy::debug(
+				"Roids",
+"irc_public: forget: '$fact' is being forgot with $f_key=$f_val",
+				7
+			);
+			$f_args = { forgotten => 0, fact => $fact, "$f_key" => $f_val };
 		} else {
-			Lucy::debug( "Roids", "irc_public: '$fact' is being remembered",
+			Lucy::debug( "Roids", "irc_public: forget: '$fact' is being forgot",
 				7 );
-			$unforget_args = $fact;
+			$f_args = $fact;
 		}
 
-		if ( $self->_unforget_roid($unforget_args) ) {
+		if ( $self->_forget_roid($f_args) ) {
+			$lucy->yield( privmsg => $where => "$nick: Ok, I forgot $fact" );
+		}
+
+	} elsif ( my ( $fact, $f_key, $f_val ) =
+		$what =~
+/^(?:unforget|remember)\s+($self->{fact_regex})\s*(?:(id|who|ts)=([\w_\-]+))?$/
+	  )
+	{
+		my $f_args;
+		if ($f_key) {
+			Lucy::debug(
+				"Roids",
+"irc_public: unforget: '$fact' is being unforgot with $f_key=$f_val",
+				7
+			);
+			$f_args = { forgotten => 1, fact => $fact, "$f_key" => $f_val };
+		} else {
+			Lucy::debug( "Roids",
+				"irc_public: unforget: '$fact' is being unforgot", 7 );
+			$f_args = $fact;
+		}
+
+		if ( $self->_unforget_roid($f_args) ) {
 			$lucy->yield(
 				privmsg => $where => "$nick: Ok, I remembered $fact" );
 		}
@@ -189,12 +267,10 @@ sub _forget_roid {
 	my $fact = shift;
 	Lucy::debug( "Roids", "_forget_roid: $fact", 7 );
 
-	# disabled as both are the same because of defaults in _get_roid
-	#	my $where =
-	#	  ( UNIVERSAL::isa( $fact, 'HASH' ) )
-	#	  ? $fact
-	#	  : { forgotten => 0, fact => $fact };
-	my $where = $fact;
+	my $where =
+	  ( UNIVERSAL::isa( $fact, 'HASH' ) )
+	  ? $fact
+	  : { fact => $fact, forgotten => 0 };
 
 	if ( my $roid = $self->_get_roid($fact) ) {
 		if (
@@ -218,7 +294,7 @@ sub _unforget_roid {
 	my $where =
 	  ( UNIVERSAL::isa( $fact, 'HASH' ) )
 	  ? $fact
-	  : { fact => $fact };
+	  : { fact => $fact, forgotten => 1 };
 
 	if ( my $roid = $self->_get_roid($where) ) {
 		if (
@@ -254,22 +330,40 @@ sub _get_roid {
 }
 
 sub _search_roids {
-	my $self  = shift;
-	my $fact  = shift;
-	my $max   = shift || 2;
-	my $grab  = shift || [qw/id fact definition who ts forgotten/];
-	my $order = shift || 'ts DESC';
+	my $self        = shift;
+	my $fact        = shift;
+	my $max_results = shift || 3;
+	my $grab        = shift || [qw/r1.id fact definition who ts forgotten/];
+	my $order       = shift || 'r1.id ASC';
+
 	Lucy::debug( "Roids", "_get_roid: $fact", 7 );
 
-	my $where =
-	  ( UNIVERSAL::isa( $fact, 'HASH' ) )
-	  ? $fact
-	  : { forgotten => 0, fact => { like => $fact } };
+	my ( $where, @bind_vars );
+	if ( UNIVERSAL::isa( $fact, 'HASH' ) ) {
+		( $where, @bind_vars ) = $Lucy::dbh->abstract->where($fact);
+		$where .= ' AND';
+	} else {
+		$where = "WHERE definition != 'is ignored' AND forgotten = 0 "
+		  . " AND MATCH (fact,definition,who) AGAINST (?) AND";
+		@bind_vars = ($fact);
+	}
 
-	if ( my $roid =
-		$Lucy::dbh->select( $self->tablename, $grab, $where, $order )->hashes )
-	{
-		return $roid;
+	# search the factoids for $args
+	my $q = $Lucy::dbh->query(
+		"SELECT "
+		  . join( ', ', @{$grab} )
+		  . " FROM "
+		  . $self->tablename
+		  . " AS r1 JOIN (SELECT ROUND(RAND() * (SELECT MAX(id) FROM "
+		  . $self->tablename
+		  . " )) AS id) AS r2 "
+		  . " $where r1.id >= r2.id "
+		  . " ORDER BY $order LIMIT $max_results",
+		@bind_vars
+	);
+
+	if ( my @roids = $q->hashes ) {
+		return @roids;
 	}
 }
 
