@@ -1,0 +1,25 @@
+
+CREATE ALGORITHM=MERGE DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW  `lucy`.`lucy_roids` AS select `lucy_roidsdefs`.`id` AS `id`,`lucy_roidsdefs`.`roidsmap_id` AS `roidsmap_id`,`lucy_roidsmap`.`what` AS `what`,`lucy_roidsdefs`.`definition` AS `definition`,`lucy_roidsdefs`.`who` AS `who`,`lucy_roidsdefs`.`ts` AS `ts`,`lucy_roidsmap`.`count` AS `count`,`lucy_roidsdefs`.`forgotten` AS `forgotten` from (`lucy_roidsdefs` join `lucy_roidsmap`) where (`lucy_roidsdefs`.`roidsmap_id` = `lucy_roidsmap`.`id`)
+
+CREATE TABLE  `lucy`.`lucy_roidsdefs` (
+  `id` int(11) NOT NULL auto_increment,
+  `ts` int(11) NOT NULL,
+  `roidsmap_id` int(11) NOT NULL,
+  `definition` varchar(255) NOT NULL,
+  `who` varchar(64) NOT NULL,
+  `forgotten` tinyint(1) NOT NULL default '0',
+  PRIMARY KEY  (`id`),
+  FULLTEXT KEY `definition_search` (`definition`)
+) ENGINE=MyISAM AUTO_INCREMENT=2086 DEFAULT CHARSET=latin1
+
+CREATE TABLE  `lucy`.`lucy_roidsmap` (
+  `id` int(11) NOT NULL auto_increment,
+  `what` varchar(255) NOT NULL,
+  `count` int(11) NOT NULL,
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `what` (`what`),
+  FULLTEXT KEY `what_search` (`what`)
+) ENGINE=MyISAM AUTO_INCREMENT=2370 DEFAULT CHARSET=latin1
+
+
+

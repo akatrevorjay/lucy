@@ -145,91 +145,93 @@ clause) to try and simplify things.
 use Carp;
 use strict;
 
-our $VERSION = do { my @r=(q$Revision: 1.21 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+our $VERSION = do { my @r = ( q$Revision: 1.21 $ =~ /\d+/g ); sprintf "%d." . "%02d" x $#r, @r };
 our $AUTOLOAD;
 
 # Fix SQL case, if so requested
 sub _sqlcase {
-    my $self = shift;
-    return $self->{case} ? $_[0] : uc($_[0]);
+	my $self = shift;
+	return $self->{case} ? $_[0] : uc( $_[0] );
 }
 
 # Anon copies of arrays/hashes
 # Based on deep_copy example by merlyn
 # http://www.stonehenge.com/merlyn/UnixReview/col30.html
 sub _anoncopy {
-    my $orig = shift;
-    return (ref $orig eq 'HASH')  ? +{map { $_ => _anoncopy($orig->{$_}) } keys %$orig}
-         : (ref $orig eq 'ARRAY') ? [map _anoncopy($_), @$orig]
-         : $orig;
+	my $orig = shift;
+	return ( ref $orig eq 'HASH' )
+	  ? +{ map { $_ => _anoncopy( $orig->{$_} ) } keys %$orig }
+	  : ( ref $orig eq 'ARRAY' ) ? [ map _anoncopy($_), @$orig ]
+	  :                            $orig;
 }
 
 # Debug
 sub _debug {
-    return unless $_[0]->{debug}; shift;  # a little faster
-    my $func = (caller(1))[3];
-    warn "[$func] ", @_, "\n";
+	return unless $_[0]->{debug};
+	shift;    # a little faster
+	my $func = ( caller(1) )[3];
+	warn "[$func] ", @_, "\n";
 }
 
 sub belch (@) {
-    my($func) = (caller(1))[3];
-    carp "[$func] Warning: ", @_;
+	my ($func) = ( caller(1) )[3];
+	carp "[$func] Warning: ", @_;
 }
 
 sub puke (@) {
-    my($func) = (caller(1))[3];
-    croak "[$func] Fatal: ", @_;
+	my ($func) = ( caller(1) )[3];
+	croak "[$func] Fatal: ", @_;
 }
 
 # Utility functions
-sub _table  {
-    my $self = shift;
-    my $tab  = shift;
-    if (ref $tab eq 'ARRAY') {
-        return join ', ', map { $self->_quote($_) } @$tab;
-    } else {
-        return $self->_quote($tab);
-    }
+sub _table {
+	my $self = shift;
+	my $tab  = shift;
+	if ( ref $tab eq 'ARRAY' ) {
+		return join ', ', map { $self->_quote($_) } @$tab;
+	} else {
+		return $self->_quote($tab);
+	}
 }
 
 sub _quote {
-    my $self  = shift;
-    my $label = shift;
+	my $self  = shift;
+	my $label = shift;
 
-    return $label
-      if $label eq '*';
+	return $label
+	  if $label eq '*';
 
-    return $self->{quote_char} . $label . $self->{quote_char}
-      if !defined $self->{name_sep};
+	return $self->{quote_char} . $label . $self->{quote_char}
+	  if !defined $self->{name_sep};
 
-    return join $self->{name_sep},
-        map { $self->{quote_char} . $_ . $self->{quote_char}  }
-        split /\Q$self->{name_sep}\E/, $label;
+	return join $self->{name_sep},
+	  map { $self->{quote_char} . $_ . $self->{quote_char} }
+	  split /\Q$self->{name_sep}\E/, $label;
 }
 
 # Conversion, if applicable
 sub _convert ($) {
-    my $self = shift;
-    return @_ unless $self->{convert};
-    my $conv = $self->_sqlcase($self->{convert});
-    my @ret = map { $conv.'('.$_.')' } @_;
-    return wantarray ? @ret : $ret[0];
+	my $self = shift;
+	return @_ unless $self->{convert};
+	my $conv = $self->_sqlcase( $self->{convert} );
+	my @ret = map { $conv . '(' . $_ . ')' } @_;
+	return wantarray ? @ret : $ret[0];
 }
 
 # And bindtype
 sub _bindtype (@) {
-    my $self = shift;
-    my($col,@val) = @_;
-    return $self->{bindtype} eq 'columns' ? [ @_ ] : @val;
+	my $self = shift;
+	my ( $col, @val ) = @_;
+	return $self->{bindtype} eq 'columns' ? [@_] : @val;
 }
 
 # Modified -logic or -nest
 sub _modlogic ($) {
-    my $self = shift;
-    my $sym = @_ ? lc(shift) : $self->{logic};
-    $sym =~ tr/_/ /;
-    $sym = $self->{logic} if $sym eq 'nest';
-    return $self->_sqlcase($sym);  # override join
+	my $self = shift;
+	my $sym = @_ ? lc(shift) : $self->{logic};
+	$sym =~ tr/_/ /;
+	$sym = $self->{logic} if $sym eq 'nest';
+	return $self->_sqlcase($sym);    # override join
 }
 
 =head2 new(option => 'value')
@@ -380,26 +382,26 @@ so that tables and column names can be individually quoted like this:
 =cut
 
 sub new {
-    my $self = shift;
-    my $class = ref($self) || $self;
-    my %opt = (ref $_[0] eq 'HASH') ? %{$_[0]} : @_;
+	my $self  = shift;
+	my $class = ref($self) || $self;
+	my %opt   = ( ref $_[0] eq 'HASH' ) ? %{ $_[0] } : @_;
 
-    # choose our case by keeping an option around
-    delete $opt{case} if $opt{case} && $opt{case} ne 'lower';
+	# choose our case by keeping an option around
+	delete $opt{case} if $opt{case} && $opt{case} ne 'lower';
 
-    # override logical operator
-    $opt{logic} = uc $opt{logic} if $opt{logic};
+	# override logical operator
+	$opt{logic} = uc $opt{logic} if $opt{logic};
 
-    # how to return bind vars
-    $opt{bindtype} ||= delete($opt{bind_type}) || 'normal';
+	# how to return bind vars
+	$opt{bindtype} ||= delete( $opt{bind_type} ) || 'normal';
 
-    # default comparison is "=", but can be overridden
-    $opt{cmp} ||= '=';
+	# default comparison is "=", but can be overridden
+	$opt{cmp} ||= '=';
 
-    # default quotation character around tables/columns
-    $opt{quote_char} ||= '';
+	# default quotation character around tables/columns
+	$opt{quote_char} ||= '';
 
-    return bless \%opt, $class;
+	return bless \%opt, $class;
 }
 
 =head2 insert($table, \@values || \%fieldvals)
@@ -411,63 +413,74 @@ It returns an SQL INSERT statement and a list of bind values.
 =cut
 
 sub insert {
-    my $self  = shift;
-    my $table = $self->_table(shift);
-    my $data  = shift || return;
+	my $self  = shift;
+	my $table = $self->_table(shift);
+	my $data  = shift || return;
 
-    my $sql   = $self->_sqlcase('insert into') . " $table ";
-    my(@sqlf, @sqlv, @sqlq) = ();
+	my $sql = $self->_sqlcase('insert into') . " $table ";
+	my ( @sqlf, @sqlv, @sqlq ) = ();
 
-    my $ref = ref $data;
-    if ($ref eq 'HASH') {
-        for my $k (sort keys %$data) {
-            my $v = $data->{$k};
-            my $r = ref $v;
-            # named fields, so must save names in order
-            push @sqlf, $self->_quote($k);
-            if ($r eq 'ARRAY') {
-                # SQL included for values
-                my @val = @$v;
-                push @sqlq, shift @val;
-                push @sqlv, $self->_bindtype($k, @val);
-            } elsif ($r eq 'SCALAR') {
-                # embedded literal SQL
-                push @sqlq, $$v;
-            } else { 
-                push @sqlq, '?';
-                push @sqlv, $self->_bindtype($k, $v);
-            }
-        }
-        #fuck trevorj
-        $sql .= '(`' . join('`, `', @sqlf) .'`) '. $self->_sqlcase('values') . ' ('. join(', ', @sqlq) .')';
-    } elsif ($ref eq 'ARRAY') {
-        # just generate values(?,?) part
-        # no names (arrayref) so can't generate bindtype
-        carp "Warning: ",__PACKAGE__,"->insert called with arrayref when bindtype set"
-            if $self->{bindtype} ne 'normal';
-        for my $v (@$data) {
-            my $r = ref $v;
-            if ($r eq 'ARRAY') {
-                my @val = @$v;
-                push @sqlq, shift @val;
-                push @sqlv, @val;
-            } elsif ($r eq 'SCALAR') {
-                # embedded literal SQL
-                push @sqlq, $$v;
-            } else { 
-                push @sqlq, '?';
-                push @sqlv, $v;
-            }
-        }
-        $sql .= $self->_sqlcase('values') . ' ('. join(', ', @sqlq) .')';
-    } elsif ($ref eq 'SCALAR') {
-        # literal SQL
-        $sql .= $$data;
-    } else {
-        puke "Unsupported data type specified to \$sql->insert";
-    }
+	my $ref = ref $data;
+	if ( $ref eq 'HASH' ) {
+		for my $k ( sort keys %$data ) {
+			my $v = $data->{$k};
+			my $r = ref $v;
 
-    return wantarray ? ($sql, @sqlv) : $sql;
+			# named fields, so must save names in order
+			push @sqlf, $self->_quote($k);
+			if ( $r eq 'ARRAY' ) {
+
+				# SQL included for values
+				my @val = @$v;
+				push @sqlq, shift @val;
+				push @sqlv, $self->_bindtype( $k, @val );
+			} elsif ( $r eq 'SCALAR' ) {
+
+				# embedded literal SQL
+				push @sqlq, $$v;
+			} else {
+				push @sqlq, '?';
+				push @sqlv, $self->_bindtype( $k, $v );
+			}
+		}
+
+		#fuck trevorj
+		$sql .= '(`'
+		  . join( '`, `', @sqlf ) . '`) '
+		  . $self->_sqlcase('values') . ' ('
+		  . join( ', ', @sqlq ) . ')';
+	} elsif ( $ref eq 'ARRAY' ) {
+
+		# just generate values(?,?) part
+		# no names (arrayref) so can't generate bindtype
+		carp "Warning: ", __PACKAGE__,
+		  "->insert called with arrayref when bindtype set"
+		  if $self->{bindtype} ne 'normal';
+		for my $v (@$data) {
+			my $r = ref $v;
+			if ( $r eq 'ARRAY' ) {
+				my @val = @$v;
+				push @sqlq, shift @val;
+				push @sqlv, @val;
+			} elsif ( $r eq 'SCALAR' ) {
+
+				# embedded literal SQL
+				push @sqlq, $$v;
+			} else {
+				push @sqlq, '?';
+				push @sqlv, $v;
+			}
+		}
+		$sql .= $self->_sqlcase('values') . ' (' . join( ', ', @sqlq ) . ')';
+	} elsif ( $ref eq 'SCALAR' ) {
+
+		# literal SQL
+		$sql .= $$data;
+	} else {
+		puke "Unsupported data type specified to \$sql->insert";
+	}
+
+	return wantarray ? ( $sql, @sqlv ) : $sql;
 }
 
 =head2 update($table, \%fieldvals, \%where)
@@ -479,45 +492,92 @@ of bind values.
 =cut
 
 sub update {
-    my $self  = shift;
-    my $table = $self->_table(shift);
-    my $data  = shift || return;
-    my $where = shift;
+	my $self  = shift;
+	my $table = $self->_table(shift);
+	my $data  = shift || return;
+	my $where = shift;
 
-    my $sql   = $self->_sqlcase('update') . " $table " . $self->_sqlcase('set ');
-    my(@sqlf, @sqlv) = ();
+	my $sql = $self->_sqlcase('update') . " $table " . $self->_sqlcase('set ');
+	my ( @sqlf, @sqlv ) = ();
 
-    puke "Unsupported data type specified to \$sql->update"
-        unless ref $data eq 'HASH';
+	puke "Unsupported data type specified to \$sql->update"
+	  unless ref $data eq 'HASH';
 
-    for my $k (sort keys %$data) {
-        my $v = $data->{$k};
-        my $r = ref $v;
-        my $label = $self->_quote($k);
-        if ($r eq 'ARRAY') {
-            # SQL included for values
-            my @bind = @$v;
-            my $sql = shift @bind;
-            push @sqlf, "$label = $sql";
-            push @sqlv, $self->_bindtype($k, @bind);
-        } elsif ($r eq 'SCALAR') {
-            # embedded literal SQL
-            push @sqlf, "$label = $$v";
-        } else { 
-            push @sqlf, "$label = ?";
-            push @sqlv, $self->_bindtype($k, $v);
-        }
-    }
-#fuck - trevorj
-    $sql .= '`'.join '`, `', @sqlf.'`';
+	for my $k ( sort keys %$data ) {
+		my $v     = $data->{$k};
+		my $r     = ref $v;
+		my $label = $self->_quote($k);
+		if ( $r eq 'ARRAY' ) {
 
-    if ($where) {
-        my($wsql, @wval) = $self->where($where);
-        $sql .= $wsql;
-        push @sqlv, @wval;
-    }
+			# SQL included for values
+			my @bind = @$v;
+			my $sql  = shift @bind;
+			push @sqlf, '`' . $label . '` = ' . $sql;
+			push @sqlv, $self->_bindtype( $k, @bind );
+		} elsif ( $r eq 'SCALAR' ) {
 
-    return wantarray ? ($sql, @sqlv) : $sql;
+			# embedded literal SQL
+			push @sqlf, '`' . $label . '` = ' . "$$v";
+		} else {
+			push @sqlf, '`' . $label . '` = ?';
+			push @sqlv, $self->_bindtype( $k, $v );
+		}
+	}
+
+	$sql .= join ', ', @sqlf;
+
+	if ($where) {
+		my ( $wsql, @wval ) = $self->where($where);
+		$sql .= $wsql;
+		push @sqlv, @wval;
+	}
+
+	return wantarray ? ( $sql, @sqlv ) : $sql;
+}
+
+sub update_trevorj {
+	my $self  = shift;
+	my $table = $self->_table(shift);
+	my $data  = shift || return;
+	my $where = shift;
+
+	my $sql = $self->_sqlcase('update') . " $table " . $self->_sqlcase('set ');
+	my ( @sqlf, @sqlv ) = ();
+
+	puke "Unsupported data type specified to \$sql->update"
+	  unless ref $data eq 'HASH';
+
+	for my $k ( sort keys %$data ) {
+		my $v     = $data->{$k};
+		my $r     = ref $v;
+		my $label = $self->_quote($k);
+		if ( $r eq 'ARRAY' ) {
+
+			# SQL included for values
+			my @bind = @$v;
+			my $sql  = shift @bind;
+			push @sqlf, "$label = $sql";
+			push @sqlv, $self->_bindtype( $k, @bind );
+		} elsif ( $r eq 'SCALAR' ) {
+
+			# embedded literal SQL
+			push @sqlf, "$label = $$v";
+		} else {
+			push @sqlf, "$label = ?";
+			push @sqlv, $self->_bindtype( $k, $v );
+		}
+	}
+
+	#fuck - trevorj
+	$sql .= '`' . join '`, `', @sqlf . '`';
+
+	if ($where) {
+		my ( $wsql, @wval ) = $self->where($where);
+		$sql .= $wsql;
+		push @sqlv, @wval;
+	}
+
+	return wantarray ? ( $sql, @sqlv ) : $sql;
 }
 
 =head2 select($table, \@fields, \%where, \@order)
@@ -529,21 +589,25 @@ corresponding SQL SELECT statement and list of bind values.
 =cut
 
 sub select {
-    my $self   = shift;
-    my $table  = $self->_table(shift);
-    my $fields = shift || '*';
-    my $where  = shift;
-    my $order  = shift;
+	my $self   = shift;
+	my $table  = $self->_table(shift);
+	my $fields = shift || '*';
+	my $where  = shift;
+	my $order  = shift;
 
-    my $f = (ref $fields eq 'ARRAY') ? '`'.join('`, `', map { $self->_quote($_) } @$fields).'`' : '`'.$fields.'`';
-    my $sql = join ' ', $self->_sqlcase('select'), $f, $self->_sqlcase('from'), $table;
+	my $f =
+	  ( ref $fields eq 'ARRAY' )
+	  ? '`' . join( '`, `', map { $self->_quote($_) } @$fields ) . '`'
+	  : '`' . $fields . '`';
+	my $sql = join ' ', $self->_sqlcase('select'), $f, $self->_sqlcase('from'),
+	  $table;
 
-    my(@sqlf, @sqlv) = ();
-    my($wsql, @wval) = $self->where($where, $order);
-    $sql .= $wsql;
-    push @sqlv, @wval;
+	my ( @sqlf, @sqlv ) = ();
+	my ( $wsql, @wval ) = $self->where( $where, $order );
+	$sql .= $wsql;
+	push @sqlv, @wval;
 
-    return wantarray ? ($sql, @sqlv) : $sql; 
+	return wantarray ? ( $sql, @sqlv ) : $sql;
 }
 
 =head2 delete($table, \%where)
@@ -554,20 +618,20 @@ It returns an SQL DELETE statement and list of bind values.
 =cut
 
 sub delete {
-    my $self  = shift;
-    my $table = $self->_table(shift);
-    my $where = shift;
+	my $self  = shift;
+	my $table = $self->_table(shift);
+	my $where = shift;
 
-    my $sql = $self->_sqlcase('delete from') . " $table";
-    my(@sqlf, @sqlv) = ();
+	my $sql = $self->_sqlcase('delete from') . " $table";
+	my ( @sqlf, @sqlv ) = ();
 
-    if ($where) {
-        my($wsql, @wval) = $self->where($where);
-        $sql .= $wsql;
-        push @sqlv, @wval;
-    }
+	if ($where) {
+		my ( $wsql, @wval ) = $self->where($where);
+		$sql .= $wsql;
+		push @sqlv, @wval;
+	}
 
-    return wantarray ? ($sql, @sqlv) : $sql; 
+	return wantarray ? ( $sql, @sqlv ) : $sql;
 }
 
 =head2 where(\%where, \@order)
@@ -582,189 +646,229 @@ clause and list of bind values.
 
 # Finally, a separate routine just to handle WHERE clauses
 sub where {
-    my $self  = shift;
-    my $where = shift;
-    my $order = shift;
+	my $self  = shift;
+	my $where = shift;
+	my $order = shift;
 
-    # Need a separate routine to properly wrap w/ "where"
-    my $sql = '';
-    my @ret = $self->_recurse_where($where);
-    if (@ret) {
-        my $wh = shift @ret;
-        $sql .= $self->_sqlcase(' where ') . $wh if $wh;
-    }
+	# Need a separate routine to properly wrap w/ "where"
+	my $sql = '';
+	my @ret = $self->_recurse_where($where);
+	if (@ret) {
+		my $wh = shift @ret;
+		$sql .= $self->_sqlcase(' where ') . $wh if $wh;
+	}
 
-    # order by?
-    if ($order) {
-        $sql .= $self->_order_by($order);
-    }
+	# order by?
+	if ($order) {
+		$sql .= $self->_order_by($order);
+	}
 
-    return wantarray ? ($sql, @ret) : $sql; 
+	return wantarray ? ( $sql, @ret ) : $sql;
 }
 
-
 sub _recurse_where {
-    local $^W = 0;  # really, you've gotta be fucking kidding me
-    my $self  = shift;
-    my $where = _anoncopy(shift);   # prevent destroying original
-    my $ref   = ref $where || '';
-    my $join  = shift || $self->{logic} ||
-                    ($ref eq 'ARRAY' ? $self->_sqlcase('or') : $self->_sqlcase('and'));
+	local $^W = 0;    # really, you've gotta be fucking kidding me
+	my $self  = shift;
+	my $where = _anoncopy(shift);    # prevent destroying original
+	my $ref   = ref $where || '';
+	my $join =
+	     shift
+	  || $self->{logic}
+	  || ( $ref eq 'ARRAY' ? $self->_sqlcase('or') : $self->_sqlcase('and') );
 
-    # For assembling SQL fields and values
-    my(@sqlf, @sqlv) = ();
+	# For assembling SQL fields and values
+	my ( @sqlf, @sqlv ) = ();
 
-    # If an arrayref, then we join each element
-    if ($ref eq 'ARRAY') {
-        # need to use while() so can shift() for arrays
-        my $subjoin;
-        while (my $el = shift @$where) {
+	# If an arrayref, then we join each element
+	if ( $ref eq 'ARRAY' ) {
 
-            # skip empty elements, otherwise get invalid trailing AND stuff
-            if (my $ref2 = ref $el) {
-                if ($ref2 eq 'ARRAY') {
-                    next unless @$el;
-                } elsif ($ref2 eq 'HASH') {
-                    next unless %$el;
-                    $subjoin ||= $self->_sqlcase('and');
-                } elsif ($ref2 eq 'SCALAR') {
-                    # literal SQL
-                    push @sqlf, $$el;
-                    next;
-                }
-                $self->_debug("$ref2(*top) means join with $subjoin");
-            } else {
-                # top-level arrayref with scalars, recurse in pairs
-                $self->_debug("NOREF(*top) means join with $subjoin");
-                $el = {$el => shift(@$where)};
-            }
-            my @ret = $self->_recurse_where($el, $subjoin);
-            push @sqlf, shift @ret;
-            push @sqlv, @ret;
-        }
-    }
-    elsif ($ref eq 'HASH') {
-        # Note: during recursion, the last element will always be a hashref,
-        # since it needs to point a column => value. So this be the end.
-        for my $k (sort keys %$where) {
-            my $v = $where->{$k};
-            my $label = '`'.$self->_quote($k).'`';
-            if ($k =~ /^-(\D+)/) {
-                # special nesting, like -and, -or, -nest, so shift over
-                my $subjoin = $self->_modlogic($1);
-                $self->_debug("OP(-$1) means special logic ($subjoin), recursing...");
-                my @ret = $self->_recurse_where($v, $subjoin);
-                push @sqlf, shift @ret;
-                push @sqlv, @ret;
-            } elsif (! defined($v)) {
-                # undef = null
-                $self->_debug("UNDEF($k) means IS NULL");
-#fuck -- trevorj WHOA NELLY this might be wrong!
-                push @sqlf, $label . $self->_sqlcase(' is null');
-            } elsif (ref $v eq 'ARRAY') {
-                my @v = @$v;
-                
-                # multiple elements: multiple options
-                $self->_debug("ARRAY($k) means multiple elements: [ @v ]");
+		# need to use while() so can shift() for arrays
+		my $subjoin;
+		while ( my $el = shift @$where ) {
 
-                # special nesting, like -and, -or, -nest, so shift over
-                my $subjoin = $self->_sqlcase('or');
-                if ($v[0] =~ /^-(\D+)/) {
-                    $subjoin = $self->_modlogic($1);    # override subjoin
-                    $self->_debug("OP(-$1) means special logic ($subjoin), shifting...");
-                    shift @v;
-                }
+			# skip empty elements, otherwise get invalid trailing AND stuff
+			if ( my $ref2 = ref $el ) {
+				if ( $ref2 eq 'ARRAY' ) {
+					next unless @$el;
+				} elsif ( $ref2 eq 'HASH' ) {
+					next unless %$el;
+					$subjoin ||= $self->_sqlcase('and');
+				} elsif ( $ref2 eq 'SCALAR' ) {
 
-                # map into an array of hashrefs and recurse
-                my @ret = $self->_recurse_where([map { {$k => $_} } @v], $subjoin);
+					# literal SQL
+					push @sqlf, $$el;
+					next;
+				}
+				$self->_debug("$ref2(*top) means join with $subjoin");
+			} else {
 
-                # push results into our structure
-                push @sqlf, shift @ret;
-                push @sqlv, @ret;
-            } elsif (ref $v eq 'HASH') {
-                # modified operator { '!=', 'completed' }
-                for my $f (sort keys %$v) {
-                    my $x = $v->{$f};
-                    $self->_debug("HASH($k) means modified operator: { $f }");
+				# top-level arrayref with scalars, recurse in pairs
+				$self->_debug("NOREF(*top) means join with $subjoin");
+				$el = { $el => shift(@$where) };
+			}
+			my @ret = $self->_recurse_where( $el, $subjoin );
+			push @sqlf, shift @ret;
+			push @sqlv, @ret;
+		}
+	} elsif ( $ref eq 'HASH' ) {
 
-                    # check for the operator being "IN" or "BETWEEN" or whatever
-                    if (ref $x eq 'ARRAY') {
-                          if ($f =~ /^-?\s*(not[\s_]+)?(in|between)\s*$/i) {
-                              my $u = $self->_modlogic($1 . $2);
-                              $self->_debug("HASH($f => $x) uses special operator: [ $u ]");
-                              if ($u =~ /between/i) {
-                                  # SQL sucks
-                                  push @sqlf, join ' ', $self->_convert($label), $u, $self->_convert('?'),
-                                                        $self->_sqlcase('and'), $self->_convert('?');
-                              } else {
-                                   push @sqlf, join ' ', $self->_convert($label), $u, '(',
-                                                  join(', ', map { $self->_convert('?') } @$x),
-                                              ')';
-                              }
-                              push @sqlv, $self->_bindtype($k, @$x);
-                          } else {
-                              # multiple elements: multiple options
-                              $self->_debug("ARRAY($x) means multiple elements: [ @$x ]");
-                              
-                              # map into an array of hashrefs and recurse
-                              my @ret = $self->_recurse_where([map { {$k => {$f, $_}} } @$x]);
-                              
-                              # push results into our structure
-                              push @sqlf, shift @ret;
-                              push @sqlv, @ret;
-                          }
-                    } elsif (! defined($x)) {
-                        # undef = NOT null
-                        my $not = ($f eq '!=' || $f eq 'not like') ? ' not' : '';
-                        push @sqlf, $label . $self->_sqlcase(" is$not null");
-                    } else {
-                        # regular ol' value
-                        $f =~ s/^-//;   # strip leading -like =>
-                        $f =~ s/_/ /;   # _ => " "
-                        push @sqlf, join ' ', $self->_convert($label), $self->_sqlcase($f), $self->_convert('?');
-                        push @sqlv, $self->_bindtype($k, $x);
-                    }
-                }
-            } elsif (ref $v eq 'SCALAR') {
-                # literal SQL
-                $self->_debug("SCALAR($k) means literal SQL: $$v");
-#fuck -- trevorj WHOA NELLY this might be wrong! not changed!
-                push @sqlf, "$label $$v";
-            } else {
-                # standard key => val
-                $self->_debug("NOREF($k) means simple key=val: \`$k\` $self->{cmp} $v");
-                push @sqlf, join ' ', $self->_convert($label), $self->_sqlcase($self->{cmp}), $self->_convert('?');
-                push @sqlv, $self->_bindtype($k, $v);
-            }
-        }
-    }
-    elsif ($ref eq 'SCALAR') {
-        # literal sql
-        $self->_debug("SCALAR(*top) means literal SQL: $$where");
-        push @sqlf, $$where;
-    }
-    elsif (defined $where) {
-        # literal sql
-        $self->_debug("NOREF(*top) means literal SQL: $where");
-        push @sqlf, $where;
-    }
+		# Note: during recursion, the last element will always be a hashref,
+		# since it needs to point a column => value. So this be the end.
+		for my $k ( sort keys %$where ) {
+			my $v     = $where->{$k};
+			my $label = '`' . $self->_quote($k) . '`';
+			if ( $k =~ /^-(\D+)/ ) {
 
-    # assemble and return sql
-    my $wsql = @sqlf ? '( ' . join(" $join ", @sqlf) . ' )' : '';
-    return wantarray ? ($wsql, @sqlv) : $wsql; 
+				# special nesting, like -and, -or, -nest, so shift over
+				my $subjoin = $self->_modlogic($1);
+				$self->_debug(
+					"OP(-$1) means special logic ($subjoin), recursing...");
+				my @ret = $self->_recurse_where( $v, $subjoin );
+				push @sqlf, shift @ret;
+				push @sqlv, @ret;
+			} elsif ( !defined($v) ) {
+
+				# undef = null
+				$self->_debug("UNDEF($k) means IS NULL");
+
+				#fuck -- trevorj WHOA NELLY this might be wrong!
+				push @sqlf, $label . $self->_sqlcase(' is null');
+			} elsif ( ref $v eq 'ARRAY' ) {
+				my @v = @$v;
+
+				# multiple elements: multiple options
+				$self->_debug("ARRAY($k) means multiple elements: [ @v ]");
+
+				# special nesting, like -and, -or, -nest, so shift over
+				my $subjoin = $self->_sqlcase('or');
+				if ( $v[0] =~ /^-(\D+)/ ) {
+					$subjoin = $self->_modlogic($1);    # override subjoin
+					$self->_debug(
+						"OP(-$1) means special logic ($subjoin), shifting...");
+					shift @v;
+				}
+
+				# map into an array of hashrefs and recurse
+				my @ret = $self->_recurse_where(
+					[
+						map {
+							{ $k => $_ }
+						  } @v
+					],
+					$subjoin
+				);
+
+				# push results into our structure
+				push @sqlf, shift @ret;
+				push @sqlv, @ret;
+			} elsif ( ref $v eq 'HASH' ) {
+
+				# modified operator { '!=', 'completed' }
+				for my $f ( sort keys %$v ) {
+					my $x = $v->{$f};
+					$self->_debug("HASH($k) means modified operator: { $f }");
+
+					# check for the operator being "IN" or "BETWEEN" or whatever
+					if ( ref $x eq 'ARRAY' ) {
+						if ( $f =~ /^-?\s*(not[\s_]+)?(in|between)\s*$/i ) {
+							my $u = $self->_modlogic( $1 . $2 );
+							$self->_debug(
+								"HASH($f => $x) uses special operator: [ $u ]");
+							if ( $u =~ /between/i ) {
+
+								# SQL sucks
+								push @sqlf, join ' ', $self->_convert($label),
+								  $u, $self->_convert('?'),
+								  $self->_sqlcase('and'), $self->_convert('?');
+							} else {
+								push @sqlf, join ' ', $self->_convert($label),
+								  $u, '(',
+								  join( ', ',
+									map { $self->_convert('?') } @$x ),
+								  ')';
+							}
+							push @sqlv, $self->_bindtype( $k, @$x );
+						} else {
+
+							# multiple elements: multiple options
+							$self->_debug(
+								"ARRAY($x) means multiple elements: [ @$x ]");
+
+							# map into an array of hashrefs and recurse
+							my @ret = $self->_recurse_where(
+								[
+									map {
+										{ $k => { $f, $_ } }
+									  } @$x
+								]
+							);
+
+							# push results into our structure
+							push @sqlf, shift @ret;
+							push @sqlv, @ret;
+						}
+					} elsif ( !defined($x) ) {
+
+						# undef = NOT null
+						my $not =
+						  ( $f eq '!=' || $f eq 'not like' ) ? ' not' : '';
+						push @sqlf, $label . $self->_sqlcase(" is$not null");
+					} else {
+
+						# regular ol' value
+						$f =~ s/^-//;    # strip leading -like =>
+						$f =~ s/_/ /;    # _ => " "
+						push @sqlf, join ' ', $self->_convert($label),
+						  $self->_sqlcase($f), $self->_convert('?');
+						push @sqlv, $self->_bindtype( $k, $x );
+					}
+				}
+			} elsif ( ref $v eq 'SCALAR' ) {
+
+				# literal SQL
+				$self->_debug("SCALAR($k) means literal SQL: $$v");
+
+				#fuck -- trevorj WHOA NELLY this might be wrong! not changed!
+				push @sqlf, "$label $$v";
+			} else {
+
+				# standard key => val
+				$self->_debug(
+					"NOREF($k) means simple key=val: \`$k\` $self->{cmp} $v");
+				push @sqlf, join ' ', $self->_convert($label),
+				  $self->_sqlcase( $self->{cmp} ), $self->_convert('?');
+				push @sqlv, $self->_bindtype( $k, $v );
+			}
+		}
+	} elsif ( $ref eq 'SCALAR' ) {
+
+		# literal sql
+		$self->_debug("SCALAR(*top) means literal SQL: $$where");
+		push @sqlf, $$where;
+	} elsif ( defined $where ) {
+
+		# literal sql
+		$self->_debug("NOREF(*top) means literal SQL: $where");
+		push @sqlf, $where;
+	}
+
+	# assemble and return sql
+	my $wsql = @sqlf ? '( ' . join( " $join ", @sqlf ) . ' )' : '';
+	return wantarray ? ( $wsql, @sqlv ) : $wsql;
 }
 
 sub _order_by {
-    my $self = shift;
-    my $ref = ref $_[0];
+	my $self = shift;
+	my $ref  = ref $_[0];
 
-    my @vals = $ref eq 'ARRAY'  ? @{$_[0]} :
-               $ref eq 'SCALAR' ? ${$_[0]} :
-               $ref eq ''       ? $_[0]    :
-               puke "Unsupported data struct $ref for ORDER BY";
+	my @vals =
+	    $ref eq 'ARRAY'  ? @{ $_[0] }
+	  : $ref eq 'SCALAR' ? ${ $_[0] }
+	  : $ref eq ''       ? $_[0]
+	  :                    puke "Unsupported data struct $ref for ORDER BY";
 
-    my $val = join ', ', map { $self->_quote($_) } @vals;
-    return $val ? $self->_sqlcase(' order by')." $val" : '';
+	my $val = join ', ', map { $self->_quote($_) } @vals;
+	return $val ? $self->_sqlcase(' order by') . " $val" : '';
 }
 
 =head2 values(\%data)
@@ -777,11 +881,11 @@ are affecting lots of rows. See below under the L</"PERFORMANCE"> section.
 =cut
 
 sub values {
-    my $self = shift;
-    my $data = shift || return;
-    puke "Argument to ", __PACKAGE__, "->values must be a \\%hash"
-        unless ref $data eq 'HASH';
-    return map { $self->_bindtype($_, $data->{$_}) } sort keys %$data;
+	my $self = shift;
+	my $data = shift || return;
+	puke "Argument to ", __PACKAGE__, "->values must be a \\%hash"
+	  unless ref $data eq 'HASH';
+	return map { $self->_bindtype( $_, $data->{$_} ) } sort keys %$data;
 }
 
 =head2 generate($any, 'number', $of, \@data, $struct, \%types)
@@ -820,78 +924,86 @@ else remains verbatim.
 =cut
 
 sub generate {
-    my $self  = shift;
+	my $self = shift;
 
-    my(@sql, @sqlq, @sqlv);
+	my ( @sql, @sqlq, @sqlv );
 
-    for (@_) {
-        my $ref = ref $_;
-        if ($ref eq 'HASH') {
-            for my $k (sort keys %$_) {
-                my $v = $_->{$k};
-                my $r = ref $v;
-                my $label = $self->_quote($k);
-                if ($r eq 'ARRAY') {
-                    # SQL included for values
-                    my @bind = @$v;
-                    my $sql = shift @bind;
-                    push @sqlq, "$label = $sql";
-                    push @sqlv, $self->_bindtype($k, @bind);
-                } elsif ($r eq 'SCALAR') {
-                    # embedded literal SQL
-                    push @sqlq, "$label = $$v";
-                } else { 
-                    push @sqlq, "$label = ?";
-                    push @sqlv, $self->_bindtype($k, $v);
-                }
-            }
-            push @sql, $self->_sqlcase('set'), join ', ', @sqlq;
-        } elsif ($ref eq 'ARRAY') {
-            # unlike insert(), assume these are ONLY the column names, i.e. for SQL
-            for my $v (@$_) {
-                my $r = ref $v;
-                if ($r eq 'ARRAY') {
-                    my @val = @$v;
-                    push @sqlq, shift @val;
-                    push @sqlv, @val;
-                } elsif ($r eq 'SCALAR') {
-                    # embedded literal SQL
-                    push @sqlq, $$v;
-                } else { 
-                    push @sqlq, '?';
-                    push @sqlv, $v;
-                }
-            }
-            push @sql, '(' . join(', ', @sqlq) . ')';
-        } elsif ($ref eq 'SCALAR') {
-            # literal SQL
-            push @sql, $$_;
-        } else {
-            # strings get case twiddled
-            push @sql, $self->_sqlcase($_);
-        }
-    }
+	for (@_) {
+		my $ref = ref $_;
+		if ( $ref eq 'HASH' ) {
+			for my $k ( sort keys %$_ ) {
+				my $v     = $_->{$k};
+				my $r     = ref $v;
+				my $label = $self->_quote($k);
+				if ( $r eq 'ARRAY' ) {
 
-    my $sql = join ' ', @sql;
+					# SQL included for values
+					my @bind = @$v;
+					my $sql  = shift @bind;
+					push @sqlq, "$label = $sql";
+					push @sqlv, $self->_bindtype( $k, @bind );
+				} elsif ( $r eq 'SCALAR' ) {
 
-    # this is pretty tricky
-    # if ask for an array, return ($stmt, @bind)
-    # otherwise, s/?/shift @sqlv/ to put it inline
-    if (wantarray) {
-        return ($sql, @sqlv);
-    } else {
-        1 while $sql =~ s/\?/my $d = shift(@sqlv);
+					# embedded literal SQL
+					push @sqlq, "$label = $$v";
+				} else {
+					push @sqlq, "$label = ?";
+					push @sqlv, $self->_bindtype( $k, $v );
+				}
+			}
+			push @sql, $self->_sqlcase('set'), join ', ', @sqlq;
+		} elsif ( $ref eq 'ARRAY' ) {
+
+		 # unlike insert(), assume these are ONLY the column names, i.e. for SQL
+			for my $v (@$_) {
+				my $r = ref $v;
+				if ( $r eq 'ARRAY' ) {
+					my @val = @$v;
+					push @sqlq, shift @val;
+					push @sqlv, @val;
+				} elsif ( $r eq 'SCALAR' ) {
+
+					# embedded literal SQL
+					push @sqlq, $$v;
+				} else {
+					push @sqlq, '?';
+					push @sqlv, $v;
+				}
+			}
+			push @sql, '(' . join( ', ', @sqlq ) . ')';
+		} elsif ( $ref eq 'SCALAR' ) {
+
+			# literal SQL
+			push @sql, $$_;
+		} else {
+
+			# strings get case twiddled
+			push @sql, $self->_sqlcase($_);
+		}
+	}
+
+	my $sql = join ' ', @sql;
+
+	# this is pretty tricky
+	# if ask for an array, return ($stmt, @bind)
+	# otherwise, s/?/shift @sqlv/ to put it inline
+	if (wantarray) {
+		return ( $sql, @sqlv );
+	} else {
+		1 while $sql =~ s/\?/my $d = shift(@sqlv);
                              ref $d ? $d->[1] : $d/e;
-        return $sql;
-    }
+		return $sql;
+	}
 }
 
 sub DESTROY { 1 }
+
 sub AUTOLOAD {
-    # This allows us to check for a local, then _form, attr
-    my $self = shift;
-    my($name) = $AUTOLOAD =~ /.*::(.+)/;
-    return $self->generate($name, @_);
+
+	# This allows us to check for a local, then _form, attr
+	my $self = shift;
+	my ($name) = $AUTOLOAD =~ /.*::(.+)/;
+	return $self->generate( $name, @_ );
 }
 
 1;
