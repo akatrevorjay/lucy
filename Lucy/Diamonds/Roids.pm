@@ -314,7 +314,7 @@ sub _get_roid {
 	my $self  = shift;
 	my $fact  = shift;
 	my $grab  = shift || [qw/id fact definition who ts forgotten/];
-	my $order = shift || 'ts DESC';
+	my $order = shift || 'rand()';
 	Lucy::debug( "Roids", "_get_roid: $fact", 7 );
 
 	unless ( UNIVERSAL::isa( $fact, 'HASH' ) ) {
