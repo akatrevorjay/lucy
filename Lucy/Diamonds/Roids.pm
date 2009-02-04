@@ -220,15 +220,21 @@ sub irc_public {
 		if (
 			my $r = $self->_get_roid(
 				{
-					forgotten  => 0,
-					fact       => $fact,
-					definition => 'is ignored'
+					-nest =>
+					  [
+						{
+							forgotten  => 0,
+							fact       => $fact,
+							definition => 'is ignored',
+						},
+						{ fact => $fact, definition => $def }
+					  ]
 				}
 			)
 		  )
 		{
 			Lucy::debug( "Roids",
-				"irc_public: [$fact] is ignored in db, not saving", 7 );
+				"irc_public: [$fact] is ignored in db, or definition already exists. not saving.", 7 );
 		} else {
 			$self->_put_roid( $fact, $def, $nick, time );
 		}
