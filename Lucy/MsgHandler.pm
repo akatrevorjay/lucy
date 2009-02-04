@@ -78,13 +78,15 @@ sub S_public {
 			'pub' );
 
 		$where = $where->[0];
+		my %nick = parseumask($who);
+
 		$lucy->_send_event(
 			'irc_bot_command_hash',
 			$cmd,
 			{
 				who         => $who,
 				where       => $where,
-				nick        => parseumask($who),
+#				nick        => %nick,
 				what        => $what,
 				cmd         => $cmd,
 				args        => $args,

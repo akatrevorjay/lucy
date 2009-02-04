@@ -34,6 +34,7 @@ sub commands {
 		translate =>
 		  [qw(trans gtrans googtrans gtranslate translate translator)],
 		googlism => [qw(googlism spewshit)],
+		weather  => [qw(weather gweather)],
 	};
 }
 
@@ -81,6 +82,34 @@ sub calc {
 	push( @msg, $calc->calc( $v->{args} ) );
 	undef $calc;
 
+	return \@msg;
+}
+
+use Weather::Google;
+
+sub weather {
+	my ( $self, $v ) = @_;
+	my @msg;
+
+	Lucy::debug( 'GoogleWeather', 'query for [' . $v->{args} . ']', 6 );
+
+	my $wg      = Weather::Google->new( $v->{args} );
+	my $current = $wg->current;
+	return unless defined($current->{temp_f}) && length($current->{temp_f}) > 0;
+	
+	push( @msg,
+		    'Weather for '
+		  . $v->{args} . ': '
+		  . $current->{temp_f} . 'F/'
+		  . $current->{temp_c}
+		  . 'C; Wind: '
+		  . $current->{wind_condition}
+		  . '; Humidity: '
+		  . $current->{humidity}
+		  . '; Conditions: '
+		  . $current->{condition} );
+
+	undef $wg;
 	return \@msg;
 }
 
@@ -133,8 +162,7 @@ sub googlism {
 		$type = $1;
 	}
 
-	my $search =
-	  WWW::Search->new( 'Googlism', %{ $v->{config} } );
+	my $search = WWW::Search->new( 'Googlism', %{ $v->{config} } );
 	$search->native_query( WWW::Search::escape_query( $v->{args} ),
 		{ type => 'who' } );
 
