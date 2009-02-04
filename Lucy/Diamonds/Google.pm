@@ -102,9 +102,9 @@ sub weather {
 		  . $v->{args} . ': '
 		  . $current->{temp_f} . 'F/'
 		  . $current->{temp_c}
-		  . 'C; Wind: '
+		  . 'C; '
 		  . $current->{wind_condition}
-		  . '; Humidity: '
+		  . '; '
 		  . $current->{humidity}
 		  . '; Conditions: '
 		  . $current->{condition} );
