@@ -77,25 +77,32 @@ sub debug {
 }
 
 sub parseumask {
-	my ($who) = @_;
+	my $who = shift;
 
 	if ( my ( $full_nick, $username, $host ) = split( /[@!]/, $who, 3 ) ) {
 		my ( $nick_status, $nick ) = parsenick($full_nick);
 		$nick = $full_nick unless defined $nick;
 
 		my %ret;
-		foreach ( [qw(full_nick nick nick_status username host)] ) {
-			$ret{$_} = eval("return \$$_ or undef");
-		}
+		$ret{nick}        = $nick;
+		$ret{nick_status} = $nick_status;
+		$ret{full_nick}   = $full_nick;
+		$ret{username}    = $username;
+		$ret{host}        = $host;
 		return %ret;
 	}
 }
 
 sub parsenick {
-	my ($nick) = @_;
+	my $nick = shift;
+	my $want = shift || '';
 
 	if ( $nick =~ /^([\&\@\+\%\~]?)(.*)$/ ) {
-		return wantarray ? { nick => $2, status => $1 } : $2;
+		if ( $want eq 'hash' ) {
+			return wantarray ? { nick => $2, status => $1 } : $2;
+		} else {
+			return wantarray ? [ $1, $2 ] : $2;
+		}
 	}
 }
 

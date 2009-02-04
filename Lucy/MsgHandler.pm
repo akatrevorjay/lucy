@@ -24,6 +24,7 @@
 #
 package Lucy::MsgHandler;
 use POE::Component::IRC::Plugin qw(:ALL);
+use Lucy::Common;
 use warnings;
 use strict;
 
@@ -76,7 +77,6 @@ sub S_public {
 		$lucy->_send_event( 'irc_bot_command', $who, $where, $what, $cmd, $args,
 			'pub' );
 
-		my %nick = parsenick($who);
 		$where = $where->[0];
 		$lucy->_send_event(
 			'irc_bot_command_hash',
@@ -84,12 +84,11 @@ sub S_public {
 			{
 				who         => $who,
 				where       => $where,
-				nick        => $nick{nick},
-				nick_status => $nick{status},
+				nick        => parseumask($who),
 				what        => $what,
 				cmd         => $cmd,
 				args        => $args,
-				type        => 'msg',
+				type        => 'pub',
 			},
 		);
 	}
@@ -101,33 +100,27 @@ sub S_public {
 # same as above but for private messages
 sub S_msg {
 	my ( $self, $lucy ) = splice @_, 0, 2;
-	my ($who) = ${ $_[0] };
-
-	#my ($where)   = ${ $_[1] };
-	my ($what)    = ${ $_[2] };
-	my ($botnick) = $lucy->nick_name();
-	my $nick      = parsenick($who);
-	my $where     = [$nick];
-
-	my ( $cmd, $args ) = $what =~ /^!?$self->{cmd_regex}/iox;
+	my ($who)  = ${ $_[0] };
+	my ($what) = ${ $_[2] };
+	
+	my ( $cmd, $args ) = $what =~ /^!?$self->{cmd_regex}/ix;
 	if ($cmd) {
 		$cmd = lc($cmd);
 		Lucy::debug( 'MsgHandler',
 			"Sending privmsg irc_bot_command ($cmd,$args)", 7 );
 
-		$lucy->_send_event( 'irc_bot_command', $who, $where, $what, $cmd, $args,
-			'msg' );
+		my %where = parseumask($who);
 
-		my %nick = parsenick($who);
-		$where = $where->[0];
+		$lucy->_send_event( 'irc_bot_command', $who, [ $where{nick} ],
+			$what, $cmd, $args, 'msg' );
+
 		$lucy->_send_event(
 			'irc_bot_command_hash',
 			$cmd,
 			{
 				who         => $who,
-				where       => $where,
-				nick        => $nick{nick},
-				nick_status => $nick{status},
+				where       => %where,
+				nick        => %where,
 				what        => $what,
 				cmd         => $cmd,
 				args        => $args,

@@ -47,36 +47,7 @@ use strict;
 
 sub new {
 	my $self = bless { priority => 0 }, shift;
-	$self->init;
 	return $self;
-}
-
-sub init {
-	my $self = shift;
-
-	#$Lucy::lucy->add_event(
-	#	qw(
-	#	  irc_001
-	#	  irc_315
-	#	  irc_324
-	#	  irc_352
-	#	  irc_bot_msg
-	#	  irc_bot_public
-	#	  irc_ctcp_action
-	#	  irc_disconnected
-	#	  irc_error
-	#	  irc_join
-	#	  irc_kick
-	#	  irc_mode
-	#	  irc_msg
-	#	  irc_nick
-	#	  irc_part
-	#	  irc_public
-	#	  irc_quit
-	#	  irc_socketerr
-	#	  irc_topic
-	#	  )
-	#);
 }
 
 # Logger->log hook
@@ -159,12 +130,12 @@ sub irc_notice {
 ### Called when Lucy sends a private messages
 ###
 sub irc_bot_msg {
-	my ( $self, $lucy, $where, $what ) = @_[ OBJECT, SENDER, ARG0, ARG1 ];
-	my $who     = $where->[0];
-	my $nick    = ( split( /[@!]/, $who, 2 ) )[0];
+	my ( $self, $lucy, $who, $what ) = @_[ OBJECT, SENDER, ARG0, ARG1 ];
+	$who = $who->[0];
+	my $nick    = Lucy::parsenick($who);
 	my $botnick = $lucy->nick_name();
 
-	unless ( $nick = $Lucy::config->{NickServUser} ) {
+	unless ( $nick eq $Lucy::config->{NickServUser} ) {
 		Lucy::debug( "privmsg", "[$nick] $botnick: $what", 2 );
 		$self->log( 'privmsg', "[$nick] $botnick: $what" );
 	}
@@ -346,7 +317,7 @@ sub irc_nick {
 	### log it
 	foreach (
 		eval {
-			@{ $lucy->nick_channels($new) }
+			     @{ $lucy->nick_channels($new) }
 			  || @{ $lucy->nick_channels($new) }
 			  || [];
 		}
