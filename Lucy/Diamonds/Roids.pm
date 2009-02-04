@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# SVN: $Id: InfoBot.pm 55 2008-11-24 05:43:05Z trevorj $
+# SVN: $Id$
 # Give Lucy Roids!
 # _____________
 # Lucy; irc bot
@@ -48,6 +48,8 @@ sub init {
 	$self->{fact_regex} = $config->{fact_regex} || '[\w\s]{3,32}';
 	$self->{trigger_regex} = $config->{trigger_regex}
 	  || 'is|are|tastes|smells|feels|sounds|says|fucks|rapes|murders|kills|hates|loves';
+	$self->{allowed_mod_regex} = $config->{allowed_mod_regex}
+	  || '(?:\s+(id|who|ts|forgotten)=([\w_\-]+))';
 }
 
 # Forget/hide a roid
@@ -57,7 +59,7 @@ sub forget {
 	return undef
 	  unless my ( $fact, $f_key, $f_val ) =
 		  $v->{args} =~
-		  /^\s*($self->{fact_regex})\s*(?:(id|who|ts)=(\w+))?\s*$/;
+		  /^\s*($self->{fact_regex})$self->{allowed_mod_regex}?\s*$/;
 	my @msg;
 
 	my $f_args;
@@ -84,7 +86,7 @@ sub unforget {
 	return undef
 	  unless my ( $fact, $f_key, $f_val ) =
 		  $v->{args} =~
-		  /^\s*($self->{fact_regex})\s*(?:(id|who|ts)=(\w+))?\s*$/;
+		  /^\s*($self->{fact_regex})$self->{allowed_mod_regex}?\s*$/;
 	my @msg;
 
 	my $f_args;
@@ -108,18 +110,29 @@ sub unforget {
 sub search {
 	my ( $self, $v ) = @_;
 	my $what = $v->{args};
-	my $max_results;
-	if ( $what =~ s/\s+max=(\d)$// ) {
-		$max_results = $1;
-	}
-	return undef unless $what =~ /^$self->{fact_regex}$/;
+	my $max_results = ( $what =~ s/\s+max=(\d)\s*$// ) ? $1 : 3;
+	return undef
+	  unless my ( $fact, $f_key, $f_val ) =
+		  $what =~ /^\s*($self->{fact_regex})$self->{allowed_mod_regex}?\s*$/;
 	my @msg;
 
-	Lucy::debug( "Roids", "search: [what=$what]", 7 );
-	if ( my @roids = $self->_search_roids( $what, $max_results ) ) {
+	my $f_args;
+	if ($f_key) {
+		Lucy::debug(
+			"Roids",
+			"search: [$fact] with [$f_key]=[$f_val] max_results=[$max_results]",
+			7
+		);
+		$f_args = { fact => $fact, "$f_key" => $f_val };
+	} else {
+		Lucy::debug( "Roids", "search: [$fact] max_results=[$max_results]", 7 );
+		$f_args = $fact;
+	}
+
+	if ( my @roids = $self->_search_roids( $f_args, $max_results ) ) {
 		my $i = 0;
 		foreach (@roids) {
-			next unless defined $_->{fact};
+			next unless UNIVERSAL::isa( $_, 'HASH' ) && defined $_->{fact};
 			$i++;
 
 			my $timesince =
@@ -145,18 +158,30 @@ sub search {
 sub history {
 	my ( $self, $v ) = @_;
 	my $what = $v->{args};
-	my $max_results;
-	if ( $what =~ s/\s+max=(\d)$// ) {
-		$max_results = $1;
-	}
-	return undef unless $what =~ /^$self->{fact_regex}$/;
+	my $max_results = ( $what =~ s/\s+max=(\d)\s*$// ) ? $1 : 3;
+	return undef
+	  unless my ( $fact, $f_key, $f_val ) =
+		  $what =~ /^\s*($self->{fact_regex})$self->{allowed_mod_regex}?\s*$/;
 	my @msg;
 
-	Lucy::debug( "Roids", "history: [what=$what]", 7 );
-	if ( my @roids = $self->_search_roids( { fact => $what }, $max_results ) ) {
+	my $f_args;
+	if ($f_key) {
+		Lucy::debug(
+			"Roids",
+"history: [$fact] with [$f_key]=[$f_val] max_results=[$max_results]",
+			7
+		);
+		$f_args = { fact => $fact, "$f_key" => $f_val };
+	} else {
+		Lucy::debug( "Roids", "history: [$fact] max_results=[$max_results]",
+			7 );
+		$f_args = { fact => $fact };
+	}
+
+	if ( my @roids = $self->_search_roids( $f_args, $max_results ) ) {
 		my $i = 0;
 		foreach (@roids) {
-			next unless defined $_->{fact};
+			next unless UNIVERSAL::isa( $_, 'HASH' ) && defined $_->{fact};
 			$i++;
 
 			my $timesince =
@@ -185,19 +210,32 @@ sub irc_public {
 	my $botnick = $lucy->nick_name();
 	$where = $where->[0];
 
-	if ( my ( $fact, $def ) =
+	my ( $fact, $f_key, $f_val, $def );
+
+	if ( ( $fact, $def ) =
 		$what =~ /^($self->{fact_regex})\s+((?:$self->{trigger_regex}).+)\s*$/ )
 	{
-		if ( my $r = $self->_get_roid( { forgotten => 0, fact => $fact } ) ) {
+
+		# We now save EVERYTHING unless it's ignored.
+		if (
+			my $r = $self->_get_roid(
+				{
+					forgotten  => 0,
+					fact       => $fact,
+					definition => 'is ignored'
+				}
+			)
+		  )
+		{
 			Lucy::debug( "Roids",
-				"irc_public: '$fact' is already in db, not saving", 7 );
+				"irc_public: [$fact] is ignored in db, not saving", 7 );
 		} else {
 			$self->_put_roid( $fact, $def, $nick, time );
 		}
 
-	} elsif ( my ( $fact, $f_key, $f_val ) =
+	} elsif ( ( $fact, $f_key, $f_val ) =
 		$what =~
-		/^forget\s+($self->{fact_regex})\s*(?:(id|who|ts)=([\w_\-]+))?$/ )
+		/^forget\s+($self->{fact_regex})$self->{allowed_mod_regex}?\s*$/ )
 	{
 		my $f_args;
 		if ($f_key) {
@@ -215,11 +253,12 @@ sub irc_public {
 
 		if ( $self->_forget_roid($f_args) ) {
 			$lucy->yield( privmsg => $where => "$nick: Ok, I forgot $fact" );
+			return 1;
 		}
 
-	} elsif ( my ( $fact, $f_key, $f_val ) =
+	} elsif ( ( $fact, $f_key, $f_val ) =
 		$what =~
-/^(?:unforget|remember)\s+($self->{fact_regex})\s*(?:(id|who|ts)=([\w_\-]+))?$/
+/^(?:unforget|remember)\s+($self->{fact_regex})$self->{allowed_mod_regex}?\s*$/
 	  )
 	{
 		my $f_args;
@@ -239,21 +278,32 @@ sub irc_public {
 		if ( $self->_unforget_roid($f_args) ) {
 			$lucy->yield(
 				privmsg => $where => "$nick: Ok, I remembered $fact" );
+			return 1;
 		}
-	} elsif ( my ($fact) = $what =~ /^($self->{fact_regex})\?.*$/ ) {
+	} elsif ( ($fact) = $what =~ /^($self->{fact_regex})\?.*$/ ) {
 		if ( my $r = $self->_get_roid($fact) ) {
-			unless ( $r->{forgotten} ) {
-				my $append =
-				  ( $r->{ts} > 0 )
-				  ? ': ' . Lucy::timesince( $r->{ts} ) . ' ago'
-				  : '';
-				$append .= '] id=' . $r->{id};
+			return
+			  if (
+				$self->_get_roid(
+					{
+						forgotten  => 0,
+						fact       => $fact,
+						definition => 'is ignored'
+					}
+				)
+			  );
+			my $append =
+			  ( $r->{ts} > 0 )
+			  ? ': ' . Lucy::timesince( $r->{ts} ) . ' ago'
+			  : '';
+			$append .= '] id=' . $r->{id};
 
-				$lucy->yield( privmsg => $where => "$nick: $fact "
-					  . $r->{definition} . ' ['
-					  . $r->{who}
-					  . $append );
-			}
+			$lucy->yield( privmsg => $where => "$nick: $fact "
+				  . $r->{definition} . ' ['
+				  . $r->{who}
+				  . $append );
+
+			return 1;
 		}
 	}
 }
@@ -317,14 +367,9 @@ sub _get_roid {
 	my $order = shift || 'rand()';
 	Lucy::debug( "Roids", "_get_roid: $fact", 7 );
 
-	unless ( UNIVERSAL::isa( $fact, 'HASH' ) ) {
-		$fact = { forgotten => 0, fact => $fact };
-	}
+	$fact = { forgotten => 0, fact => $fact }
+	  unless ( UNIVERSAL::isa( $fact, 'HASH' ) );
 	my ( $where, @bind_vars ) = $Lucy::dbh->abstract->where($fact);
-
-	#	if ( my $roid =
-	#		$Lucy::dbh->select( $self->tablename, $grab, $where, $order )->hash )
-	#	{
 
 	if (
 		my $roid = $Lucy::dbh->query(
@@ -347,8 +392,7 @@ sub _search_roids {
 	my $max_results = shift || 3;
 	my $grab        = shift || [qw/id fact definition who ts forgotten/];
 	my $order       = shift || 'rand()';
-
-	Lucy::debug( "Roids", "_get_roid: $fact", 7 );
+	Lucy::debug( "Roids", "_search_roid: $fact", 7 );
 
 	my ( $where, @bind_vars );
 	if ( UNIVERSAL::isa( $fact, 'HASH' ) ) {
@@ -359,7 +403,6 @@ sub _search_roids {
 		@bind_vars = ($fact);
 	}
 
-	# search the factoids for $args
 	my $q = $Lucy::dbh->query(
 		"SELECT "
 		  . join( ', ', @{$grab} )
@@ -386,25 +429,6 @@ sub _put_roid {
 	Lucy::debug( "Roids", "_put_roid: $r{fact}", 7 );
 
 	$Lucy::dbh->insert( $self->tablename, \%r );
-}
-
-sub _roid_exists {
-	my $self  = shift;
-	my $fact  = shift;
-	my $grab  = shift || [qw/id/];
-	my $order = shift;
-	Lucy::debug( "Roids", "_roid_exists: $fact", 7 );
-
-	my $where =
-	  ( UNIVERSAL::isa( $fact, 'HASH' ) )
-	  ? $fact
-	  : { forgotten => 0, fact => $fact };
-
-	if ( my $roid =
-		$Lucy::dbh->select( $self->tablename, $grab, $where, $order ) )
-	{
-		return 1;
-	}
 }
 
 1;
