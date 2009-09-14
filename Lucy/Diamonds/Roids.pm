@@ -47,7 +47,7 @@ sub init {
 	my $config = $self->diamond_config;
 	$self->{fact_regex} = $config->{fact_regex} || '[\w\s]{3,32}';
 	$self->{trigger_regex} = $config->{trigger_regex}
-	  || 'is|are|tastes|smells|feels|sounds|says|fucks|rapes|murders|kills|hates|loves';
+	  || 'is|are|(?:taste|smell|feel|sound|say|fuck|rape|murder|kill|hate|love)s?';
 	$self->{allowed_mod_regex} = $config->{allowed_mod_regex}
 	  || '(?:\s+(id|who|ts|forgotten)=([\w_\-]+))';
 }
