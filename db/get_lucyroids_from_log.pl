@@ -57,7 +57,7 @@ my $dbh = DBIx::Simple->connect(
 $dbh->{mysql_auto_reconnect} = 1;
 
 my $fact_regex = '[\w\s]{3,32}';
-my $trigger_regex = 'is|are|tastes|smells|feels|sounds|says|fucks|rapes|murders|kills|hates|loves';
+my $trigger_regex = 'is|are|(?:taste|smell|feel|sound|say|fuck|rape|murder|kill|hate|love)s?';
 
 while (<>) {
 	if (my ($ts, $nick, $fact, $definition) = /^(\d+)\s*\<([^>]+)\>\s+($fact_regex)\s+((?:$trigger_regex).+)\s*$/) {
