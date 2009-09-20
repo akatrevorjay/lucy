@@ -25,7 +25,10 @@
 package Lucy::Diamonds::Alice;
 use base qw(Lucy::Diamond);
 use POE;
-use IO::Socket;
+# Perl 5.10.0 requires this to be loaded as well as IO::Socket, or the module does some weird things where it won't load it's own code,
+#  not to mention $self->methods stops working.
+use Socket;
+use IO::Socket::UNIX;
 use warnings;
 use strict;
 
@@ -47,31 +50,30 @@ sub irc_bot_command {
 	$lucy->yield( privmsg => $where => $out );
 }
 
+# 092009 trevorj - This needs to be moved more global if it shall continue to exist. Reponses should have a change to do a random response as well.
 ### The acronyms of defeat shall pwn thee
-sub irc_public {
-	return unless ( int( rand(180) ) == 38 );
-
-	my ( $self, $lucy, $who, $where, $what ) =
-	  @_[ OBJECT, SENDER, ARG0, ARG1, ARG2 ];
-	my $nick = ( split( /[@!]/, $who, 2 ) )[0];
-	$where = $where->[0];
-
-	my $out;
-	if ( my $msg = $self->do_alice( $nick, $what ) ) {
-		$out = Lucy::font( 'bold', $nick ) . ": " . $msg;
-#	} else {
-#		$out = Lucy::font( 'red', $nick ) . ": unable to connect to socket";
-	}
-
-	$lucy->yield( privmsg => $where => $out );
-}
+#sub irc_public {
+#	return unless ( int( rand(180) ) == 38 );
+#
+#	my ( $self, $lucy, $who, $where, $what ) =
+#	  @_[ OBJECT, SENDER, ARG0, ARG1, ARG2 ];
+#	my $nick = ( split( /[@!]/, $who, 2 ) )[0];
+#	$where = $where->[0];
+#
+#	my $out;
+#	if ( my $msg = $self->do_alice( $nick, $what ) ) {
+#		$out = Lucy::font( 'bold', $nick ) . ": " . $msg;
+##	} else {
+##		$out = Lucy::font( 'red', $nick ) . ": unable to connect to socket";
+#	}
+#
+#	$lucy->yield( privmsg => $where => $out );
+#}
 
 ### Mmmm. We have been loaded.
 sub new {
-	my $class = shift;
-
-	# use the lowest priority
-	return bless { priority => 9 }, $class;
+	my $self = bless { priority => 9 }, shift;
+	return $self;
 }
 
 ### Heart and soul, Yo.

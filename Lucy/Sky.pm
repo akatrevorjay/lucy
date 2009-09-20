@@ -64,6 +64,7 @@ sub add_diamond {
 			push( @methods, 'irc_bot_command' )
 			  if ( $self->{Diamonds}{$d}{__abstract});
 
+			Lucy::debug( "Sky", "Adding events to $priority:$d: @methods", 9);
 			foreach (@methods) {
 				next unless s/^irc_//;
 				$self->{Diamonds_events}{$d}{$_} = 1;
@@ -217,8 +218,10 @@ sub _default {
 			#TODO is this really needed in this foreach as well as the next??
 			my $ret;
 			foreach my $d ( keys %{ $self->{Diamonds_map}[$pri] } ) {
+				Lucy::debug( 'Event' . $pri, "Seeing if $state_name exists for $d", 11 );
 				next
 				  unless ( $self->{Diamonds_events}{$d}{$state_name} );
+				Lucy::debug( 'Event' . $pri, "Sending $state to $d", 9 );
 				$ret = eval { $self->{Diamonds}{$d}->$state(@new_) };
 
 				Lucy::debug(

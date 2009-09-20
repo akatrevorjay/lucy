@@ -2,5 +2,7 @@
 <includepath>
   <includepathentry path="/home/trevorj/code/lucy/" />
   <includepathentry path="/home/trevorj/code/lucy/lib" />
+  <includepathentry path="/Users/trevorj/Documents/code/skywww/lucy/trunk" />
+  <includepathentry path="/Users/trevorj/Documents/code/skywww/lucy/trunk/lib" />
 </includepath>
 
