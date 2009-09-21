@@ -41,6 +41,10 @@ use vars qw($AUTOLOAD);
 sub add_diamond {
 	my $self = shift;
 	foreach my $d (@_) {
+
+		# skip it if it's not sanitized enough
+		next if $d =~ /[^\w]/;
+
 		$self->remove_diamond($d) if $self->is_diamond_loaded($d);
 		if ( eval( 'return require Lucy::Diamonds::' . $d . ' or undef;' ) ) {
 			$self->{Diamonds}{$d} =
@@ -57,14 +61,14 @@ sub add_diamond {
 
 			# On-demand events
 			my @methods = $self->{Diamonds}{$d}->methods();
-			
+
 			#TODO this doesn't really belong here..
 			# We need a way for methods() to see the subs in the Diamond
 			# sub-class as well. Then we could avoid this ugliness.
 			push( @methods, 'irc_bot_command' )
-			  if ( $self->{Diamonds}{$d}{__abstract});
+			  if ( $self->{Diamonds}{$d}{__abstract} );
 
-			Lucy::debug( "Sky", "Adding events to $priority:$d: @methods", 9);
+			Lucy::debug( "Sky", "Adding events to $d: [@methods]", 9 );
 			foreach (@methods) {
 				next unless s/^irc_//;
 				$self->{Diamonds_events}{$d}{$_} = 1;
@@ -76,7 +80,7 @@ sub add_diamond {
 			Lucy::debug( "Sky", "Loaded diamond $d [priority=$priority]", 2 );
 		} else {
 			Lucy::debug( "Sky",
-				"WHOA THERE NELLY!!! $d failed to load: \n" . $@, 1 );
+						 "WHOA THERE NELLY!!! $d failed to load: \n" . $@, 1 );
 		}
 	}
 }
@@ -100,28 +104,23 @@ sub remove_diamond {
 			Lucy::debug( "Sky", "Unloaded diamond $d", 2 );
 		} else {
 			Lucy::debug( "Sky",
-				"WHOA THERE NELLY!!! $d failed to unload: \n" . $@, 1 );
+						 "WHOA THERE NELLY!!! $d failed to unload: \n" . $@,
+						 1 );
 		}
 	}
 }
 
-#TODO if run without args, reload all modules OR preferably, reload all changed modules
 sub reload_diamond {
 	my ( $self, @diamonds ) = @_;
-	if (@diamonds) {
 
-		# refresh the diamonds, if modified
-		foreach (@diamonds) {
-			$self->{refresher}
-			  ->refresh_module_if_modified("Lucy/Diamonds/$_.pm");
-		}
+	@diamonds = keys( %{ $self->{Diamonds} } ) if ( $#diamonds eq -1 );
+
+	# refresh the diamonds, if modified
+	foreach (@diamonds) {
+		Lucy::debug( "Sky", "Reloading diamond $_", 9 );
 
 		# add_diamond will unload the diamond if it's already loaded.
-		$self->add_diamond(@diamonds);
-
-   #} else {
-   #TODO this is kind of broken, as it doesn't remove and add the diamond again.
-   #$self->{refresher}->refresh();
+		$self->add_diamond($_);
 	}
 }
 
@@ -157,10 +156,10 @@ sub init {
 	# Create the component that will represent an IRC network.
 	$self->{__irc} =
 	  POE::Component::IRC::State->spawn(
-		Debug => ( $Lucy::config->{debug_level} > 9 ) ? 1 : 0 );
+						Debug => ( $Lucy::config->{debug_level} > 9 ) ? 1 : 0 );
 
 	POE::Session->create(
-		object_states => [ $self => [ '_start', '_stop', '_default' ], ], );
+			object_states => [ $self => [ '_start', '_stop', '_default' ], ], );
 }
 
 sub _start {
@@ -168,11 +167,11 @@ sub _start {
 
 	$self->{__irc}->plugin_add( 'MsgHandler' => Lucy::MsgHandler->new() );
 	$self->{__irc}->plugin_add( 'BotTraffic',
-		POE::Component::IRC::Plugin::BotTraffic->new() );
+							   POE::Component::IRC::Plugin::BotTraffic->new() );
 	$self->{__irc}->plugin_add(
-		'Connector' => POE::Component::IRC::Plugin::Connector->new() );
+				 'Connector' => POE::Component::IRC::Plugin::Connector->new() );
 	$self->{__irc}->plugin_add(
-		'ISupport' => POE::Component::IRC::Plugin::ISupport->new() );
+				   'ISupport' => POE::Component::IRC::Plugin::ISupport->new() );
 	$self->{__irc}->yield( "register", "all" );
 
 	my $hash = {};
@@ -210,29 +209,34 @@ sub _default {
 	( my $state_name = $state ) =~ s/^irc_//;
 
 	# run the event on the diamonds, in order of prioritizationing
+	Lucy::debug( 'Event', "Sending $state", 9 );
 	if ( $self->{Events}{$state_name} ) {
 		foreach my $pri ( 0 .. $#{ $self->{Diamonds_map} } ) {
 			next unless defined $self->{Diamonds_map}[$pri];
-			Lucy::debug( 'Event' . $pri, "Sending $state", 9 );
 
 			#TODO is this really needed in this foreach as well as the next??
 			my $ret;
 			foreach my $d ( keys %{ $self->{Diamonds_map}[$pri] } ) {
-				Lucy::debug( 'Event' . $pri, "Seeing if $state_name exists for $d", 11 );
+				Lucy::debug( 'Event' . $pri,
+							 "Seeing if $state_name exists for $d", 11 );
 				next
 				  unless ( $self->{Diamonds_events}{$d}{$state_name} );
 				Lucy::debug( 'Event' . $pri, "Sending $state to $d", 9 );
 				$ret = eval { $self->{Diamonds}{$d}->$state(@new_) };
 
 				Lucy::debug(
-					'Sky',
-					'Compilation of ' . $state . ' @ ' . $d . ' failed: ' . $@,
-					0
+							 'Sky',
+							 'Compilation of ' 
+							   . $state . ' @ ' 
+							   . $d
+							   . ' failed: '
+							   . $@,
+							 0
 				) if $@;
-				
+
 				if ($ret) {
 					Lucy::debug( 'Event' . $pri,
-						$d . ' stopped event of ' . $state, 9 );
+								 $d . ' stopped event of ' . $state, 9 );
 					last;
 				}
 			}
@@ -253,15 +257,18 @@ sub AUTOLOAD {
 	if ( $self->{__irc}->can($method) ) {
 		$ret = eval { $self->{__irc}->$method(@_); };
 		Lucy::debug( 'Sky',
-			'Compilation of ' . $method . ' @ Sky:AUTOLOAD_can failed: ' . $@,
-			0 )
+			  'Compilation of ' . $method . ' @ Sky:AUTOLOAD_can failed: ' . $@,
+			  0 )
 		  if $@;
 	} else {
 		$ret = eval { $self->{__irc}->call( $method, @_ ); };
 		Lucy::debug(
-			'Sky',
-			'Compilation of ' . $method . ' @ Sky:AUTOLOAD_else failed: ' . $@,
-			0
+					 'Sky',
+					 'Compilation of ' 
+					   . $method
+					   . ' @ Sky:AUTOLOAD_else failed: '
+					   . $@,
+					 0
 		) if $@;
 	}
 	return $ret;

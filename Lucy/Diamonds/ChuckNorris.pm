@@ -37,13 +37,15 @@ sub commands {
 		rot13                 => [qw(rot13 xor)],
 		terror_level          => [qw(terror)],
 
-		diamond_load   => [qw(diamond_load dload dadd)],
-		diamond_unload => [qw(diamond_unload dunload ddel)],
-		diamond_reload => [qw(diamond_reload dreload drel reload)],
+		diamond_list   => [qw(diamond_list dlist)],
+		diamond_add    => [qw(diamond_load diamond_add dload dadd)],
+		diamond_remove => [qw(diamond_unload diamond_remove dunload dremove)],
+		diamond_reload => [qw(diamond_reload dreload reload)],
 		timesince      => [qw(timesince)],
-		use_irc_colors => [qw(colors)],
-		debug_level    => [qw(debug)],
-		version        => [qw(version)],
+
+		#		use_irc_colors => [qw(colors)],
+		debug_level => [qw(debug)],
+		version     => [qw(version)],
 	};
 }
 
@@ -56,11 +58,11 @@ sub russianroulette_load {
 
 	if ( defined $self->{gunchamber} ) {
 		$Lucy::lucy->yield( kill => $v->{nick} =>
-			  "BANG - Don't stuff bullets into a loaded gun" );
+							"BANG - Don't stuff bullets into a loaded gun" );
 	} else {
 		$self->{gunchamber} = 1 + Lucy::crand(6);
 		$Lucy::lucy->yield( ctcp => $v->{where} => 'ACTION' =>
-			  'loads the gun and sets it on the table' );
+							'loads the gun and sets it on the table' );
 	}
 }
 
@@ -68,18 +70,18 @@ sub russianroulette_shoot {
 	my ( $self, $v ) = @_;
 	my @msg;
 
-	if (   ( !defined $self->{gunchamber} )
-		|| ( $self->{gunchamber} <= 0 ) )
+	if (    ( !defined $self->{gunchamber} )
+		 || ( $self->{gunchamber} <= 0 ) )
 	{
 		push( @msg,
-			"You probrably want to !load the gun first, don't you think?" );
+			  "You probrably want to !load the gun first, don't you think?" );
 		return @msg;
 	} else {
 		$self->{gunchamber}--;
 		if ( $self->{gunchamber} == 0 ) {
 			$Lucy::lucy->yield( privmsg => $v->{nick} => "Bang!!!" );
 			$Lucy::lucy->yield(
-				privmsg => $v->{nick} => "Better luck next time, $v->{nick}" );
+				 privmsg => $v->{nick} => "Better luck next time, $v->{nick}" );
 			$Lucy::lucy->yield( kill => $v->{nick} => "BANG!!!!" );
 			delete $self->{gunchamber};
 		} else {
@@ -135,7 +137,7 @@ sub math {
 		$Lucy::lucy->yield( privmsg => $v->{where} => "$v->{nick}: $answer" );
 	} else {
 		$Lucy::lucy->yield(
-			privmsg => $v->{where} => "$v->{nick}: expression failed bitch" );
+			  privmsg => $v->{where} => "$v->{nick}: expression failed bitch" );
 	}
 }
 
@@ -146,12 +148,12 @@ sub terror_level {
 	my ( $self, $v ) = @_;
 
 	if ( my $XML =
-		XML::Smart->new("http://www.dhs.gov/dhspublic/getAdvisoryCondition") )
+		 XML::Smart->new("http://www.dhs.gov/dhspublic/getAdvisoryCondition") )
 	{
 		$XML = $XML->cut_root;
 		$Lucy::lucy->yield(
-			privmsg => $v->{where} => "WHOA!! TAKE COVER!!! TERROR LEVEL IS "
-			  . $XML->{CONDITION} );
+			   privmsg => $v->{where} => "WHOA!! TAKE COVER!!! TERROR LEVEL IS "
+				 . $XML->{CONDITION} );
 		undef $XML;
 	}
 	return 1;
@@ -163,6 +165,7 @@ use Acme::Magic8Ball qw(ask);
 sub eightball {
 	my ( $self, $v ) = @_;
 	$Lucy::lucy->privmsg( $v->{where}, "$v->{nick}: " . ask( $v->{args} ) );
+	return 1;
 }
 
 # Rot13 unbreakable encryption
@@ -170,6 +173,7 @@ sub rot13 {
 	my ( $self, $v ) = @_;
 	$v->{args} =~ tr[a-zA-Z][n-za-mN-ZA-M];
 	$Lucy::lucy->yield( privmsg => $v->{where} => $v->{args} );
+	return 1;
 }
 
 # change the debug level
@@ -178,6 +182,7 @@ sub debug_level {
 	if ( $v->{args} =~ /(?:level=)?([4-8])/ ) {
 		Lucy::debug( "debug", "--- SET DEBUG LEVEL TO $1 ---", 2 );
 		$Lucy::lucy::config->{debug_level} = scalar($1);
+		return 1;
 	}
 }
 
@@ -186,6 +191,7 @@ sub use_irc_colors {
 	my ( $self, $v ) = @_;
 	if ( $v->{args} =~ /^(?:on|off)$/i ) {
 		$Lucy::lucy::config->{UseIRCColors} = ( $v->{args} eq 'on' ) ? 1 : 0;
+		return 1;
 	}
 }
 
@@ -194,49 +200,64 @@ sub use_irc_colors {
 ##
 #TODO some kind of auth system is required for such powerful functions
 #FUCK diamond_load doesn't work correctly. remove|reload work fine.
-sub diamond_load {
+sub diamond_add {
 	my ( $self, $v ) = @_;
 
-	if (   $v->{type} eq 'pub'
-		&& $Lucy::lucy->is_channel_admin( $v->{where}, $v->{nick} )
-		&& $v->{args} =~ /\w{3,20}/ )
+	if (    $v->{type} eq 'pub'
+		 && $Lucy::lucy->is_channel_admin( $v->{where}, $v->{nick} )
+		 && $v->{args} =~ /\w{3,20}/ )
 	{
 		Lucy::debug( "ChuckNorris",
-			"Loading diamond $v->{args} by $v->{nick}\'s request..", 1 );
+					"Adding diamonds [$v->{args}] by [$v->{nick}]\'s request..",
+					1 );
 		$Lucy::lucy->add_diamond( $v->{args} );
+		return ['ok'];
 	}
 }
 
-sub diamond_unload {
+sub diamond_remove {
 	my ( $self, $v ) = @_;
 
-	if (   $v->{type} eq 'pub'
-		&& $Lucy::lucy->is_channel_admin( $v->{where}, $v->{nick} )
-		&& $v->{args} =~ /\w{3,20}/ )
+	if (    $v->{type} eq 'pub'
+		 && $Lucy::lucy->is_channel_admin( $v->{where}, $v->{nick} )
+		 && $v->{args} =~ /\w{3,20}/ )
 	{
 		Lucy::debug( "ChuckNorris",
-			"Unloading diamond $v->{args} by $v->{nick}\'s request..", 1 );
+				  "Removing diamonds [$v->{args}] by [$v->{nick}]\'s request..",
+				  1 );
 		$Lucy::lucy->remove_diamond( $v->{args} );
+		return ['ok'];
 	}
 }
 
 sub diamond_reload {
 	my ( $self, $v ) = @_;
 
-	if (   $v->{type} eq 'pub'
-		&& $Lucy::lucy->is_channel_admin( $v->{where}, $v->{nick} ) )
+	if (    $v->{type} eq 'pub'
+		 && $Lucy::lucy->is_channel_admin( $v->{where}, $v->{nick} ) )
 	{
-		Lucy::debug(
-			"ChuckNorris",
-			"Reloading diamonds that have changed by $v->{nick}\'s request...",
-			1
-		);
-		if ( $Lucy::lucy->reload_diamond() ) {
-			$Lucy::lucy->yield( privmsg => $v->{where} => "$v->{nick}: ok" );
-		} else {
-			$Lucy::lucy->yield(
-				privmsg => $v->{where} => "$v->{nick}: failed to reload" );
-		}
+		Lucy::debug( "ChuckNorris",
+				"Reloading diamonds [$v->{args}] by [$v->{nick}]\'s request...",
+				1 );
+		
+		my @diamonds = split(/\s/, $v->{args});		
+		$Lucy::lucy->reload_diamond( @diamonds );
+
+		return ['ok'];
+	}
+}
+
+sub diamond_list {
+	my ( $self, $v ) = @_;
+
+	if (    $v->{type} eq 'pub'
+		 && $Lucy::lucy->is_channel_admin( $v->{where}, $v->{nick} ) )
+	{
+		Lucy::debug( "ChuckNorris",
+					 "Listing diamonds by [$v->{nick}]\'s request", 4 );
+
+		my @diamonds = keys( %{ $Lucy::lucy->{Diamonds} } );
+		return ["Loaded Diamonds: @diamonds"];
 	}
 }
 
@@ -245,10 +266,8 @@ sub timesince {
 	my ( $self, $v ) = @_;
 
 	if ( $v->{args} =~ /^\d+$/ ) {
-		$Lucy::lucy->yield(
-			    privmsg => $v->{where} => "$v->{nick}: $v->{args} was "
-			  . Lucy::timesince( $v->{args} )
-			  . ' ago.' );
+		return [
+			   $v->{args} . ' was ' . Lucy::timesince( $v->{args} ) . ' ago.' ];
 	}
 }
 

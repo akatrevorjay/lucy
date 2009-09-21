@@ -44,7 +44,10 @@ sub methods {
 # Based on methods_via() in perl5db.pl
 		for my $method (
 			eval {
-				grep { not /^[(_]/ and defined &{ ${"${class}::"}{$_} } }
+				grep {
+					not /^[(_]/
+					  and defined &{ ${"${class}::"}{$_} }
+				  }
 				  keys %{"${class}::"};
 			}
 		  )
@@ -100,6 +103,9 @@ sub diamond_config {
 sub irc_bot_command {
 	unless ( $_[OBJECT]->{__cmd_map}{ $_[ARG3] } ) {
 		return undef;
+	} else {
+		Lucy::debug( $_[OBJECT]->{__name} . 'Diamond',
+					 "Running Abstract command " . $_[ARG3], 9 );
 	}
 
 	my ( $self, $lucy, $who, $where, $what, $cmd, $args, $type ) =
@@ -108,30 +114,31 @@ sub irc_bot_command {
 	$where = $where->[0];
 
 	my $vars = {
-		config => $self->diamond_config,
-		cmd    => $cmd,
-		args   => $args,
-		nick   => $nick,
-		where  => $where,
-		type   => $type,
+				 config => $self->diamond_config,
+				 cmd    => $cmd,
+				 args   => $args,
+				 nick   => $nick,
+				 where  => $where,
+				 type   => $type,
 	};
 
 	#TODO text replacement mechanism? like %nick%, or %red%this is red%red%
 	if ( my $ret =
-		eval( 'return $self->' . $self->{__cmd_map}{$cmd} . '($vars);' ) )
+		 eval( 'return $self->' . $self->{__cmd_map}{$cmd} . '($vars);' ) )
 	{
 
 		#use Data::Dumper;
 		#print Dumper($ret);
 		foreach ( eval { @{$ret} } ) {
 			$lucy->privmsg(
-				$where => Lucy::font( 'yellow bold', "$nick: " ) . $_ );
+						$where => Lucy::font( 'yellow bold', "$nick: " ) . $_ );
 		}
 	} else {
 		Lucy::debug( 'Diamond',
-			'Failed to run [' . $self->{__cmd_map}{$cmd} . ']: ' . $@, 2 );
+					 'Failed to run [' . $self->{__cmd_map}{$cmd} . ']: ' . $@,
+					 2 );
 	}
-	
+
 	return 1;
 }
 
