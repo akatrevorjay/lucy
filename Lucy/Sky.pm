@@ -41,10 +41,6 @@ use vars qw($AUTOLOAD);
 sub add_diamond {
 	my $self = shift;
 	foreach my $d (@_) {
-
-		# skip it if it's not sanitized enough
-		next if $d =~ /[^\w]/;
-
 		$self->remove_diamond($d) if $self->is_diamond_loaded($d);
 		if ( eval( 'return require Lucy::Diamonds::' . $d . ' or undef;' ) ) {
 			$self->{Diamonds}{$d} =

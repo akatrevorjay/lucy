@@ -205,7 +205,7 @@ sub diamond_add {
 
 	if (    $v->{type} eq 'pub'
 		 && $Lucy::lucy->is_operator( $v->{nick} )
-		 && $v->{args} =~ /\w{3,20}/ )
+		 && $v->{args} =~ /^\w{0,20}$/ )
 	{
 		Lucy::debug( "ChuckNorris",
 					"Adding diamonds [$v->{args}] by [$v->{nick}]\'s request..",
@@ -220,7 +220,7 @@ sub diamond_remove {
 
 	if (    $v->{type} eq 'pub'
 		 && $Lucy::lucy->is_operator( $v->{nick} )
-		 && $v->{args} =~ /\w{3,20}/ )
+		 && $v->{args} =~ /^\w{0,20}$/ )
 	{
 		Lucy::debug( "ChuckNorris",
 				  "Removing diamonds [$v->{args}] by [$v->{nick}]\'s request..",
@@ -234,14 +234,15 @@ sub diamond_reload {
 	my ( $self, $v ) = @_;
 
 	if (    $v->{type} eq 'pub'
-		 && $Lucy::lucy->is_operator( $v->{nick} ) )
+		 && $Lucy::lucy->is_operator( $v->{nick} )
+		 && $v->{args} =~ /^\w{0,20}$/ )
 	{
 		Lucy::debug( "ChuckNorris",
 				"Reloading diamonds [$v->{args}] by [$v->{nick}]\'s request...",
 				1 );
-		
-		my @diamonds = split(/\s/, $v->{args});		
-		$Lucy::lucy->reload_diamond( @diamonds );
+
+		my @diamonds = split( /\s/, $v->{args} );
+		$Lucy::lucy->reload_diamond(@diamonds);
 
 		return ['ok'];
 	}
