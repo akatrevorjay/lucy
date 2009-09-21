@@ -26,7 +26,7 @@
 <xsl:template match="/">
 <html>
 <body>
-<h2>LucyStats version 0.4 [timestamp=<xsl:value-of select="lucystats/ts"/>]</h2>
+<h2>LucyStats version 0.6svn [timestamp=<xsl:value-of select="lucystats/ts"/>]</h2>
 Mmmmmmm...<br />
 <br />
 	<table>
@@ -83,15 +83,15 @@ Mmmmmmm...<br />
 	</xsl:for-each>
 </table>
 </xsl:for-each>
-<h3>Factoids</h3>
+<h3>Roids</h3>
 <table>
 	<tr>
-		<th>Factoid</th>
+		<th>Roid</th>
 		<th>Definition</th>
 		<th>Who</th>
 		<th>Timestamp</th>
 	</tr>
-	<xsl:for-each select="lucystats/factoid">
+	<xsl:for-each select="lucystats/roid">
 	<tr>
 		<td><xsl:value-of select="@fact"/></td>
 		<td><xsl:value-of select="@definition"/></td>
