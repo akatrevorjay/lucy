@@ -204,7 +204,7 @@ sub diamond_add {
 	my ( $self, $v ) = @_;
 
 	if (    $v->{type} eq 'pub'
-		 && $Lucy::lucy->is_channel_admin( $v->{where}, $v->{nick} )
+		 && $Lucy::lucy->is_operator( $v->{nick} )
 		 && $v->{args} =~ /\w{3,20}/ )
 	{
 		Lucy::debug( "ChuckNorris",
@@ -219,7 +219,7 @@ sub diamond_remove {
 	my ( $self, $v ) = @_;
 
 	if (    $v->{type} eq 'pub'
-		 && $Lucy::lucy->is_channel_admin( $v->{where}, $v->{nick} )
+		 && $Lucy::lucy->is_operator( $v->{nick} )
 		 && $v->{args} =~ /\w{3,20}/ )
 	{
 		Lucy::debug( "ChuckNorris",
@@ -234,7 +234,7 @@ sub diamond_reload {
 	my ( $self, $v ) = @_;
 
 	if (    $v->{type} eq 'pub'
-		 && $Lucy::lucy->is_channel_admin( $v->{where}, $v->{nick} ) )
+		 && $Lucy::lucy->is_operator( $v->{nick} ) )
 	{
 		Lucy::debug( "ChuckNorris",
 				"Reloading diamonds [$v->{args}] by [$v->{nick}]\'s request...",
@@ -251,7 +251,7 @@ sub diamond_list {
 	my ( $self, $v ) = @_;
 
 	if (    $v->{type} eq 'pub'
-		 && $Lucy::lucy->is_channel_admin( $v->{where}, $v->{nick} ) )
+		 && $Lucy::lucy->is_operator( $v->{nick} ) )
 	{
 		Lucy::debug( "ChuckNorris",
 					 "Listing diamonds by [$v->{nick}]\'s request", 4 );
