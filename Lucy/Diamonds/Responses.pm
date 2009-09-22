@@ -159,9 +159,9 @@ sub tre_filter {
 
 	if ( defined $regex && length($regex) > 0 && defined $args ) {
 		if ( $args =~ /$regex/ ) {
-			my $count = 0;
+			my $count = 1;
 			while ( my $m = eval( 'return $' . $count . ' or undef;' ) ) {
-				$tr->{ 'arg' . $count } = $m;
+				$tr->{ 'arg' . ( $count - 1 ) } = $m;
 				$count++;
 			}
 		} else {
