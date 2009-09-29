@@ -318,6 +318,35 @@ sub irc_public {
 ## Helper functions
 ##
 
+sub tre_filter {
+	my $self  = shift;
+	my $str   = shift;
+	my $tr    = shift;
+	my $regex = shift || undef;
+	my $args  = shift || undef;
+
+	if ( defined $regex && length($regex) > 0 && defined $args ) {
+		if ( $args =~ /$regex/ ) {
+			my $count = 1;
+			while ( my $m = eval( 'return $' . $count . ' or undef;' ) ) {
+				$tr->{ 'arg' . ( $count - 1 ) } = $m;
+				$count++;
+			}
+		} else {
+			Lucy::debug( "Roids", "tre_filter: args didn't match the regex",
+				7 );
+			return 0;
+		}
+	}
+
+	# replace the %var%'s with $var's
+	foreach ( keys %{$tr} ) {
+		$str =~ s/%$_%/$tr->{$_}/;
+	}
+
+	return $str;
+}
+
 sub _forget_roid {
 	my $self = shift;
 	my $fact = shift;

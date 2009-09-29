@@ -70,7 +70,12 @@ sub response {
 	}
 
 	my $rssfeed = $self->{feed_objs}{$feed_name};
-	my $res     = $response_packet->[0];
+	unless ( $rssfeed->can("parse") ) { 
+		warn "[$feed_name] Unknown Feed, can't parse\n";
+		return;
+	}
+
+	my $res = $response_packet->[0];
 	if ( $res->is_success ) {
 		warn "[" . $feed_name . "] Fetched " . $rssfeed->url . "\n"
 		  if $self->{debug};
@@ -193,8 +198,8 @@ sub irc_bot_command {
 					$append .= " $_=" . $f->{$_};
 				}
 
-				$lucy->yield( privmsg => $where => "$nick: " 
-					  . "feed: [" 
+				$lucy->yield( privmsg => $where => "$nick: "
+					  . "feed: ["
 					  . $name . "]"
 					  . $append );
 			}
