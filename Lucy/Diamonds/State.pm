@@ -163,7 +163,7 @@ sub irc_topic {
 	Lucy::debug( "topic", "$nick changed the topic of $channel to: $what", 4 );
 
 	$self->log( $Lucy::config->{Channels}{$channel}{log},
-				"-!- $nick changed the topic of $channel to [$what]" );
+		"-!- $nick changed the topic of $channel to [$what]" );
 }
 
 ####
@@ -194,7 +194,7 @@ sub irc_join {
 
 	# log n seen
 	$self->log( $Lucy::config->{Channels}{$channel}{log},
-				"-!- $nick joined $channel" );
+		"-!- $nick joined $channel" );
 	$self->updateseen( $nick, 'join', $channel );
 }
 
@@ -215,8 +215,10 @@ sub irc_invite {
 	# add channel to config, join, and log.
 	$Lucy::config->{Channels}{$channel} = { log => "$channel.log", };
 	$lucy->yield( join => $channel );
-	$self->log( $Lucy::config->{Channels}{$channel}{log},
-				"-!- invited to $channel by $nick" );
+	$self->log(
+		$Lucy::config->{Channels}{$channel}{log},
+		"-!- invited to $channel by $nick"
+	);
 }
 
 ####
@@ -230,12 +232,12 @@ sub irc_part {
 
 	# log n seen
 	$self->log( $Lucy::config->{Channels}{$channel}{log},
-				"-!- $nick left $channel" );
+		"-!- $nick left $channel" );
 	$self->updateseen( $nick, 'part', $channel );
 
 	if ( $nick eq $lucy->nick_name ) {
 		Lucy::debug( "part", "Rejoining $channel in 5s because I was parted",
-					 2 );
+			2 );
 		$lucy->delay( [ join => $channel ], 5 );
 	}
 }
@@ -253,7 +255,7 @@ sub irc_quit {
 	# find out what channels the user was on and log it
 	foreach ( @{$channels} ) {
 		$self->log( $Lucy::config->{Channels}{$_}{log},
-					"-!- $nick has quit IRC" );
+			"-!- $nick has quit IRC" );
 	}
 	$self->updateseen( $nick, 'quit' );
 }
@@ -267,19 +269,44 @@ sub irc_kick {
 	  @_[ KERNEL, OBJECT, SENDER, ARG1, ARG2, ARG3 ];
 	my $kicker = ( split( /[@!]/, $_[ARG0], 2 ) )[0];
 	Lucy::debug( "kick",
-				 "$nick has been kicked from $channel by $kicker for [$reason]",
-				 2 );
+		"$nick has been kicked from $channel by $kicker for [$reason]", 2 );
 
 	# log it
-	$self->log( $Lucy::config->{Channels}{$channel}{log},
-				"-!- " . $nick . " has quit [" . $channel . "]" );
+	$self->log(
+		$Lucy::config->{Channels}{$channel}{log},
+		"-!- " . $nick . " has quit [" . $channel . "]"
+	);
 	$self->updateseen( $nick, 'kick', $channel, $kicker, $reason );
 
+	#TODO move to MsgHandler
 	if ( $nick eq $lucy->nick_name ) {
 		Lucy::debug( "kick", "Rejoining $channel in 5s because I was kicked",
-					 2 );
+			2 );
 		$lucy->delay( [ join => $channel ], 5 );
 	}
+}
+
+###
+### We're banned from a channel
+###
+sub irc_474 {
+	my ( $kernel, $self, $lucy, $server, $args ) =
+	  @_[ KERNEL, OBJECT, SENDER, ARG0, ARG2 ];
+	my ( $where, $msg ) = @$args;
+
+	Lucy::debug( "banned", "Banned from channel [$where] [$msg]", 1 );
+
+	#TODO move to MsgHandler
+	if (   defined $Lucy::config->{OperUser}
+		&& defined $Lucy::config->{OperPass} )
+	{
+		Lucy::debug( "banned", "SAJoining [$where] in 5s because I was banned",
+			1 );
+		$lucy->delay(
+			[ quote => sajoin => " " . $lucy->nick_name . " :" . $where ], 5 );
+	}
+
+	#$_[OBJECT]->log('lucy','-!- IRC: Cannot join [$where]. Banned. [$msg]');
 }
 
 sub irc_disconnected {
@@ -327,7 +354,7 @@ sub irc_nick {
 	  )
 	{
 		$self->log( $Lucy::config->{Channels}{$_}{log},
-					"-!- " . $nick . " changed nicks to [" . $new . "]" );
+			"-!- " . $nick . " changed nicks to [" . $new . "]" );
 	}
 
 	### seen update

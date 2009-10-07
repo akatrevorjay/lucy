@@ -76,7 +76,7 @@ sub add_diamond {
 			Lucy::debug( "Sky", "Loaded diamond $d [priority=$priority]", 2 );
 		} else {
 			Lucy::debug( "Sky",
-						 "WHOA THERE NELLY!!! $d failed to load: \n" . $@, 1 );
+				"WHOA THERE NELLY!!! $d failed to load: \n" . $@, 1 );
 		}
 	}
 }
@@ -100,8 +100,7 @@ sub remove_diamond {
 			Lucy::debug( "Sky", "Unloaded diamond $d", 2 );
 		} else {
 			Lucy::debug( "Sky",
-						 "WHOA THERE NELLY!!! $d failed to unload: \n" . $@,
-						 1 );
+				"WHOA THERE NELLY!!! $d failed to unload: \n" . $@, 1 );
 		}
 	}
 }
@@ -152,10 +151,10 @@ sub init {
 	# Create the component that will represent an IRC network.
 	$self->{__irc} =
 	  POE::Component::IRC::State->spawn(
-						Debug => ( $Lucy::config->{debug_level} > 9 ) ? 1 : 0 );
+		Debug => ( $Lucy::config->{debug_level} > 9 ) ? 1 : 0 );
 
 	POE::Session->create(
-			object_states => [ $self => [ '_start', '_stop', '_default' ], ], );
+		object_states => [ $self => [ '_start', '_stop', '_default' ], ], );
 }
 
 sub _start {
@@ -163,11 +162,11 @@ sub _start {
 
 	$self->{__irc}->plugin_add( 'MsgHandler' => Lucy::MsgHandler->new() );
 	$self->{__irc}->plugin_add( 'BotTraffic',
-							   POE::Component::IRC::Plugin::BotTraffic->new() );
+		POE::Component::IRC::Plugin::BotTraffic->new() );
 	$self->{__irc}->plugin_add(
-				 'Connector' => POE::Component::IRC::Plugin::Connector->new() );
+		'Connector' => POE::Component::IRC::Plugin::Connector->new() );
 	$self->{__irc}->plugin_add(
-				   'ISupport' => POE::Component::IRC::Plugin::ISupport->new() );
+		'ISupport' => POE::Component::IRC::Plugin::ISupport->new() );
 	$self->{__irc}->yield( "register", "all" );
 
 	my $hash = {};
@@ -178,6 +177,7 @@ sub _start {
 	$hash->{Username} = $Lucy::config->{Username} || 'lucy';
 	$hash->{Ircname}  = $Lucy::config->{Ircname}  || 'My Owner is a Lamer';
 	$hash->{UseSSL}   = $Lucy::config->{UseSSL}   || undef;
+	$hash->{Raw}      = 0;
 
 	$self->{__irc}->yield( "connect" => $hash );
 	undef $hash;
@@ -214,25 +214,21 @@ sub _default {
 			my $ret;
 			foreach my $d ( keys %{ $self->{Diamonds_map}[$pri] } ) {
 				Lucy::debug( 'Event' . $pri,
-							 "Seeing if $state_name exists for $d", 11 );
+					"Seeing if $state_name exists for $d", 11 );
 				next
 				  unless ( $self->{Diamonds_events}{$d}{$state_name} );
 				Lucy::debug( 'Event' . $pri, "Sending $state to $d", 9 );
 				$ret = eval { $self->{Diamonds}{$d}->$state(@new_) };
 
 				Lucy::debug(
-							 'Sky',
-							 'Compilation of ' 
-							   . $state . ' @ ' 
-							   . $d
-							   . ' failed: '
-							   . $@,
-							 0
+					'Sky',
+					'Compilation of ' . $state . ' @ ' . $d . ' failed: ' . $@,
+					0
 				) if $@;
 
 				if ($ret) {
 					Lucy::debug( 'Event' . $pri,
-								 $d . ' stopped event of ' . $state, 9 );
+						$d . ' stopped event of ' . $state, 9 );
 					last;
 				}
 			}
@@ -253,18 +249,15 @@ sub AUTOLOAD {
 	if ( $self->{__irc}->can($method) ) {
 		$ret = eval { $self->{__irc}->$method(@_); };
 		Lucy::debug( 'Sky',
-			  'Compilation of ' . $method . ' @ Sky:AUTOLOAD_can failed: ' . $@,
-			  0 )
+			'Compilation of ' . $method . ' @ Sky:AUTOLOAD_can failed: ' . $@,
+			0 )
 		  if $@;
 	} else {
 		$ret = eval { $self->{__irc}->call( $method, @_ ); };
 		Lucy::debug(
-					 'Sky',
-					 'Compilation of ' 
-					   . $method
-					   . ' @ Sky:AUTOLOAD_else failed: '
-					   . $@,
-					 0
+			'Sky',
+			'Compilation of ' . $method . ' @ Sky:AUTOLOAD_else failed: ' . $@,
+			0
 		) if $@;
 	}
 	return $ret;
