@@ -41,6 +41,7 @@ sub commands {
 		diamond_add    => [qw(diamond_load diamond_add dload dadd)],
 		diamond_remove => [qw(diamond_unload diamond_remove dunload dremove)],
 		diamond_reload => [qw(diamond_reload dreload reload)],
+		command_list   => [qw(command_list commands_list commands)],
 		timesince      => [qw(timesince)],
 
 		#		use_irc_colors => [qw(colors)],
@@ -260,6 +261,29 @@ sub diamond_list {
 		my @diamonds = keys( %{ $Lucy::lucy->{Diamonds} } );
 		return ["Loaded Diamonds: @diamonds"];
 	}
+}
+
+sub commands_list {
+	my ( $self, $v ) = @_;
+	
+	my $msg_str;
+	foreach my $d ( keys %{ $Lucy::lucy->{Diamonds} } ) {
+		# only work on abstract diamonds for now
+		next unless $Lucy::lucy->{Diamonds}{$d}->{__abstract};
+		next unless my %commands = %{ $Lucy::lucy->{Diamonds}{$d}->commands };
+		
+		$msg_str .= "$d=[ ";
+		foreach my $c (keys %commands) {
+			$msg_str .= "$c";
+			$msg_str .= ' aliases=(' . join(',', @$commands{$c} ) . ')'
+				if ($v->{args} =~ /aliases/);
+			$msg_str .= ",";
+		}
+		$msg_str .= '], ';
+	}
+
+	my @msg = [$msg_str];
+	return \@msg;
 }
 
 ## DANANANAnanananaNA timesince!

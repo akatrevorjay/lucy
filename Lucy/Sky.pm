@@ -177,6 +177,7 @@ sub _start {
 	$hash->{Username} = $Lucy::config->{Username} || 'lucy';
 	$hash->{Ircname}  = $Lucy::config->{Ircname}  || 'My Owner is a Lamer';
 	$hash->{UseSSL}   = $Lucy::config->{UseSSL}   || undef;
+	$hash->{Password} = $Lucy::config->{Password} || undef;
 	$hash->{Raw}      = 0;
 
 	$self->{__irc}->yield( "connect" => $hash );
