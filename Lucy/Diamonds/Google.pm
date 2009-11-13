@@ -186,9 +186,11 @@ use HTML::Entities;
 
 sub lmgtfy {
 	my ( $self, $v ) = @_;
-	
-	Lucy::debug( 'LMGTFY', 'query for [' $v->{args} . ']', 6 );
-	return "http://lmgtfy.com/?q=" . encode_entities( $v->{args} );
+	my @msg;	
+	Lucy::debug( 'LMGTFY', 'query for [' . $v->{args} . ']', 6 );
+
+	push(@msg, "http://lmgtfy.com/?q=" . encode_entities( $v->{args} ));
+	return \@msg;
 }
 
 1;
