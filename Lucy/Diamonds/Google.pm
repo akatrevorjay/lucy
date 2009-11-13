@@ -35,6 +35,7 @@ sub commands {
 		  [qw(trans gtrans googtrans gtranslate translate translator)],
 		googlism => [qw(googlism spewshit)],
 		weather  => [qw(weather gweather)],
+		lmgtfy   => [qw(lmgtfy)],
 	};
 }
 
@@ -95,16 +96,15 @@ sub weather {
 
 	my $wg      = Weather::Google->new( $v->{args} );
 	my $current = $wg->current;
-	return unless defined($current->{temp_f}) && length($current->{temp_f}) > 0;
-	
+	return
+	  unless defined( $current->{temp_f} ) && length( $current->{temp_f} ) > 0;
+
 	push( @msg,
 		    'Weather for '
 		  . $v->{args} . ': '
 		  . $current->{temp_f} . 'F/'
-		  . $current->{temp_c}
-		  . 'C; '
-		  . $current->{wind_condition}
-		  . '; '
+		  . $current->{temp_c} . 'C; '
+		  . $current->{wind_condition} . '; '
 		  . $current->{humidity}
 		  . '; Conditions: '
 		  . $current->{condition} );
@@ -180,6 +180,15 @@ sub googlism {
 	}
 
 	return \@msg;
+}
+
+use HTML::Entities;
+
+sub lmgtfy {
+	my ( $self, $v ) = @_;
+	
+	Lucy::debug( 'LMGTFY', 'query for [' $v->{args} . ']', 6 );
+	return "http://lmgtfy.com/?q=" . encode_entities( $v->{args} );
 }
 
 1;
