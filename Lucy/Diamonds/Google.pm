@@ -189,9 +189,12 @@ sub lmgtfy {
 	my @msg;
 	Lucy::debug( 'LMGTFY', 'query for [' . $v->{args} . ']', 6 );
 
+	# Why oh why does encode_entities not support spaces? Grr.
+	$v->{args} =~ s/ /%20/g;
+	
 	push( @msg,
 		"http://lmgtfy.com/?q="
-		  . encode_entities( $v->{args}, '^\n\x20-\x25\x27-\x7e ' ) );
+		  . encode_entities( $v->{args}, '^\n\x20-\x25\x27-\x7e' ) );
 	return \@msg;
 }
 
