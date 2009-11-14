@@ -263,27 +263,34 @@ sub diamond_list {
 	}
 }
 
-sub commands_list {
+sub command_list {
 	my ( $self, $v ) = @_;
+
+	Lucy::debug( "ChuckNorris", "Listing abstract commands by [$v->{nick}]'s request", 6);
 	
-	my $msg_str;
+	my @diamond_commands;
 	foreach my $d ( keys %{ $Lucy::lucy->{Diamonds} } ) {
 		# only work on abstract diamonds for now
 		next unless $Lucy::lucy->{Diamonds}{$d}->{__abstract};
 		next unless my %commands = %{ $Lucy::lucy->{Diamonds}{$d}->commands };
 		
-		$msg_str .= "$d=[ ";
-		foreach my $c (keys %commands) {
-			$msg_str .= "$c";
-			$msg_str .= ' aliases=(' . join(',', @$commands{$c} ) . ')'
-				if ($v->{args} =~ /aliases/);
-			$msg_str .= ",";
-		}
-		$msg_str .= '], ';
+		#$msg_str .= Lucy::font( 'blue', $d . "=[ " );
+		#foreach my $c (keys %commands) {
+		#	if ($v->{args} =~ /alias/) {
+		#		$msg_str .= Lucy::font('white', $c .'=(' )
+		#			. join(',', @{ $commands{$c} } )
+		#			. Lucy::font( 'white', ')' );
+		#	} else {
+		#		$msg_str .= $c;
+		#	}
+		#	$msg_str .= ",";
+		#}
+		#$msg_str .= Lucy::font( 'blue', ' ]' );
+
+		push( @diamond_commands, join( ',', keys %commands ) );
 	}
 
-	my @msg = [$msg_str];
-	return \@msg;
+	return ["Abstract commands: " . join('|', @diamond_commands )];
 }
 
 ## DANANANAnanananaNA timesince!
