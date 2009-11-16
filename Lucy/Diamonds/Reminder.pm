@@ -86,8 +86,8 @@ sub check_for_reminders {
 	) or return;
 
 	for my $r ( $q->hashes ) {
+		#FUCK seriously, why does this not work here alone????
 		my $timesince = Lucy::timesince( $r->{ts} );
-		print "JDJDJDJD TIMESINCE = $timesince TS = $r->{ts}\n";
 		$timesince
 		  ? $timesince = ' around ' . $timesince . ' ago'
 		  : $timesince = '';
