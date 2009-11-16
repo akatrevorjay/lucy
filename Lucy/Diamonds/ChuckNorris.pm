@@ -59,11 +59,11 @@ sub russianroulette_load {
 
 	if ( defined $self->{gunchamber} ) {
 		$Lucy::lucy->yield( kill => $v->{nick} =>
-							"BANG - Don't stuff bullets into a loaded gun" );
+			  "BANG - Don't stuff bullets into a loaded gun" );
 	} else {
 		$self->{gunchamber} = 1 + Lucy::crand(6);
 		$Lucy::lucy->yield( ctcp => $v->{where} => 'ACTION' =>
-							'loads the gun and sets it on the table' );
+			  'loads the gun and sets it on the table' );
 	}
 }
 
@@ -71,18 +71,18 @@ sub russianroulette_shoot {
 	my ( $self, $v ) = @_;
 	my @msg;
 
-	if (    ( !defined $self->{gunchamber} )
-		 || ( $self->{gunchamber} <= 0 ) )
+	if (   ( !defined $self->{gunchamber} )
+		|| ( $self->{gunchamber} <= 0 ) )
 	{
 		push( @msg,
-			  "You probrably want to !load the gun first, don't you think?" );
+			"You probrably want to !load the gun first, don't you think?" );
 		return @msg;
 	} else {
 		$self->{gunchamber}--;
 		if ( $self->{gunchamber} == 0 ) {
 			$Lucy::lucy->yield( privmsg => $v->{nick} => "Bang!!!" );
 			$Lucy::lucy->yield(
-				 privmsg => $v->{nick} => "Better luck next time, $v->{nick}" );
+				privmsg => $v->{nick} => "Better luck next time, $v->{nick}" );
 			$Lucy::lucy->yield( kill => $v->{nick} => "BANG!!!!" );
 			delete $self->{gunchamber};
 		} else {
@@ -138,7 +138,7 @@ sub math {
 		$Lucy::lucy->yield( privmsg => $v->{where} => "$v->{nick}: $answer" );
 	} else {
 		$Lucy::lucy->yield(
-			  privmsg => $v->{where} => "$v->{nick}: expression failed bitch" );
+			privmsg => $v->{where} => "$v->{nick}: expression failed bitch" );
 	}
 }
 
@@ -149,12 +149,12 @@ sub terror_level {
 	my ( $self, $v ) = @_;
 
 	if ( my $XML =
-		 XML::Smart->new("http://www.dhs.gov/dhspublic/getAdvisoryCondition") )
+		XML::Smart->new("http://www.dhs.gov/dhspublic/getAdvisoryCondition") )
 	{
 		$XML = $XML->cut_root;
 		$Lucy::lucy->yield(
-			   privmsg => $v->{where} => "WHOA!! TAKE COVER!!! TERROR LEVEL IS "
-				 . $XML->{CONDITION} );
+			privmsg => $v->{where} => "WHOA!! TAKE COVER!!! TERROR LEVEL IS "
+			  . $XML->{CONDITION} );
 		undef $XML;
 	}
 	return 1;
@@ -204,13 +204,12 @@ sub use_irc_colors {
 sub diamond_add {
 	my ( $self, $v ) = @_;
 
-	if (    $v->{type} eq 'pub'
-		 && $Lucy::lucy->is_operator( $v->{nick} )
-		 && $v->{args} =~ /^\w{0,20}$/ )
+	if (   $v->{type} eq 'pub'
+		&& $Lucy::lucy->is_operator( $v->{nick} )
+		&& $v->{args} =~ /^\w{0,20}$/ )
 	{
 		Lucy::debug( "ChuckNorris",
-					"Adding diamonds [$v->{args}] by [$v->{nick}]\'s request..",
-					1 );
+			"Adding diamonds [$v->{args}] by [$v->{nick}]\'s request..", 1 );
 		$Lucy::lucy->add_diamond( $v->{args} );
 		return ['ok'];
 	}
@@ -219,13 +218,12 @@ sub diamond_add {
 sub diamond_remove {
 	my ( $self, $v ) = @_;
 
-	if (    $v->{type} eq 'pub'
-		 && $Lucy::lucy->is_operator( $v->{nick} )
-		 && $v->{args} =~ /^\w{0,20}$/ )
+	if (   $v->{type} eq 'pub'
+		&& $Lucy::lucy->is_operator( $v->{nick} )
+		&& $v->{args} =~ /^\w{0,20}$/ )
 	{
 		Lucy::debug( "ChuckNorris",
-				  "Removing diamonds [$v->{args}] by [$v->{nick}]\'s request..",
-				  1 );
+			"Removing diamonds [$v->{args}] by [$v->{nick}]\'s request..", 1 );
 		$Lucy::lucy->remove_diamond( $v->{args} );
 		return ['ok'];
 	}
@@ -234,13 +232,13 @@ sub diamond_remove {
 sub diamond_reload {
 	my ( $self, $v ) = @_;
 
-	if (    $v->{type} eq 'pub'
-		 && $Lucy::lucy->is_operator( $v->{nick} )
-		 && $v->{args} =~ /^\w{0,20}$/ )
+	if (   $v->{type} eq 'pub'
+		&& $Lucy::lucy->is_operator( $v->{nick} )
+		&& $v->{args} =~ /^\w{0,20}$/ )
 	{
 		Lucy::debug( "ChuckNorris",
-				"Reloading diamonds [$v->{args}] by [$v->{nick}]\'s request...",
-				1 );
+			"Reloading diamonds [$v->{args}] by [$v->{nick}]\'s request...",
+			1 );
 
 		my @diamonds = split( /\s/, $v->{args} );
 		$Lucy::lucy->reload_diamond(@diamonds);
@@ -252,11 +250,11 @@ sub diamond_reload {
 sub diamond_list {
 	my ( $self, $v ) = @_;
 
-	if (    $v->{type} eq 'pub'
-		 && $Lucy::lucy->is_operator( $v->{nick} ) )
+	if (   $v->{type} eq 'pub'
+		&& $Lucy::lucy->is_operator( $v->{nick} ) )
 	{
 		Lucy::debug( "ChuckNorris",
-					 "Listing diamonds by [$v->{nick}]\'s request", 4 );
+			"Listing diamonds by [$v->{nick}]\'s request", 4 );
 
 		my @diamonds = keys( %{ $Lucy::lucy->{Diamonds} } );
 		return ["Loaded Diamonds: @diamonds"];
@@ -266,31 +264,21 @@ sub diamond_list {
 sub command_list {
 	my ( $self, $v ) = @_;
 
-	Lucy::debug( "ChuckNorris", "Listing abstract commands by [$v->{nick}]'s request", 6);
-	
+	Lucy::debug( "ChuckNorris",
+		"Listing abstract commands by [$v->{nick}]'s request", 6 );
+
 	my @diamond_commands;
 	foreach my $d ( keys %{ $Lucy::lucy->{Diamonds} } ) {
+
 		# only work on abstract diamonds for now
 		next unless $Lucy::lucy->{Diamonds}{$d}->{__abstract};
 		next unless my %commands = %{ $Lucy::lucy->{Diamonds}{$d}->commands };
-		
-		#$msg_str .= Lucy::font( 'blue', $d . "=[ " );
-		#foreach my $c (keys %commands) {
-		#	if ($v->{args} =~ /alias/) {
-		#		$msg_str .= Lucy::font('white', $c .'=(' )
-		#			. join(',', @{ $commands{$c} } )
-		#			. Lucy::font( 'white', ')' );
-		#	} else {
-		#		$msg_str .= $c;
-		#	}
-		#	$msg_str .= ",";
-		#}
-		#$msg_str .= Lucy::font( 'blue', ' ]' );
 
 		push( @diamond_commands, join( ',', keys %commands ) );
 	}
 
-	return ["Abstract commands: " . join('|', @diamond_commands )];
+	return [ "Abstract commands: "
+		  . join( Lucy::font( 'blue', '|' ), @diamond_commands ) ];
 }
 
 ## DANANANAnanananaNA timesince!
@@ -299,7 +287,7 @@ sub timesince {
 
 	if ( $v->{args} =~ /^\d+$/ ) {
 		return [
-			   $v->{args} . ' was ' . Lucy::timesince( $v->{args} ) . ' ago.' ];
+			$v->{args} . ' was ' . Lucy::timesince( $v->{args} ) . ' ago.' ];
 	}
 }
 

@@ -44,30 +44,6 @@ sub remind {
 	# Only works with fixed SQL::Abstract [w/ mysql 5]
 	my ( $to, $reminder );
 	if ( ( $to, $reminder ) = $v->{args} =~ /^([\w\-\_\']{3,30})\s*(.+)$/ ) {
-		unless ( $reminder =~ s/\s+(?:no)(?:replace|crap|help)(?:\=[01])?\s*$//ix )
-		{
-			$reminder = "   $reminder   ";
-
-			# I am -> s/he is
-			$reminder =~ s# (\s) I (\s) am (\s) #$1s/he$2is$3#gix;
-
-			# I -> s/he
-			$reminder =~ s# (\s) I (\s) #$1s/he$2#gix;
-
-			# s/he is -> you are
-			$reminder =~ s# (\s) (?:she|he) (\s) is (\s) #$1you$2are$3#gix;
-
-			# s/he -> you
-			$reminder =~ s# (\s) (?:she|he) (\s)#$1you$2#gix;
-
-			# his|her -> your
-			$reminder =~ s# (\s) (?:his|her) (\s) #$1your$2#gix;
-
-			# why won't chop work?
-			$reminder =~ s/^\s+//;
-			$reminder =~ s/\s+$//;
-		}
-
 		$Lucy::dbh->insert(
 			$self->tablename,
 			{
@@ -108,16 +84,21 @@ sub check_for_reminders {
 		[qw(id to from reminder ts)],
 		{ to => [ lc($nick), $lucy->nick_name ] }
 	) or return;
+
 	for my $r ( $q->hashes ) {
 		my $timesince = Lucy::timesince( $r->{ts} );
+		print "JDJDJDJD TIMESINCE = $timesince TS = $r->{ts}\n";
 		$timesince
 		  ? $timesince = ' around ' . $timesince . ' ago'
 		  : $timesince = '';
+		print "JDJDJDJD TIMESINCE = $timesince TS = $r->{ts}\n";
 		$lucy->privmsg( $where,
 			Lucy::font( 'blue', $r->{to} )
 			  . ": $r->{from} wanted to remind you $r->{reminder}$timesince" );
 		$Lucy::dbh->delete( $self->tablename, { id => $r->{id} } );
 	}
+
+	#return 1;
 }
 
 #TODO cleanup

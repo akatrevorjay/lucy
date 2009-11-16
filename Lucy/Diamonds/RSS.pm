@@ -70,7 +70,7 @@ sub response {
 	}
 
 	my $rssfeed = $self->{feed_objs}{$feed_name};
-	unless ( $rssfeed->can("parse") ) { 
+	unless ( $rssfeed->can("parse") ) {
 		warn "[$feed_name] Unknown Feed, can't parse\n";
 		return;
 	}
@@ -246,11 +246,8 @@ sub irc_bot_command {
 			$kernel->post( 'rss' => 'remove_feed', $subargs[0] );
 
 			#$Lucy::dbh->delete( $self->tablename, {name => $subargs[0]} );
-			$lucy->privmsg(
-				$where,
-				"$nick : ok,
-					I removed it from memory
-					  . It will be back when I am restarted though . "
+			$lucy->privmsg( $where,
+"$nick : ok, I removed it from memory. It will be back when I am restarted though . "
 			);
 		} elsif ( $subcmd eq 'pause' && $subargs[0] =~ /^[\w\s]{3,30}$/ ) {
 			Lucy::debug( 'RSS', 'pausing feed [' . $subargs[0] . ']', 6 );

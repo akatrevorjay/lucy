@@ -49,7 +49,7 @@ sub lastfm_recent_track {
 			'[' . $v->{nick} . "] requested recent track $ssong of [$swho]",
 			6 );
 		my ( $content, $url );
-		
+
 		if (
 			my $XML = XML::Smart->new(
 				"http://ws.audioscrobbler.com/1.0/user/$swho/recenttracks.xml")
