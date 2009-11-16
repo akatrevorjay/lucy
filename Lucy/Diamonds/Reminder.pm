@@ -91,7 +91,6 @@ sub check_for_reminders {
 		$timesince
 		  ? $timesince = ' around ' . $timesince . ' ago'
 		  : $timesince = '';
-		print "JDJDJDJD TIMESINCE = $timesince TS = $r->{ts}\n";
 		$lucy->privmsg( $where,
 			Lucy::font( 'blue', $r->{to} )
 			  . ": $r->{from} wanted to remind you $r->{reminder}$timesince" );
