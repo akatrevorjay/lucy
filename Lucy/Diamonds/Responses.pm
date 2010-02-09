@@ -32,37 +32,37 @@ sub tablename     { return 'lucy_responses'; }
 sub tablename_map { return 'lucy_responsemap'; }
 
 ### The acronyms of defeat shall pwn thee
-sub irc_public {
-	return unless ( int( rand(6) ) == 1 );
-
-	my ( $self, $lucy, $who, $where, $what ) =
-	  @_[ OBJECT, SENDER, ARG0, ARG1, ARG2 ];
-	my $nick = ( split( /[@!]/, $who, 2 ) )[0];
-	$where = $where->[0];
-
-	my $responsecmd = ( split( /\s+/, $what, 2 ) )[0];
-
-	my $tr = { command => 'public', nick => $nick, where => $where };
-	$tr->{args} = $what if defined $what;
-	$tr->{args_or_nick} = ( length($what) > 0 ) ? $what : $nick;
-
-	#$tr->{args_or_nick} = $nick;
-
-	if ( my $res = $self->getresponse( $responsecmd, $tr ) ) {
-		if ( $res->{type} eq 'action' ) {
-			$lucy->yield( ctcp => $where => ACTION => $res->{response} );
-		} elsif ( $res->{type} eq 'reply' ) {
-			$lucy->yield(
-				privmsg => $where => $nick . ': ' . $res->{response} );
-		} else {
-			$lucy->yield( privmsg => $where => $res->{response} );
-		}
-
-		return 1;
-	}
-
-	undef $tr;
-}
+#sub irc_public {
+#	return unless ( int( rand(6) ) == 1 );
+#
+#	my ( $self, $lucy, $who, $where, $what ) =
+#	  @_[ OBJECT, SENDER, ARG0, ARG1, ARG2 ];
+#	my $nick = ( split( /[@!]/, $who, 2 ) )[0];
+#	$where = $where->[0];
+#
+#	my $responsecmd = ( split( /\s+/, $what, 2 ) )[0];
+#
+#	my $tr = { command => 'public', nick => $nick, where => $where };
+#	$tr->{args} = $what if defined $what;
+#	$tr->{args_or_nick} = ( length($what) > 0 ) ? $what : $nick;
+#
+#	#$tr->{args_or_nick} = $nick;
+#
+#	if ( my $res = $self->getresponse( $responsecmd, $tr ) ) {
+#		if ( $res->{type} eq 'action' ) {
+#			$lucy->yield( ctcp => $where => ACTION => $res->{response} );
+#		} elsif ( $res->{type} eq 'reply' ) {
+#			$lucy->yield(
+#				privmsg => $where => $nick . ': ' . $res->{response} );
+#		} else {
+#			$lucy->yield( privmsg => $where => $res->{response} );
+#		}
+#
+#		return 1;
+#	}
+#
+#	undef $tr;
+#}
 
 ### I'm Spider Man, Bitch.
 sub irc_bot_command {
