@@ -5,5 +5,5 @@ cpan -i "CPAN::SQLite" "Term::ANSIColor" "YAML"
 cpan -i "Time::Interval" "Crypt::Random" "POE::Component::IRC::State" "POE::Component::Client::DNS" "DBIx::Simple" "Regexp::Common"
 
 # Diamond required modules
-cpan -i "POE::Component::Client::HTTP" "LWP::Simple" "Weather::Com::Simple" "WWW::Search" "XML::Smart" "Math::Expression" "XML::RSS::Feed" "Net::LastFM" "Google::Search"
+cpan -i "POE::Component::Client::HTTP" "LWP::Simple" "Weather::Com::Simple" "WWW::Search" "XML::Smart" "Math::Expression" "XML::RSS::Feed" "Net::LastFM" "Google::Search" "RiveScript"
 
